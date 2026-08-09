@@ -56,7 +56,11 @@
     if (overlayTimeoutId) clearTimeout(overlayTimeoutId);
     newPhotoUsername.textContent = photo.username;
     newPhotoImg.src = photo.url;
+    // show overlay
     newPhotoOverlay.classList.add("visible");
+    // subtle zoom of the main slide to draw attention
+    slide.classList.add("slide-zoom");
+    setTimeout(() => slide.classList.remove("slide-zoom"), 700);
     overlayTimeoutId = setTimeout(() => {
       newPhotoOverlay.classList.remove("visible");
     }, NEW_PHOTO_DISPLAY_MS);
@@ -129,7 +133,7 @@
     topList.innerHTML = top
       .map(
         (p) =>
-          `<div style="display:flex;gap:10px;align-items:center;margin-bottom:8px"><img src="${p.url}" style="width:72px;height:54px;object-fit:cover;border-radius:8px;border:1px solid rgba(0,0,0,0.06)"><div style="flex:1"><div style="font-weight:700">${p.username}</div><div style="font-size:0.9rem;color:#556575">${p.likes_count} ♥</div></div></div>`
+          `<div class="leaderboard-item"><img class="leaderboard-thumb" src="${p.url}" alt="thumb"><div class="leaderboard-meta"><div class="leaderboard-username">${p.username}</div><div class="leaderboard-count">${p.likes_count} ♥</div></div></div>`
       )
       .join("");
   }

@@ -1,0 +1,105 @@
+/* Shared site-wide styles and CSS variables for the photos app */
+:root{
+  --bg-1: #effcf6;
+  --bg-2: #fff5e8;
+  --ink: #223449;
+  --soft: #5f768c;
+  --card: rgba(255,255,255,0.94);
+  --card-border: rgba(255,255,255,0.88);
+  --btn-1: #16a34a;
+  --btn-2: #10b981;
+  --danger-1: #dc2626;
+  --danger-2: #ef4444;
+  --accent: #0ea5e9;
+  /* TV specific variables */
+  --sky-1: #f7fff6;
+  --sky-2: #fff6eb;
+  --mint: #22c55e;
+  --orange: #fb923c;
+  --ink-strong: #1f2a37;
+  --soft-ink: #4b5f75;
+  --card-light: rgba(255,255,255,0.9);
+  --card-border-2: rgba(255,255,255,0.85);
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;min-height:100vh;font-family:"Trebuchet MS","Segoe UI",sans-serif;color:var(--ink);}
+body{background:linear-gradient(140deg,var(--bg-1),var(--bg-2));padding:22px;}
+
+/* Card used by most pages */
+.card{width:min(100%,620px);background:var(--card);border:1px solid var(--card-border);border-radius:24px;box-shadow:0 20px 40px rgba(31,52,72,0.16);padding:clamp(22px,3.8vw,34px);-webkit-backdrop-filter:blur(5px);backdrop-filter:blur(5px);animation:rise .55s ease}
+@keyframes rise{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+h1{margin:0;font-size:clamp(1.3rem,3.5vw,2.3rem);line-height:1.1}
+.as-user{color:var(--soft);margin-top:10px;margin-bottom:16px}
+
+/* Buttons */
+button, .btn{border:0;border-radius:13px;padding:12px 20px;font-size:1rem;font-weight:700;color:#fff;cursor:pointer;transition:transform .15s ease,box-shadow .2s ease}
+button:hover,.btn:hover{transform:translateY(-1px)}
+button.primary{background:linear-gradient(90deg,var(--btn-1),var(--btn-2));box-shadow:0 8px 18px rgba(22,163,74,0.3)}
+.btn.back{background:linear-gradient(90deg,var(--btn-1),var(--btn-2));box-shadow:0 8px 18px rgba(22,163,74,0.3)}
+.btn.delete{background:linear-gradient(90deg,var(--danger-1),var(--danger-2));box-shadow:0 8px 18px rgba(220,38,38,0.3)}
+
+/* Messages */
+.messages{padding:0;margin:0 0 14px;display:grid;gap:8px}
+.message{padding:10px 12px;border-radius:12px;font-weight:600;border:1px solid transparent}
+.message.success{background:#dff7e8;border-color:#86efac;color:#166534}
+.message.error{background:#ffe8ee;border-color:#fda4af;color:#9f1239}
+
+/* Links that look like buttons/links */
+.tv-link,.gallery-link{display:inline-block;margin-top:24px;color:#0f766e;text-decoration:none;font-weight:700;border-bottom:2px solid rgba(15,118,110,0.2);transition:border-color .2s ease}
+.tv-link:hover,.gallery-link:hover{border-color:rgba(15,118,110,0.55)}
+
+/* Forms */
+input[type=file],input[type=text],input[type=email],textarea,select{width:100%;padding:12px;border-radius:12px;border:2px solid #d4e4ee;background:#fff}
+
+/* Small helpers */
+.chips{margin-top:16px;color:var(--soft);font-size:.92rem;display:flex;gap:8px;flex-wrap:wrap}
+.chip{background:#fff;border:1px solid #e4edf3;border-radius:999px;padding:5px 10px}
+
+/* Gallery grid */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px}
+.card .thumb{width:100%;height:160px;object-fit:cover;border-radius:8px}
+/* Card metadata layout */
+.card .meta{display:flex;justify-content:space-between;align-items:center;margin-top:8px}
+
+/* Ensure media responds */
+@media(max-width:760px){body{padding:12px}.card{width:100%;padding:16px}}
+
+/* TV page specific backgrounds and decorations */
+.tv-page{
+  background: radial-gradient(circle at 15% 10%, rgba(34,197,94,0.22), transparent 38%), radial-gradient(circle at 84% 18%, rgba(251,146,60,0.2), transparent 34%), linear-gradient(145deg,var(--sky-1),var(--sky-2));
+  color: var(--ink-strong);
+  height:100vh;overflow:hidden;padding:0;margin:0;
+}
+.tv-page::before,.tv-page::after{content:"";position:fixed;border-radius:50%;filter:blur(1px);z-index:0;pointer-events:none}
+.tv-page::before{width:420px;height:420px;left:-120px;bottom:-130px;background:rgba(34,197,94,0.24);}
+.tv-page::after{width:320px;height:320px;right:-90px;top:-110px;background:rgba(251,146,60,0.26);}
+
+@keyframes float{0%{transform:translateY(0) scale(1)}50%{transform:translateY(-18px) scale(1.04)}100%{transform:translateY(0) scale(1)}}
+
+.tv-page::before,.tv-page::after{animation:float 18s ease-in-out infinite}
+
+/* TV sidebar / leaderboard */
+.tv-sidebar{position:absolute;right:30px;top:180px;width:320px;background:var(--card);border:1px solid var(--card-border);padding:12px;border-radius:12px;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);box-shadow:0 12px 30px rgba(28,43,57,0.14);z-index:4}
+.tv-sidebar strong{display:block;margin-bottom:8px;color:var(--soft-ink);font-weight:700}
+.leaderboard-item{display:flex;gap:10px;align-items:center;margin-bottom:8px}
+.leaderboard-thumb{width:72px;height:54px;object-fit:cover;border-radius:8px;border:1px solid rgba(0,0,0,0.06)}
+.leaderboard-meta{flex:1}
+.leaderboard-username{font-weight:700}
+.leaderboard-count{font-size:0.9rem;color:#556575;margin-top:4px}
+
+/* New photo announcement overlay */
+.new-photo-overlay{position:absolute;right:18px;top:18px;background:var(--card);border:1px solid var(--card-border);padding:12px;border-radius:12px;display:flex;gap:12px;align-items:center;box-shadow:0 18px 40px rgba(20,30,48,0.18);opacity:0;pointer-events:none;transform:translateX(-12px);transition:opacity .3s ease,transform .3s cubic-bezier(.2,.9,.3,1);z-index:6}
+.new-photo-overlay.visible{opacity:1;transform:translateX(0)}
+.new-photo-thumb{width:88px;height:66px;object-fit:cover;border-radius:8px;border:1px solid rgba(0,0,0,0.06)}
+.new-photo-username{font-weight:800;color:var(--ink)}
+.new-photo-sub{font-size:0.9rem;color:var(--soft);margin-top:4px}
+
+/* Two-column TV layout: left = frame/photo, right = controls/leaderboard */
+.tv-content{display:flex;gap:20px;height:100vh;padding:28px}
+.tv-left{flex:1;position:relative;display:flex;align-items:center;justify-content:center}
+.tv-right{width:340px;display:flex;flex-direction:column;gap:16px;padding-top:24px}
+.tv-left .frame{pointer-events:auto}
+.tv-left #slide{max-width:100%;max-height:84vh;border-radius:12px;box-shadow:0 12px 30px rgba(20,30,48,0.15)}
+
+/* subtle zoom when a new photo arrives */
+.slide-zoom{transform:scale(1.02);transition:transform .35s ease}
