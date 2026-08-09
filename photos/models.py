@@ -1,12 +1,23 @@
 import os
+import uuid
 
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
+from django.utils import timezone
+from django.utils.text import slugify
+
+
+def photo_upload_path(instance, filename):
+    ext = os.path.splitext(filename)[1].lower()
+    username_part = slugify(instance.username) or "user"
+    time_part = timezone.localtime().strftime("%Hh%M")
+    unique_id = uuid.uuid4().hex[:8]
+    return f"photos/{username_part}_{time_part}_{unique_id}{ext}"
 
 
 class Photo(models.Model):
     username = models.CharField(max_length=50)
-    image = models.ImageField(upload_to="photos/")
+    image = models.ImageField(upload_to=photo_upload_path)
     uploaded_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
