@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>My photos</title>
+  <style>
+    body { font-family: sans-serif; max-width: 720px; margin: 40px auto; padding: 0 16px; }
+    .messages { list-style: none; padding: 0; }
+    .messages li { padding: 8px; margin-bottom: 8px; border-radius: 4px; }
+    .messages .success { background: #d4f8d4; }
+    .messages .error { background: #f8d4d4; }
+    .nav-link { display: inline-block; margin-bottom: 16px; }
+    .empty { color: #666; }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+      gap: 16px;
+    }
+    .card {
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      overflow: hidden;
+      background: #fafafa;
+    }
+    .card img {
+      width: 100%;
+      height: 140px;
+      object-fit: cover;
+      display: block;
+    }
+    .card form {
+      margin: 0;
+      padding: 8px;
+    }
+    .card button {
+      width: 100%;
+      padding: 6px;
+      background: #f8d4d4;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <a class="nav-link" href="{% url 'upload' %}">&larr; Back to upload</a>
+  <h1>My photos</h1>
+  <p>Signed in as <strong>{{ pseudo }}</strong></p>
+
+  {% if messages %}
+  <ul class="messages">
+    {% for message in messages %}
+    <li class="{{ message.tags }}">{{ message }}</li>
+    {% endfor %}
+  </ul>
+  {% endif %}
+
+  {% if photos %}
+  <div class="grid">
+    {% for photo in photos %}
+    <div class="card">
+      <img src="{{ photo.image.url }}" alt="">
+      <form method="post" action="{% url 'delete-own-photo' photo.id %}" onsubmit="return confirm('Delete this photo?');">
+        {% csrf_token %}
+        <button type="submit">Delete</button>
+      </form>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <p class="empty">You haven't uploaded any photos yet.</p>
+  {% endif %}
+</body>
+</html>

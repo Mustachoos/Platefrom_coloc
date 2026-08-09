@@ -6,7 +6,7 @@ from channels.layers import get_channel_layer
 from django.contrib import messages
 from django.db import IntegrityError
 from django.http import HttpResponse, JsonResponse
-from django.shortcuts import redirect, render
+from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 
 from .forms import PseudoForm
@@ -69,6 +69,27 @@ def upload_view(request):
 
 def tv_view(request):
     return render(request, "photos/tv.html")
+
+
+def my_photos_view(request):
+    pseudo = request.session.get("pseudo")
+    if not pseudo:
+        return redirect("choose-pseudo")
+    photos = Photo.objects.filter(username=pseudo).order_by("-uploaded_at")
+    return render(request, "photos/my_photos.html", {"pseudo": pseudo, "photos": photos})
+
+
+def delete_own_photo(request, photo_id):
+    pseudo = request.session.get("pseudo")
+    if not pseudo:
+        return redirect("choose-pseudo")
+    if request.method == "POST":
+        # username=pseudo in the lookup ensures a user can only ever delete
+        # their own photos, not just anything visible in their session.
+        photo = get_object_or_404(Photo, id=photo_id, username=pseudo)
+        photo.delete()
+        messages.success(request, "Photo deleted.")
+    return redirect("my-photos")
 
 
 def photo_list_api(request):
