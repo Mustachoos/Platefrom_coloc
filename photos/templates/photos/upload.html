@@ -8,35 +8,45 @@
   <link rel="stylesheet" href="{% static 'photos/site.css' %}">
 </head>
 <body>
-  <main class="card">
-    <h1>Upload photos to the TV</h1>
-    <p class="as-user">Uploading as <strong>{{ pseudo }}</strong></p>
+  <main class="card upload-page">
+    <div class="upload-top">
+      <h1>Upload photos to the TV</h1>
+      <p class="as-user">Uploading as <strong>{{ pseudo }}</strong></p>
 
-    {% if messages %}
-    <div class="messages">
-      {% for message in messages %}
-      <div class="message {{ message.tags }}">{{ message }}</div>
-      {% endfor %}
+      {% if messages %}
+      <div class="messages">
+        {% for message in messages %}
+        <div class="message {{ message.tags }}">{{ message }}</div>
+        {% endfor %}
+      </div>
+      {% endif %}
     </div>
-    {% endif %}
 
-    <form method="post" enctype="multipart/form-data">
+    <div class="upload-center">
+      <div id="photo-status"
+           class="photo-status {% if just_uploaded %}state-success{% else %}state-empty{% endif %}"
+           data-just-uploaded="{{ just_uploaded|yesno:'1,0' }}"
+      >{% if just_uploaded %}Upload successful{% else %}No photo yet :({% endif %}</div>
+    </div>
+
+    <form method="post" enctype="multipart/form-data" class="upload-bottom">
       {% csrf_token %}
       <div class="form-row">
-        <label>Add a photo</label>
+        <label class="form-row-label-centered">Add a photo</label>
         <input type="file" id="images" name="images" accept="image/*" style="display:none">
         <input type="file" id="camera-input" accept="image/*" capture="environment" style="display:none">
         <div class="form-actions">
           <button type="button" id="choose-btn" class="btn secondary">&#128444;&#65039; Choose a photo</button>
           <button type="button" id="camera-btn" class="btn secondary">&#128247; Take a photo</button>
         </div>
-        <div id="file-chips" class="chips"></div>
       </div>
 
-      <div class="form-actions">
-          <button id="upload-btn" type="submit" class="btn neutral">Upload</button>
-        <a class="btn secondary" href="{% url 'my-photos' %}">My photos</a>
-        <a class="btn secondary" href="{% url 'gallery' %}">Gallery</a>
+      <div class="upload-actions">
+        <button id="upload-btn" type="submit" class="btn neutral large">Upload</button>
+        <div class="upload-links">
+          <a class="btn secondary" href="{% url 'my-photos' %}">My photos</a>
+          <a class="btn secondary" href="{% url 'gallery' %}">Gallery</a>
+        </div>
       </div>
     </form>
 
@@ -47,13 +57,32 @@
         const chooseBtn = document.getElementById('choose-btn');
         const cameraInput = document.getElementById('camera-input');
         const cameraBtn = document.getElementById('camera-btn');
-        const chips = document.getElementById('file-chips');
+        const status = document.getElementById('photo-status');
         const cameraFiles = new Set();
+        const justUploaded = !!status && status.dataset.justUploaded === '1';
 
-        if (chooseBtn && input) {
-          chooseBtn.addEventListener('click', function () {
-            input.click();
-          });
+        // Drop the one-time flag from the URL so a page refresh doesn't
+        // replay the "Upload successful" state.
+        if (justUploaded && window.history && window.history.replaceState) {
+          const url = new URL(window.location.href);
+          url.searchParams.delete('uploaded');
+          window.history.replaceState({}, '', url);
+        }
+
+        function setStatus(state, text) {
+          if (!status) return;
+          status.classList.remove('state-empty', 'state-selected', 'state-success');
+          status.classList.add('state-' + state);
+          status.textContent = text;
+        }
+
+        function updateSelectionStatus() {
+          if (input.files && input.files.length > 0) {
+            const file = input.files[0];
+            setStatus('selected', cameraFiles.has(file) ? 'I see you took a nice picture !' : file.name);
+          } else {
+            setStatus('empty', 'No photo yet :(');
+          }
         }
 
         function update(){
@@ -63,15 +92,13 @@
           } else {
             btn.classList.remove('ready');
           }
-          if (chips) {
-            chips.innerHTML = '';
-            Array.from(input.files || []).forEach(function (file) {
-              const chip = document.createElement('span');
-              chip.className = 'chip';
-              chip.textContent = cameraFiles.has(file) ? 'I see you took a nice picture !' : file.name;
-              chips.appendChild(chip);
-            });
-          }
+          updateSelectionStatus();
+        }
+
+        if (chooseBtn && input) {
+          chooseBtn.addEventListener('click', function () {
+            input.click();
+          });
         }
 
         if (cameraBtn && cameraInput) {
@@ -94,7 +121,18 @@
         }
 
         input.addEventListener('change', update);
-        document.addEventListener('DOMContentLoaded', update);
+
+        document.addEventListener('DOMContentLoaded', function () {
+          if (justUploaded) {
+            // Already server-rendered as "Upload successful"; just schedule
+            // the transition back to the empty state.
+            setTimeout(function () {
+              setStatus('empty', 'No photo yet :(');
+            }, 3000);
+          } else {
+            update();
+          }
+        });
       })();
     </script>
   </main>

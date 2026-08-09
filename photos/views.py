@@ -76,10 +76,10 @@ def upload_view(request):
                     "tv_updates",
                     {"type": "photo.uploaded", "photo": _photo_payload(photo)},
                 )
-            messages.success(request, f"Uploaded {len(images)} photo(s). Thanks {pseudo}!")
-            return redirect("upload")
+            return redirect(f"{reverse('upload')}?uploaded=1")
         messages.error(request, "Please choose at least one photo.")
-    return render(request, "photos/upload.html", {"pseudo": pseudo})
+    just_uploaded = request.GET.get("uploaded") == "1"
+    return render(request, "photos/upload.html", {"pseudo": pseudo, "just_uploaded": just_uploaded})
 
 
 def tv_view(request):
