@@ -75,8 +75,16 @@ def my_photos_view(request):
     pseudo = request.session.get("pseudo")
     if not pseudo:
         return redirect("choose-pseudo")
-    photos = Photo.objects.filter(username=pseudo).order_by("-uploaded_at")
+    photos = Photo.objects.filter(username=pseudo).order_by("uploaded_at")
     return render(request, "photos/my_photos.html", {"pseudo": pseudo, "photos": photos})
+
+
+def photo_detail_view(request, photo_id):
+    pseudo = request.session.get("pseudo")
+    if not pseudo:
+        return redirect("choose-pseudo")
+    photo = get_object_or_404(Photo, id=photo_id, username=pseudo)
+    return render(request, "photos/photo_detail.html", {"photo": photo})
 
 
 def delete_own_photo(request, photo_id):

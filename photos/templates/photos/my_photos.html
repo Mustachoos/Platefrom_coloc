@@ -5,71 +5,157 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>My photos</title>
   <style>
-    body { font-family: sans-serif; max-width: 720px; margin: 40px auto; padding: 0 16px; }
-    .messages { list-style: none; padding: 0; }
-    .messages li { padding: 8px; margin-bottom: 8px; border-radius: 4px; }
-    .messages .success { background: #d4f8d4; }
-    .messages .error { background: #f8d4d4; }
-    .nav-link { display: inline-block; margin-bottom: 16px; }
-    .empty { color: #666; }
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-      gap: 16px;
+    :root {
+      --bg-1: #effcf6;
+      --bg-2: #fff5e8;
+      --ink: #223449;
+      --soft: #5f768c;
+      --success-bg: #dff7e8;
+      --success-border: #86efac;
+      --error-bg: #ffe8ee;
+      --error-border: #fda4af;
+      --card: rgba(255, 255, 255, 0.94);
+      --card-border: rgba(255, 255, 255, 0.88);
     }
-    .card {
-      border: 1px solid #ddd;
-      border-radius: 8px;
-      overflow: hidden;
-      background: #fafafa;
-    }
-    .card img {
-      width: 100%;
-      height: 140px;
-      object-fit: cover;
-      display: block;
-    }
-    .card form {
+
+    * { box-sizing: border-box; }
+
+    body {
       margin: 0;
-      padding: 8px;
+      min-height: 100vh;
+      padding: 22px;
+      display: grid;
+      place-items: center;
+      font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 12% 12%, rgba(16, 185, 129, 0.18), transparent 30%),
+        radial-gradient(circle at 88% 86%, rgba(251, 146, 60, 0.17), transparent 34%),
+        linear-gradient(140deg, var(--bg-1), var(--bg-2));
     }
-    .card button {
-      width: 100%;
-      padding: 6px;
-      background: #f8d4d4;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
+
+    .card {
+      width: min(100%, 620px);
+      background: var(--card);
+      border: 1px solid var(--card-border);
+      border-radius: 24px;
+      box-shadow: 0 20px 40px rgba(31, 52, 72, 0.16);
+      padding: clamp(22px, 3.8vw, 34px);
+      -webkit-backdrop-filter: blur(5px);
+      backdrop-filter: blur(5px);
+      animation: rise 0.55s ease;
+    }
+
+    @keyframes rise {
+      from { opacity: 0; transform: translateY(12px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(1.7rem, 4.8vw, 2.3rem);
+      line-height: 1.1;
+    }
+
+    .as-user {
+      color: var(--soft);
+      margin-top: 10px;
+      margin-bottom: 16px;
+    }
+
+    .messages {
+      padding: 0;
+      margin: 0 0 14px;
+      display: grid;
+      gap: 8px;
+    }
+
+    .message {
+      padding: 10px 12px;
+      border-radius: 12px;
+      font-weight: 600;
+      border: 1px solid transparent;
+    }
+
+    .message.success {
+      background: var(--success-bg);
+      border-color: var(--success-border);
+      color: #166534;
+    }
+
+    .message.error {
+      background: var(--error-bg);
+      border-color: var(--error-border);
+      color: #9f1239;
+    }
+
+    .tv-link {
+      display: inline-block;
+      margin-top: 24px;
+      color: #0f766e;
+      text-decoration: none;
+      font-weight: 700;
+      border-bottom: 2px solid rgba(15, 118, 110, 0.2);
+      transition: border-color 0.2s ease;
+    }
+
+    .tv-link:hover {
+      border-color: rgba(15, 118, 110, 0.55);
+    }
+
+    .empty {
+      color: var(--soft);
+    }
+
+    .photo-list {
+      list-style: none;
+      margin: 8px 0 0;
+      padding: 0;
+      display: grid;
+      gap: 8px;
+    }
+
+    .photo-list li a {
+      display: block;
+      padding: 12px 14px;
+      border-radius: 14px;
+      background: #fcfffd;
+      border: 2px dashed #c9dfcf;
+      color: var(--ink);
+      text-decoration: none;
+      font-weight: 600;
+      transition: border-color 0.2s ease, transform 0.15s ease;
+    }
+
+    .photo-list li a:hover {
+      border-color: #86efac;
+      transform: translateY(-1px);
     }
   </style>
 </head>
 <body>
-  <a class="nav-link" href="{% url 'upload' %}">&larr; Back to upload</a>
-  <h1>My photos</h1>
-  <p>Signed in as <strong>{{ pseudo }}</strong></p>
+  <main class="card">
+    <a class="tv-link" href="{% url 'upload' %}">&larr; Back to upload</a>
+    <h1>My photos</h1>
+    <p class="as-user">Signed in as <strong>{{ pseudo }}</strong></p>
 
-  {% if messages %}
-  <ul class="messages">
-    {% for message in messages %}
-    <li class="{{ message.tags }}">{{ message }}</li>
-    {% endfor %}
-  </ul>
-  {% endif %}
-
-  {% if photos %}
-  <div class="grid">
-    {% for photo in photos %}
-    <div class="card">
-      <img src="{{ photo.image.url }}" alt="">
-      <form method="post" action="{% url 'delete-own-photo' photo.id %}" onsubmit="return confirm('Delete this photo?');">
-        {% csrf_token %}
-        <button type="submit">Delete</button>
-      </form>
+    {% if messages %}
+    <div class="messages">
+      {% for message in messages %}
+      <div class="message {{ message.tags }}">{{ message }}</div>
+      {% endfor %}
     </div>
-    {% endfor %}
-  </div>
-  {% else %}
-  <p class="empty">You haven't uploaded any photos yet.</p>
-  {% endif %}
+    {% endif %}
+
+    {% if photos %}
+    <ul class="photo-list">
+      {% for photo in photos %}
+      <li><a href="{% url 'photo-detail' photo.id %}">{{ photo.filename }}</a></li>
+      {% endfor %}
+    </ul>
+    {% else %}
+    <p class="empty">You haven't uploaded any photos yet.</p>
+    {% endif %}
+  </main>
 </body>
 </html>

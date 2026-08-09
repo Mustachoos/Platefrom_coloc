@@ -1,3 +1,5 @@
+import os
+
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 
@@ -12,6 +14,10 @@ class Photo(models.Model):
 
     def __str__(self):
         return f"{self.username} - {self.uploaded_at:%Y-%m-%d %H:%M}"
+
+    @property
+    def filename(self):
+        return os.path.basename(self.image.name)
 
 
 class UserIdentity(models.Model):
