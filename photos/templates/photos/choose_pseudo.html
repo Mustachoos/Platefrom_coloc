@@ -14,10 +14,17 @@
 
     <form method="post">
       {% csrf_token %}
-      <label for="{{ form.pseudo.id_for_label }}">Your name</label>
-      {{ form.pseudo }}
-      {{ form.pseudo.errors }}
-      <button type="submit">Continue</button>
+      <div class="form-row">
+        <label for="{{ form.pseudo.id_for_label }}">Your name</label>
+        {{ form.pseudo }}
+        {% if form.pseudo.errors %}
+          <div class="message error">{{ form.pseudo.errors }}</div>
+        {% endif %}
+      </div>
+      <div class="form-actions">
+        <button type="submit" class="btn primary">Continue</button>
+        <a class="btn secondary" href="{% url 'gallery' %}">Browse Gallery</a>
+      </div>
     </form>
   </main>
 </body>
