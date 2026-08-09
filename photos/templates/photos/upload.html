@@ -23,8 +23,14 @@
     <form method="post" enctype="multipart/form-data">
       {% csrf_token %}
       <div class="form-row">
-        <label for="images">Choose photos to upload</label>
-        <input type="file" id="images" name="images" accept="image/*" multiple required>
+        <label>Add a photo</label>
+        <input type="file" id="images" name="images" accept="image/*" style="display:none">
+        <input type="file" id="camera-input" accept="image/*" capture="environment" style="display:none">
+        <div class="form-actions">
+          <button type="button" id="choose-btn" class="btn secondary">&#128444;&#65039; Choose a photo</button>
+          <button type="button" id="camera-btn" class="btn secondary">&#128247; Take a photo</button>
+        </div>
+        <div id="file-chips" class="chips"></div>
       </div>
 
       <div class="form-actions">
@@ -38,6 +44,18 @@
       (function(){
         const input = document.getElementById('images');
         const btn = document.getElementById('upload-btn');
+        const chooseBtn = document.getElementById('choose-btn');
+        const cameraInput = document.getElementById('camera-input');
+        const cameraBtn = document.getElementById('camera-btn');
+        const chips = document.getElementById('file-chips');
+        const cameraFiles = new Set();
+
+        if (chooseBtn && input) {
+          chooseBtn.addEventListener('click', function () {
+            input.click();
+          });
+        }
+
         function update(){
           if(!input) return;
           if(input.files && input.files.length>0){
@@ -45,7 +63,36 @@
           } else {
             btn.classList.remove('ready');
           }
+          if (chips) {
+            chips.innerHTML = '';
+            Array.from(input.files || []).forEach(function (file) {
+              const chip = document.createElement('span');
+              chip.className = 'chip';
+              chip.textContent = cameraFiles.has(file) ? 'I see you took a nice picture !' : file.name;
+              chips.appendChild(chip);
+            });
+          }
         }
+
+        if (cameraBtn && cameraInput) {
+          cameraBtn.addEventListener('click', function () {
+            cameraInput.click();
+          });
+          // Only one photo at a time: a freshly taken photo replaces
+          // whatever was previously selected, rather than adding to it.
+          cameraInput.addEventListener('change', function () {
+            if (!cameraInput.files || cameraInput.files.length === 0) return;
+            cameraFiles.clear();
+            const replaced = new DataTransfer();
+            const file = cameraInput.files[0];
+            replaced.items.add(file);
+            cameraFiles.add(file);
+            input.files = replaced.files;
+            cameraInput.value = '';
+            update();
+          });
+        }
+
         input.addEventListener('change', update);
         document.addEventListener('DOMContentLoaded', update);
       })();
