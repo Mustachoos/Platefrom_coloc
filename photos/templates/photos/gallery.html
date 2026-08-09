@@ -5,13 +5,13 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Photo gallery</title>
+  {% load static %}
+  <link rel="stylesheet" href="{% static 'photos/site.css' %}">
   <style>
-    body{font-family:Segoe UI, Tahoma, sans-serif;margin:16px;color:#223449}
-    .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px}
+    body{margin:16px}
     .card{background:#fff;border-radius:10px;padding:8px;border:1px solid #edf2f7}
-    .thumb{width:100%;height:160px;object-fit:cover;border-radius:8px}
     .meta{display:flex;justify-content:space-between;align-items:center;margin-top:8px}
-    .like-btn{background:#ff6b6b;color:#fff;border:0;padding:6px 10px;border-radius:8px;cursor:pointer}
+    .like-btn{background:#fff;color:#556575;border:1px solid #556575;padding:6px 10px;border-radius:8px;cursor:pointer}
   </style>
 </head>
 <body>
@@ -33,6 +33,7 @@
     </div>
     {% endfor %}
   </div>
+  <form style="display:none">{% csrf_token %}</form>
 
 <script>
 function getCookie(name){
@@ -44,6 +45,11 @@ const csrftoken = getCookie('csrftoken');
 function updateCard(card, data){
   const count = card.querySelector('.count');
   if(count) count.textContent = data.likes_count;
+  if(data.liked){
+    card.querySelector('.like-btn').style.color = '#ff6b6b';
+  } else {
+    card.querySelector('.like-btn').style.color = '#556575';
+  }
 }
 
 document.querySelectorAll('.card').forEach(card=>{
@@ -52,6 +58,7 @@ document.querySelectorAll('.card').forEach(card=>{
     const id = card.dataset.id;
     fetch(`/api/photos/${id}/like/`, {
       method: 'POST',
+      credentials: 'same-origin',
       headers: { 'X-CSRFToken': csrftoken },
     }).then(r=>r.json()).then(data=>{
       if(data && !data.error){

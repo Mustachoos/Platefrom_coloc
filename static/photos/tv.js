@@ -13,6 +13,10 @@
   let timerId = null;
   let intervalMs = DEFAULT_INTERVAL_MS;
   let overlayTimeoutId = null;
+  let overlayAnimateTimeoutId = null;
+  // queue for sequential new-photo overlays
+  const overlayQueue = [];
+  let overlayShowing = false;
 
   function displayPhoto(photo) {
     if (!photo) {
@@ -53,12 +57,45 @@
   // 10s, independent of the slideshow interval. The background rotation
   // (`slide`) keeps running on its own schedule underneath, untouched.
   function announceNewPhoto(photo) {
-    if (overlayTimeoutId) clearTimeout(overlayTimeoutId);
-    newPhotoUsername.textContent = photo.username;
+    // enqueue the photo overlay; it will be shown in order
+    overlayQueue.push(photo);
+    if (!overlayShowing) showNextOverlay();
+  }
+
+  function showNextOverlay() {
+    const photo = overlayQueue.shift();
+    if (!photo) {
+      overlayShowing = false;
+      return;
+    }
+    overlayShowing = true;
+    // clear any previous timers
+    if (overlayTimeoutId) {
+      clearTimeout(overlayTimeoutId);
+      overlayTimeoutId = null;
+    }
+    if (overlayAnimateTimeoutId) {
+      clearTimeout(overlayAnimateTimeoutId);
+      overlayAnimateTimeoutId = null;
+    }
+    newPhotoUsername.textContent = `New photo from ${photo.username}`;
     newPhotoImg.src = photo.url;
-    newPhotoOverlay.classList.add("visible");
+    // show centered overlay with entrance animation
+    newPhotoOverlay.classList.add("visible", "new-photo-animate");
+    // remove the animate class after the initial animation so it can replay later
+    overlayAnimateTimeoutId = setTimeout(() => {
+      newPhotoOverlay.classList.remove("new-photo-animate");
+      overlayAnimateTimeoutId = null;
+    }, 1200);
+    // hide overlay after display time, then show next in queue
     overlayTimeoutId = setTimeout(() => {
       newPhotoOverlay.classList.remove("visible");
+      overlayTimeoutId = null;
+      overlayShowing = false;
+      // small delay to let hide transition finish before showing next
+      setTimeout(() => {
+        if (overlayQueue.length > 0) showNextOverlay();
+      }, 250);
     }, NEW_PHOTO_DISPLAY_MS);
   }
 
@@ -129,7 +166,7 @@
     topList.innerHTML = top
       .map(
         (p) =>
-          `<div style="display:flex;gap:10px;align-items:center;margin-bottom:8px"><img src="${p.url}" style="width:72px;height:54px;object-fit:cover;border-radius:8px;border:1px solid rgba(0,0,0,0.06)"><div style="flex:1"><div style="font-weight:700">${p.username}</div><div style="font-size:0.9rem;color:#556575">${p.likes_count} ♥</div></div></div>`
+          `<div class="leaderboard-item"><img class="leaderboard-thumb" src="${p.url}" alt="thumb"><div class="leaderboard-meta"><div class="leaderboard-username">${p.username}</div><div class="leaderboard-count">${p.likes_count} ♥</div></div></div>`
       )
       .join("");
   }
