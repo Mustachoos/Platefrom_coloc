@@ -1,6 +1,7 @@
 from django.contrib import admin
 
 from .models import Photo, SlideshowSettings, UserIdentity
+from .models import Like
 
 
 @admin.register(Photo)
@@ -25,3 +26,9 @@ class SlideshowSettingsAdmin(admin.ModelAdmin):
 
     def has_delete_permission(self, request, obj=None):
         return False
+
+
+@admin.register(Like)
+class LikeAdmin(admin.ModelAdmin):
+    list_display = ("user", "photo", "created_at")
+    ordering = ("-created_at",)

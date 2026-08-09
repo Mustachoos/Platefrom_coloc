@@ -22,3 +22,6 @@ class PhotosConsumer(WebsocketConsumer):
 
     def settings_changed(self, event):
         self.send(text_data=json.dumps({"event": "settings", "interval_seconds": event["interval_seconds"]}))
+
+    def photo_liked(self, event):
+        self.send(text_data=json.dumps({"event": "liked", "photo_id": event["photo_id"], "likes_count": event["likes_count"]}))

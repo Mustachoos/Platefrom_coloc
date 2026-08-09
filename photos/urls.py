@@ -12,6 +12,8 @@ urlpatterns = [
     path("my-photos/<int:photo_id>/delete/", views.delete_own_photo, name="delete-own-photo"),
     path("tv/", views.tv_view, name="tv"),
     path("api/photos/", views.photo_list_api, name="photo-list-api"),
+    path("api/photos/<int:photo_id>/like/", views.like_toggle_api, name="photo-like-api"),
+    path("gallery/", views.gallery_view, name="gallery"),
     path("api/settings/", views.slideshow_settings_api, name="slideshow-settings-api"),
     path("qr/upload.png", views.upload_qr_code, name="upload-qr-code"),
 ]

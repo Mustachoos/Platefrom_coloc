@@ -1,6 +1,7 @@
 (function () {
   const slide = document.getElementById("slide");
   const empty = document.getElementById("empty");
+  const topList = document.getElementById("top-list");
   const newPhotoOverlay = document.getElementById("new-photo-overlay");
   const newPhotoImg = document.getElementById("new-photo-img");
   const newPhotoUsername = document.getElementById("new-photo-username");
@@ -76,7 +77,6 @@
           showCurrent();
           restartTimer();
         }
-        announceNewPhoto(data.photo);
       } else if (data.event === "deleted") {
         const removedIndex = photos.findIndex((p) => p.url === data.url);
         if (removedIndex === -1) return;
@@ -94,6 +94,13 @@
       } else if (data.event === "settings") {
         intervalMs = data.interval_seconds * 1000;
         restartTimer();
+      } else if (data.event === "liked") {
+        // update local photo likes and re-render leaderboard
+        const idx = photos.findIndex((p) => p.id === data.photo_id);
+        if (idx !== -1) {
+          photos[idx].likes_count = data.likes_count;
+        }
+        renderLeaderboard();
       }
     };
     ws.onclose = () => {
@@ -109,7 +116,24 @@
     intervalMs = settingsData.interval_seconds * 1000;
     showCurrent();
     restartTimer();
+    renderLeaderboard();
   });
+
+  function renderLeaderboard() {
+    if (!topList) return;
+    const top = photos
+      .slice()
+      .sort((a, b) => b.likes_count - a.likes_count)
+      .slice(0, 3);
+    topList.innerHTML = top
+      .map(
+        (p) =>
+          `<div style="display:flex;gap:10px;align-items:center;margin-bottom:8px"><img src="${p.url}" style="width:72px;height:54px;object-fit:cover;border-radius:8px;border:1px solid rgba(0,0,0,0.06)"><div style="flex:1"><div style="font-weight:700">${p.username}</div><div style="font-size:0.9rem;color:#556575">${p.likes_count} ♥</div></div></div>`
+      )
+      .join("");
+  }
+
+  // (rendering kicked from initial fetch)
 
   connectWebSocket();
 })();
