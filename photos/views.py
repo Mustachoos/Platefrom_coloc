@@ -4,12 +4,13 @@ import qrcode
 from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
 from django.contrib import messages
+from django.db import IntegrityError
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import redirect, render
 from django.urls import reverse
 
-from .forms import UploadForm
-from .models import Photo, SlideshowSettings
+from .forms import PseudoForm
+from .models import Photo, SlideshowSettings, UserIdentity
 
 
 def _photo_payload(photo):
@@ -20,28 +21,50 @@ def _photo_payload(photo):
     }
 
 
-def upload_view(request):
+def choose_pseudo(request):
+    if request.session.get("pseudo"):
+        return redirect("upload")
+
     if request.method == "POST":
-        form = UploadForm(request.POST)
-        # Django's FileField doesn't support multiple files cleanly, so the
-        # file input is read directly from request.FILES instead of the form.
+        form = PseudoForm(request.POST)
+        if form.is_valid():
+            pseudo = form.cleaned_data["pseudo"].strip()
+            if UserIdentity.objects.filter(pseudo__iexact=pseudo).exists():
+                form.add_error("pseudo", "That name is already taken, please choose another one.")
+            else:
+                if not request.session.session_key:
+                    request.session.create()
+                try:
+                    UserIdentity.objects.create(pseudo=pseudo, session_key=request.session.session_key)
+                except IntegrityError:
+                    form.add_error("pseudo", "That name is already taken, please choose another one.")
+                else:
+                    request.session["pseudo"] = pseudo
+                    return redirect("upload")
+    else:
+        form = PseudoForm()
+    return render(request, "photos/choose_pseudo.html", {"form": form})
+
+
+def upload_view(request):
+    pseudo = request.session.get("pseudo")
+    if not pseudo:
+        return redirect("choose-pseudo")
+
+    if request.method == "POST":
         images = request.FILES.getlist("images")
-        if form.is_valid() and images:
-            username = form.cleaned_data["username"]
+        if images:
             channel_layer = get_channel_layer()
             for image in images:
-                photo = Photo.objects.create(username=username, image=image)
+                photo = Photo.objects.create(username=pseudo, image=image)
                 async_to_sync(channel_layer.group_send)(
                     "tv_updates",
                     {"type": "photo.uploaded", "photo": _photo_payload(photo)},
                 )
-            messages.success(request, f"Uploaded {len(images)} photo(s). Thanks {username}!")
+            messages.success(request, f"Uploaded {len(images)} photo(s). Thanks {pseudo}!")
             return redirect("upload")
-        if not images:
-            messages.error(request, "Please choose at least one photo.")
-    else:
-        form = UploadForm()
-    return render(request, "photos/upload.html", {"form": form})
+        messages.error(request, "Please choose at least one photo.")
+    return render(request, "photos/upload.html", {"pseudo": pseudo})
 
 
 def tv_view(request):

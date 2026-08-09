@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Choose your name</title>
+  <style>
+    body { font-family: sans-serif; max-width: 480px; margin: 40px auto; padding: 0 16px; }
+    label { display: block; margin-top: 16px; font-weight: bold; }
+    input { width: 100%; padding: 8px; margin-top: 4px; box-sizing: border-box; }
+    button { margin-top: 20px; padding: 10px 16px; font-size: 1rem; }
+    .errorlist { list-style: none; padding: 0; margin: 4px 0 0; color: #c00; font-size: 0.9rem; }
+    p.hint { color: #555; }
+  </style>
+</head>
+<body>
+  <h1>What's your name?</h1>
+  <p class="hint">This is how flatmates will know which photos are yours, and it'll be remembered for this device.</p>
+
+  <form method="post">
+    {% csrf_token %}
+    <label for="{{ form.pseudo.id_for_label }}">Your name</label>
+    {{ form.pseudo }}
+    {{ form.pseudo.errors }}
+    <button type="submit">Continue</button>
+  </form>
+</body>
+</html>

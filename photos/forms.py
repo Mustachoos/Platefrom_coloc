@@ -1,5 +1,5 @@
 from django import forms
 
 
-class UploadForm(forms.Form):
-    username = forms.CharField(max_length=50)
+class PseudoForm(forms.Form):
+    pseudo = forms.CharField(max_length=50, label="Your name")

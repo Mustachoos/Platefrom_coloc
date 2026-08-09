@@ -14,10 +14,12 @@
     .messages .success { background: #d4f8d4; }
     .messages .error { background: #f8d4d4; }
     .tv-link { display: inline-block; margin-top: 24px; }
+    .as-user { color: #555; }
   </style>
 </head>
 <body>
   <h1>Upload photos to the TV</h1>
+  <p class="as-user">Uploading as <strong>{{ pseudo }}</strong></p>
 
   {% if messages %}
   <ul class="messages">
@@ -29,8 +31,6 @@
 
   <form method="post" enctype="multipart/form-data">
     {% csrf_token %}
-    <label for="{{ form.username.id_for_label }}">Your name</label>
-    {{ form.username }}
     <label for="images">Photos</label>
     <input type="file" id="images" name="images" accept="image/*" multiple required>
     <button type="submit">Upload</button>

@@ -14,6 +14,15 @@ class Photo(models.Model):
         return f"{self.username} - {self.uploaded_at:%Y-%m-%d %H:%M}"
 
 
+class UserIdentity(models.Model):
+    pseudo = models.CharField(max_length=50, unique=True)
+    session_key = models.CharField(max_length=40, unique=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.pseudo
+
+
 class SlideshowSettings(models.Model):
     interval_seconds = models.FloatField(
         default=5.0,

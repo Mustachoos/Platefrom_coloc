@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Photo, SlideshowSettings
+from .models import Photo, SlideshowSettings, UserIdentity
 
 
 @admin.register(Photo)
@@ -8,6 +8,12 @@ class PhotoAdmin(admin.ModelAdmin):
     list_display = ("username", "uploaded_at")
     list_filter = ("username",)
     ordering = ("-uploaded_at",)
+
+
+@admin.register(UserIdentity)
+class UserIdentityAdmin(admin.ModelAdmin):
+    list_display = ("pseudo", "created_at")
+    ordering = ("-created_at",)
 
 
 @admin.register(SlideshowSettings)
