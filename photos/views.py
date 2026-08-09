@@ -1,4 +1,5 @@
 import io
+import os
 
 import qrcode
 from asgiref.sync import async_to_sync
@@ -111,7 +112,19 @@ def slideshow_settings_api(request):
 
 
 def upload_qr_code(request):
-    upload_url = request.build_absolute_uri(reverse("upload"))
+    forced_ip = os.environ.get("QR_HOST_IP", "").strip()
+    if forced_ip:
+        scheme = "https" if request.is_secure() else "http"
+        raw_host = request.get_host()
+        if raw_host.count(":") == 1 and not raw_host.startswith("["):
+            _, port = raw_host.rsplit(":", 1)
+        else:
+            port = request.get_port()
+        default_port = "443" if scheme == "https" else "80"
+        host = forced_ip if str(port) == default_port else f"{forced_ip}:{port}"
+        upload_url = f"{scheme}://{host}{reverse('upload')}"
+    else:
+        upload_url = request.build_absolute_uri(reverse("upload"))
     image = qrcode.make(upload_url)
     buffer = io.BytesIO()
     image.save(buffer, format="PNG")
