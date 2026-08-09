@@ -45,5 +45,5 @@ def tv_view(request):
 
 
 def photo_list_api(request):
-    photos = Photo.objects.all()[:200]
+    photos = Photo.objects.order_by("uploaded_at")
     return JsonResponse([_photo_payload(photo) for photo in photos], safe=False)

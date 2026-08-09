@@ -15,4 +15,7 @@ class PhotosConsumer(WebsocketConsumer):
         async_to_sync(self.channel_layer.group_discard)(self.group_name, self.channel_name)
 
     def photo_uploaded(self, event):
-        self.send(text_data=json.dumps(event["photo"]))
+        self.send(text_data=json.dumps({"event": "uploaded", "photo": event["photo"]}))
+
+    def photo_deleted(self, event):
+        self.send(text_data=json.dumps({"event": "deleted", "url": event["url"]}))

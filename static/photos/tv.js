@@ -37,12 +37,29 @@
     const protocol = location.protocol === "https:" ? "wss" : "ws";
     const ws = new WebSocket(protocol + "://" + location.host + "/ws/tv/");
     ws.onmessage = (event) => {
-      const photo = JSON.parse(event.data);
-      const wasEmpty = photos.length === 0;
-      photos.unshift(photo);
-      if (wasEmpty) {
-        index = 0;
-        showCurrent();
+      const data = JSON.parse(event.data);
+      if (data.event === "uploaded") {
+        // Appended at the end to preserve chronological upload order; since
+        // nothing before `index` shifts, the currently displayed photo stays put.
+        photos.push(data.photo);
+        if (photos.length === 1) {
+          index = 0;
+          showCurrent();
+        }
+      } else if (data.event === "deleted") {
+        const removedIndex = photos.findIndex((p) => p.url === data.url);
+        if (removedIndex === -1) return;
+        const wasCurrent = removedIndex === index;
+        photos.splice(removedIndex, 1);
+        if (photos.length === 0) {
+          showCurrent();
+          return;
+        }
+        if (removedIndex < index) {
+          index -= 1;
+        }
+        index = index % photos.length;
+        if (wasCurrent) showCurrent();
       }
     };
     ws.onclose = () => {
