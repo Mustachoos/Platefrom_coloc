@@ -111,13 +111,14 @@ input[type=file],input[type=text],input[type=email],textarea,select{width:100%;p
 @keyframes popfloat{0%{transform:translate(-50%,-50%) translateY(18px) scale(.96);opacity:0}60%{transform:translate(-50%,-50%) translateY(-6px) scale(1.02);opacity:1}100%{transform:translate(-50%,-50%) translateY(0) scale(1)}}
 
 /* Two-column TV layout: left = frame/photo, right = controls/leaderboard */
-.tv-content{display:flex;gap:20px;height:100vh;padding:28px}
+.tv-content{display:flex;gap:20px;height:100vh;padding:28px;align-items:center}
 .tv-left{flex:1;position:relative;display:flex;align-items:center;justify-content:center}
-.tv-right{width:340px;display:flex;flex-direction:column;gap:24px;padding-top:32px;align-items:center}
+.tv-right{width:340px;display:flex;flex-direction:column;gap:24px;justify-content:center;align-items:center;padding-top:0}
 .tv-left .frame{pointer-events:auto}
-.tv-left .slide-wrap{width:100%;max-width:calc(100vw - 380px);aspect-ratio:16/9;position:relative;overflow:hidden;padding:12px;box-sizing:border-box}
-.tv-left .slide-wrap .frame{inset:0}
-.tv-left #slide{position:absolute;inset:0;width:100%;height:100%;border-radius:12px;object-fit:contain;display:block}
+.tv-left .slide-wrap{width:100%;max-width:calc(100vw - 380px);position:relative;overflow:visible;display:flex;align-items:center;justify-content:center}
+.tv-left .slide-wrap .frame{display:none !important}
+.tv-left #slide{max-width:100%;max-height:84vh;border-radius:12px;object-fit:contain;display:block;border:6px solid #fff;box-shadow:0 12px 30px rgba(20,30,48,0.12)}
+.new-photo-big{width:60%;max-width:560px;height:auto;border-radius:12px;object-fit:cover;border:6px solid #fff;box-shadow:0 18px 40px rgba(20,30,48,0.16)}
 
 /* subtle zoom when a new photo arrives */
 .slide-zoom{transform:scale(1.02);transition:transform .35s ease}

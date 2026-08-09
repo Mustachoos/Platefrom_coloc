@@ -6,7 +6,7 @@
   const newPhotoImg = document.getElementById("new-photo-img");
   const newPhotoUsername = document.getElementById("new-photo-username");
   const DEFAULT_INTERVAL_MS = 5000;
-  const NEW_PHOTO_DISPLAY_MS = 10000;
+  const NEW_PHOTO_DISPLAY_MS = 3000;
 
   let photos = [];
   let index = 0;
