@@ -5,15 +5,15 @@
 
   let photos = [];
   let index = 0;
+  let timerId = null;
 
-  function showCurrent() {
-    if (photos.length === 0) {
+  function displayPhoto(photo) {
+    if (!photo) {
       slide.style.opacity = 0;
       empty.style.display = "block";
       return;
     }
     empty.style.display = "none";
-    const photo = photos[index % photos.length];
     const preload = new Image();
     preload.onload = () => {
       slide.style.opacity = 0;
@@ -27,10 +27,27 @@
     preload.src = photo.url;
   }
 
+  function showCurrent() {
+    displayPhoto(photos.length ? photos[index % photos.length] : null);
+  }
+
   function advance() {
     if (photos.length === 0) return;
     index = (index + 1) % photos.length;
     showCurrent();
+  }
+
+  function restartTimer() {
+    if (timerId) clearInterval(timerId);
+    timerId = setInterval(advance, INTERVAL_MS);
+  }
+
+  // Shows a freshly uploaded photo right away, without touching `index`, then
+  // gives it a full interval before the normal rotation resumes from exactly
+  // where it left off.
+  function interruptWithUpload(photo) {
+    displayPhoto(photo);
+    restartTimer();
   }
 
   function connectWebSocket() {
@@ -41,10 +58,14 @@
       if (data.event === "uploaded") {
         // Appended at the end to preserve chronological upload order; since
         // nothing before `index` shifts, the currently displayed photo stays put.
+        const wasEmpty = photos.length === 0;
         photos.push(data.photo);
-        if (photos.length === 1) {
+        if (wasEmpty) {
           index = 0;
           showCurrent();
+          restartTimer();
+        } else {
+          interruptWithUpload(data.photo);
         }
       } else if (data.event === "deleted") {
         const removedIndex = photos.findIndex((p) => p.url === data.url);
@@ -75,5 +96,5 @@
     });
 
   connectWebSocket();
-  setInterval(advance, INTERVAL_MS);
+  restartTimer();
 })();
