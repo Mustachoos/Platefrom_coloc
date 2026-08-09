@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Upload photos</title>
+  <style>
+    body { font-family: sans-serif; max-width: 480px; margin: 40px auto; padding: 0 16px; }
+    label { display: block; margin-top: 16px; font-weight: bold; }
+    input { width: 100%; padding: 8px; margin-top: 4px; box-sizing: border-box; }
+    button { margin-top: 20px; padding: 10px 16px; font-size: 1rem; }
+    .messages { list-style: none; padding: 0; }
+    .messages li { padding: 8px; margin-bottom: 8px; border-radius: 4px; }
+    .messages .success { background: #d4f8d4; }
+    .messages .error { background: #f8d4d4; }
+    .tv-link { display: inline-block; margin-top: 24px; }
+  </style>
+</head>
+<body>
+  <h1>Upload photos to the TV</h1>
+
+  {% if messages %}
+  <ul class="messages">
+    {% for message in messages %}
+    <li class="{{ message.tags }}">{{ message }}</li>
+    {% endfor %}
+  </ul>
+  {% endif %}
+
+  <form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    <label for="{{ form.username.id_for_label }}">Your name</label>
+    {{ form.username }}
+    <label for="images">Photos</label>
+    <input type="file" id="images" name="images" accept="image/*" multiple required>
+    <button type="submit">Upload</button>
+  </form>
+
+  <a class="tv-link" href="{% url 'tv' %}">Go to TV slideshow &rarr;</a>
+</body>
+</html>

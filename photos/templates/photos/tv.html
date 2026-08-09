@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Flatshare TV</title>
+  <style>
+    html, body { margin: 0; padding: 0; background: #000; height: 100%; overflow: hidden; }
+    #slide {
+      width: 100vw;
+      height: 100vh;
+      object-fit: contain;
+      opacity: 0;
+      transition: opacity 1s ease;
+      display: block;
+    }
+    #empty {
+      color: #888;
+      font-family: sans-serif;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 2rem;
+    }
+  </style>
+</head>
+<body>
+  <img id="slide" alt="">
+  <div id="empty">Waiting for photos&hellip;</div>
+  {% load static %}
+  <script src="{% static 'photos/tv.js' %}"></script>
+</body>
+</html>

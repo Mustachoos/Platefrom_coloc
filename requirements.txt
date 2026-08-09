@@ -1,0 +1,5 @@
+Django>=5.0,<6.0
+Pillow
+psycopg2-binary
+channels
+daphne
