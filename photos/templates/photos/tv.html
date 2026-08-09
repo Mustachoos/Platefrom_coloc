@@ -133,15 +133,13 @@
       transform: translate(-50%, -50%);
       font-size: clamp(1.3rem, 2.2vw, 2rem);
       font-weight: 700;
-      color: var(--soft-ink);
+      color: #fff;
       text-align: center;
-      background: var(--card);
-      border: 1px solid var(--card-border);
+      background: #000;
+      border: 1px solid rgba(255, 255, 255, 0.15);
       border-radius: 18px;
       padding: 18px 24px;
-      box-shadow: 0 12px 30px rgba(24, 40, 54, 0.15);
-      -webkit-backdrop-filter: blur(4px);
-      backdrop-filter: blur(4px);
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4);
     }
 
     #qr-box {
@@ -175,6 +173,65 @@
       color: var(--soft-ink);
     }
 
+    .new-photo-overlay {
+      position: fixed;
+      z-index: 6;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 18px;
+      pointer-events: none;
+      opacity: 0;
+      transform: scale(0.92);
+      transition: opacity 0.5s ease, transform 0.5s ease;
+    }
+
+    .new-photo-overlay.visible {
+      opacity: 1;
+      transform: scale(1);
+    }
+
+    .new-photo-banner {
+      font-size: clamp(1.5rem, 4vw, 2.6rem);
+      font-weight: 800;
+      letter-spacing: 0.02em;
+      text-align: center;
+      background: linear-gradient(90deg, #ff004c, #ff9900, #fff200, #22c55e, #00c2ff, #7c3aed, #ff004c);
+      background-size: 400% 100%;
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      animation: rainbow-shift 3s linear infinite;
+      text-shadow: 0 2px 18px rgba(0, 0, 0, 0.1);
+    }
+
+    @keyframes rainbow-shift {
+      0% { background-position: 0% 50%; }
+      100% { background-position: 400% 50%; }
+    }
+
+    .new-photo-frame {
+      border-radius: 22px;
+      overflow: hidden;
+      box-shadow: 0 26px 60px rgba(20, 32, 44, 0.35);
+      border: 4px solid rgba(255, 255, 255, 0.85);
+      animation: gentle-float 3.2s ease-in-out infinite;
+    }
+
+    .new-photo-frame img {
+      display: block;
+      max-width: 62vw;
+      max-height: 60vh;
+      object-fit: contain;
+    }
+
+    @keyframes gentle-float {
+      0%, 100% { transform: translateY(0) rotate(-1.2deg) scale(1); }
+      50% { transform: translateY(-14px) rotate(1.2deg) scale(1.025); }
+    }
+
     @media (max-width: 760px) {
       .frame {
         inset: 10px;
@@ -202,6 +259,11 @@
       #empty {
         width: min(88vw, 460px);
       }
+
+      .new-photo-frame img {
+        max-width: 82vw;
+        max-height: 52vh;
+      }
     }
   </style>
 </head>
@@ -212,10 +274,16 @@
     <span class="title">Flatshare TV</span>
   </div>
   <img id="slide" alt="">
-  <div id="empty">Waiting for photos&hellip;</div>
+  <div id="empty">Let the party begin, upload your photos</div>
   <div id="qr-box">
     <img src="{% url 'upload-qr-code' %}" alt="QR code to upload photos">
     <span>Scan to upload</span>
+  </div>
+  <div id="new-photo-overlay" class="new-photo-overlay">
+    <div class="new-photo-banner">New photo from <span id="new-photo-username"></span>!</div>
+    <div class="new-photo-frame">
+      <img id="new-photo-img" alt="">
+    </div>
   </div>
   {% load static %}
   <script src="{% static 'photos/tv.js' %}"></script>

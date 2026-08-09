@@ -1,12 +1,17 @@
 (function () {
   const slide = document.getElementById("slide");
   const empty = document.getElementById("empty");
+  const newPhotoOverlay = document.getElementById("new-photo-overlay");
+  const newPhotoImg = document.getElementById("new-photo-img");
+  const newPhotoUsername = document.getElementById("new-photo-username");
   const DEFAULT_INTERVAL_MS = 5000;
+  const NEW_PHOTO_DISPLAY_MS = 10000;
 
   let photos = [];
   let index = 0;
   let timerId = null;
   let intervalMs = DEFAULT_INTERVAL_MS;
+  let overlayTimeoutId = null;
 
   function displayPhoto(photo) {
     if (!photo) {
@@ -43,12 +48,17 @@
     timerId = setInterval(advance, intervalMs);
   }
 
-  // Shows a freshly uploaded photo right away, without touching `index`, then
-  // gives it a full interval before the normal rotation resumes from exactly
-  // where it left off.
-  function interruptWithUpload(photo) {
-    displayPhoto(photo);
-    restartTimer();
+  // Announces a freshly uploaded photo in a floating overlay for a fixed
+  // 10s, independent of the slideshow interval. The background rotation
+  // (`slide`) keeps running on its own schedule underneath, untouched.
+  function announceNewPhoto(photo) {
+    if (overlayTimeoutId) clearTimeout(overlayTimeoutId);
+    newPhotoUsername.textContent = photo.username;
+    newPhotoImg.src = photo.url;
+    newPhotoOverlay.classList.add("visible");
+    overlayTimeoutId = setTimeout(() => {
+      newPhotoOverlay.classList.remove("visible");
+    }, NEW_PHOTO_DISPLAY_MS);
   }
 
   function connectWebSocket() {
@@ -65,9 +75,8 @@
           index = 0;
           showCurrent();
           restartTimer();
-        } else {
-          interruptWithUpload(data.photo);
         }
+        announceNewPhoto(data.photo);
       } else if (data.event === "deleted") {
         const removedIndex = photos.findIndex((p) => p.url === data.url);
         if (removedIndex === -1) return;
