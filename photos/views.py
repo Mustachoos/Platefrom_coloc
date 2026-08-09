@@ -11,15 +11,29 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 
 from .forms import PseudoForm
-from .models import Photo, SlideshowSettings, UserIdentity
+from .models import Photo, SlideshowSettings, UserIdentity, Like
+from django.shortcuts import get_object_or_404
 
 
-def _photo_payload(photo):
+def _photo_payload(photo, user=None):
+    liked = False
+    if user is not None:
+        liked = Like.objects.filter(photo=photo, user=user).exists()
     return {
+        "id": photo.id,
         "url": photo.image.url,
         "username": photo.username,
         "uploaded_at": photo.uploaded_at.isoformat(),
+        "likes_count": photo.likes_count,
+        "liked": liked,
     }
+
+
+def _get_user_identity(request):
+    session_key = request.session.session_key
+    if not session_key:
+        return None
+    return UserIdentity.objects.filter(session_key=session_key).first()
 
 
 def choose_pseudo(request):
@@ -102,8 +116,38 @@ def delete_own_photo(request, photo_id):
 
 
 def photo_list_api(request):
+    user = _get_user_identity(request)
     photos = Photo.objects.order_by("uploaded_at")
-    return JsonResponse([_photo_payload(photo) for photo in photos], safe=False)
+    return JsonResponse([_photo_payload(photo, user=user) for photo in photos], safe=False)
+
+
+def like_toggle_api(request, photo_id):
+    if request.method != "POST":
+        return JsonResponse({"error": "POST required"}, status=405)
+    user = _get_user_identity(request)
+    if not user:
+        return JsonResponse({"error": "identity required"}, status=403)
+    photo = get_object_or_404(Photo, pk=photo_id)
+    like, created = Like.objects.get_or_create(photo=photo, user=user)
+    if not created:
+        like.delete()
+        liked = False
+    else:
+        liked = True
+    # broadcast updated likes
+    channel_layer = get_channel_layer()
+    async_to_sync(channel_layer.group_send)(
+        "tv_updates",
+        {"type": "photo.liked", "photo_id": photo.id, "likes_count": photo.likes_count},
+    )
+    return JsonResponse({"photo_id": photo.id, "likes_count": photo.likes_count, "liked": liked})
+
+
+def gallery_view(request):
+    user = _get_user_identity(request)
+    photos = Photo.objects.order_by("-uploaded_at")
+    payloads = [_photo_payload(photo, user=user) for photo in photos]
+    return render(request, "photos/gallery.html", {"photos": payloads})
 
 
 def slideshow_settings_api(request):
