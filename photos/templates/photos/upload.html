@@ -126,7 +126,7 @@
       color: #9f1239;
     }
 
-    .tv-link {
+    .gallery-link {
       display: inline-block;
       margin-top: 24px;
       color: #0f766e;
@@ -136,7 +136,7 @@
       transition: border-color 0.2s ease;
     }
 
-    .tv-link:hover {
+    .gallery-link:hover {
       border-color: rgba(15, 118, 110, 0.55);
     }
   </style>
@@ -161,9 +161,9 @@
       <button type="submit">Upload</button>
     </form>
 
-  <a class="tv-link" href="{% url 'tv' %}">Go to TV slideshow &rarr;</a>
-  <br>
   <a class="tv-link" href="{% url 'my-photos' %}">My photos &rarr;</a>
+  <br>
+  <a class="gallery-link" href="{% url 'gallery' %}">Go to gallery &rarr;</a>
   </main>
 </body>
 </html>

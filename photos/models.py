@@ -29,6 +29,8 @@ class Photo(models.Model):
     @property
     def filename(self):
         return os.path.basename(self.image.name)
+    def likes_count(self):
+        return self.likes.count()
 
 
 class UserIdentity(models.Model):
@@ -38,6 +40,18 @@ class UserIdentity(models.Model):
 
     def __str__(self):
         return self.pseudo
+
+
+class Like(models.Model):
+    photo = models.ForeignKey(Photo, related_name="likes", on_delete=models.CASCADE)
+    user = models.ForeignKey(UserIdentity, related_name="likes", on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ("photo", "user")
+
+    def __str__(self):
+        return f"{self.user.pseudo} ♥ {self.photo.id}"
 
 
 class SlideshowSettings(models.Model):
