@@ -1,11 +1,12 @@
 (function () {
   const slide = document.getElementById("slide");
   const empty = document.getElementById("empty");
-  const INTERVAL_MS = 8000;
+  const DEFAULT_INTERVAL_MS = 5000;
 
   let photos = [];
   let index = 0;
   let timerId = null;
+  let intervalMs = DEFAULT_INTERVAL_MS;
 
   function displayPhoto(photo) {
     if (!photo) {
@@ -39,7 +40,7 @@
 
   function restartTimer() {
     if (timerId) clearInterval(timerId);
-    timerId = setInterval(advance, INTERVAL_MS);
+    timerId = setInterval(advance, intervalMs);
   }
 
   // Shows a freshly uploaded photo right away, without touching `index`, then
@@ -81,6 +82,9 @@
         }
         index = index % photos.length;
         if (wasCurrent) showCurrent();
+      } else if (data.event === "settings") {
+        intervalMs = data.interval_seconds * 1000;
+        restartTimer();
       }
     };
     ws.onclose = () => {
@@ -88,13 +92,15 @@
     };
   }
 
-  fetch("/api/photos/")
-    .then((response) => response.json())
-    .then((data) => {
-      photos = data;
-      showCurrent();
-    });
+  Promise.all([
+    fetch("/api/photos/").then((response) => response.json()),
+    fetch("/api/settings/").then((response) => response.json()),
+  ]).then(([photoData, settingsData]) => {
+    photos = photoData;
+    intervalMs = settingsData.interval_seconds * 1000;
+    showCurrent();
+    restartTimer();
+  });
 
   connectWebSocket();
-  restartTimer();
 })();

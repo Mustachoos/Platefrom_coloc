@@ -9,7 +9,7 @@ from django.shortcuts import redirect, render
 from django.urls import reverse
 
 from .forms import UploadForm
-from .models import Photo
+from .models import Photo, SlideshowSettings
 
 
 def _photo_payload(photo):
@@ -51,6 +51,11 @@ def tv_view(request):
 def photo_list_api(request):
     photos = Photo.objects.order_by("uploaded_at")
     return JsonResponse([_photo_payload(photo) for photo in photos], safe=False)
+
+
+def slideshow_settings_api(request):
+    settings_obj = SlideshowSettings.get_solo()
+    return JsonResponse({"interval_seconds": settings_obj.interval_seconds})
 
 
 def upload_qr_code(request):

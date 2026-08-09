@@ -1,3 +1,4 @@
+from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 
 
@@ -11,3 +12,23 @@ class Photo(models.Model):
 
     def __str__(self):
         return f"{self.username} - {self.uploaded_at:%Y-%m-%d %H:%M}"
+
+
+class SlideshowSettings(models.Model):
+    interval_seconds = models.FloatField(
+        default=5.0,
+        validators=[MinValueValidator(0.1), MaxValueValidator(100)],
+        help_text="How long each photo stays on screen, in seconds (0.1-100).",
+    )
+
+    class Meta:
+        verbose_name = "Slideshow settings"
+        verbose_name_plural = "Slideshow settings"
+
+    def __str__(self):
+        return f"Slideshow interval: {self.interval_seconds}s"
+
+    @classmethod
+    def get_solo(cls):
+        obj, _ = cls.objects.get_or_create(pk=1)
+        return obj
