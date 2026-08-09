@@ -1,8 +1,12 @@
+import io
+
+import qrcode
 from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
 from django.contrib import messages
-from django.http import JsonResponse
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import redirect, render
+from django.urls import reverse
 
 from .forms import UploadForm
 from .models import Photo
@@ -47,3 +51,11 @@ def tv_view(request):
 def photo_list_api(request):
     photos = Photo.objects.order_by("uploaded_at")
     return JsonResponse([_photo_payload(photo) for photo in photos], safe=False)
+
+
+def upload_qr_code(request):
+    upload_url = request.build_absolute_uri(reverse("upload"))
+    image = qrcode.make(upload_url)
+    buffer = io.BytesIO()
+    image.save(buffer, format="PNG")
+    return HttpResponse(buffer.getvalue(), content_type="image/png")

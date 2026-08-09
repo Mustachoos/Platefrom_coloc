@@ -22,11 +22,36 @@
       transform: translate(-50%, -50%);
       font-size: 2rem;
     }
+    #qr-box {
+      position: absolute;
+      top: 24px;
+      right: 24px;
+      background: #fff;
+      padding: 10px;
+      border-radius: 8px;
+      text-align: center;
+      font-family: sans-serif;
+    }
+    #qr-box img {
+      display: block;
+      width: 120px;
+      height: 120px;
+    }
+    #qr-box span {
+      display: block;
+      margin-top: 4px;
+      font-size: 0.7rem;
+      color: #333;
+    }
   </style>
 </head>
 <body>
   <img id="slide" alt="">
   <div id="empty">Waiting for photos&hellip;</div>
+  <div id="qr-box">
+    <img src="{% url 'upload-qr-code' %}" alt="QR code to upload photos">
+    <span>Scan to upload</span>
+  </div>
   {% load static %}
   <script src="{% static 'photos/tv.js' %}"></script>
 </body>
