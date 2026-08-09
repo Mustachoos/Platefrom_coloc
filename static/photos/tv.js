@@ -77,6 +77,7 @@
           showCurrent();
           restartTimer();
         }
+        announceNewPhoto(data.photo);
       } else if (data.event === "deleted") {
         const removedIndex = photos.findIndex((p) => p.url === data.url);
         if (removedIndex === -1) return;

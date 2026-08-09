@@ -29,6 +29,7 @@ class Photo(models.Model):
     @property
     def filename(self):
         return os.path.basename(self.image.name)
+    @property
     def likes_count(self):
         return self.likes.count()
 

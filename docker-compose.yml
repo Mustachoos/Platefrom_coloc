@@ -27,7 +27,7 @@ services:
       DJANGO_DB_PASSWORD: coloc
       DJANGO_DB_HOST: db
       DJANGO_DB_PORT: "5432"
-      QR_HOST_IP: "192.168.1.185"
+      QR_HOST_IP: "192.168.1.13"
     depends_on:
       db:
         condition: service_healthy
