@@ -24,6 +24,7 @@
 *{box-sizing:border-box}
 html,body{margin:0;padding:0;min-height:100vh;font-family:"Trebuchet MS","Segoe UI",sans-serif;color:var(--ink);}
 body{background:linear-gradient(140deg,var(--bg-1),var(--bg-2));padding:22px;}
+body.centered-page{display:flex;align-items:center;justify-content:center}
 
 /* Card used by most pages */
 .card{width:min(100%,620px);background:var(--card);border:1px solid var(--card-border);border-radius:24px;box-shadow:0 20px 40px rgba(31,52,72,0.16);padding:clamp(22px,3.8vw,34px);-webkit-backdrop-filter:blur(5px);backdrop-filter:blur(5px);animation:rise .55s ease}
@@ -64,10 +65,9 @@ input[type=file],input[type=text],input[type=email],textarea,select{width:100%;p
 .upload-actions{display:flex;flex-direction:column;align-items:center;gap:14px;margin-top:18px}
 .upload-links{display:flex;gap:12px;justify-content:center}
 
-/* Upload page: status centered in the middle, all controls anchored at the bottom */
-.upload-page{display:flex;flex-direction:column;min-height:min(82vh,680px)}
-.upload-center{flex:1;display:flex;align-items:center;justify-content:center}
-.upload-center .photo-status{width:100%;margin-top:0}
+/* Upload page: status box gets breathing room, controls grouped below it */
+.upload-center{margin:36px 0}
+.upload-center .photo-status{margin-top:0}
 .form-row-label-centered{text-align:center}
 
 /* Small helpers */
@@ -79,6 +79,13 @@ input[type=file],input[type=text],input[type=email],textarea,select{width:100%;p
 .photo-status.state-empty{background:#ffe8ee;border-color:#fda4af;color:#9f1239}
 .photo-status.state-selected{background:#e0f2fe;border-color:#7dd3fc;color:#075985}
 .photo-status.state-success{background:#dff7e8;border-color:#86efac;color:#166534}
+.photo-status.shake{animation:photo-status-shake .5s ease}
+@keyframes photo-status-shake{
+  10%,90%{transform:translateX(-2px)}
+  20%,80%{transform:translateX(4px)}
+  30%,50%,70%{transform:translateX(-8px)}
+  40%,60%{transform:translateX(8px)}
+}
 
 /* Gallery grid */
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px}

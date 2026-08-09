@@ -7,8 +7,8 @@
   {% load static %}
   <link rel="stylesheet" href="{% static 'photos/site.css' %}">
 </head>
-<body>
-  <main class="card upload-page">
+<body class="centered-page">
+  <main class="card">
     <div class="upload-top">
       <h1>Upload photos to the TV</h1>
       <p class="as-user">Uploading as <strong>{{ pseudo }}</strong></p>
@@ -29,7 +29,7 @@
       >{% if just_uploaded %}Upload successful{% else %}No photo yet :({% endif %}</div>
     </div>
 
-    <form method="post" enctype="multipart/form-data" class="upload-bottom">
+    <form id="upload-form" method="post" enctype="multipart/form-data" class="upload-bottom">
       {% csrf_token %}
       <div class="form-row">
         <label class="form-row-label-centered">Add a photo</label>
@@ -54,6 +54,7 @@
       (function(){
         const input = document.getElementById('images');
         const btn = document.getElementById('upload-btn');
+        const form = document.getElementById('upload-form');
         const chooseBtn = document.getElementById('choose-btn');
         const cameraInput = document.getElementById('camera-input');
         const cameraBtn = document.getElementById('camera-btn');
@@ -121,6 +122,22 @@
         }
 
         input.addEventListener('change', update);
+
+        if (form && status) {
+          form.addEventListener('submit', function (e) {
+            if (!input.files || input.files.length === 0) {
+              e.preventDefault();
+              status.classList.remove('shake');
+              // Force a reflow so the animation restarts if triggered again
+              // right away (e.g. clicking Upload twice with nothing chosen).
+              void status.offsetWidth;
+              status.classList.add('shake');
+            }
+          });
+          status.addEventListener('animationend', function () {
+            status.classList.remove('shake');
+          });
+        }
 
         document.addEventListener('DOMContentLoaded', function () {
           if (justUploaded) {
