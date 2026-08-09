@@ -5,37 +5,163 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Upload photos</title>
   <style>
-    body { font-family: sans-serif; max-width: 480px; margin: 40px auto; padding: 0 16px; }
-    label { display: block; margin-top: 16px; font-weight: bold; }
-    input { width: 100%; padding: 8px; margin-top: 4px; box-sizing: border-box; }
-    button { margin-top: 20px; padding: 10px 16px; font-size: 1rem; }
-    .messages { list-style: none; padding: 0; }
-    .messages li { padding: 8px; margin-bottom: 8px; border-radius: 4px; }
-    .messages .success { background: #d4f8d4; }
-    .messages .error { background: #f8d4d4; }
-    .tv-link { display: inline-block; margin-top: 24px; }
-    .as-user { color: #555; }
+    :root {
+      --bg-1: #effcf6;
+      --bg-2: #fff5e8;
+      --ink: #223449;
+      --soft: #5f768c;
+      --success-bg: #dff7e8;
+      --success-border: #86efac;
+      --error-bg: #ffe8ee;
+      --error-border: #fda4af;
+      --card: rgba(255, 255, 255, 0.94);
+      --card-border: rgba(255, 255, 255, 0.88);
+      --btn-1: #16a34a;
+      --btn-2: #10b981;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      padding: 22px;
+      display: grid;
+      place-items: center;
+      font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 12% 12%, rgba(16, 185, 129, 0.18), transparent 30%),
+        radial-gradient(circle at 88% 86%, rgba(251, 146, 60, 0.17), transparent 34%),
+        linear-gradient(140deg, var(--bg-1), var(--bg-2));
+    }
+
+    .card {
+      width: min(100%, 620px);
+      background: var(--card);
+      border: 1px solid var(--card-border);
+      border-radius: 24px;
+      box-shadow: 0 20px 40px rgba(31, 52, 72, 0.16);
+      padding: clamp(22px, 3.8vw, 34px);
+      -webkit-backdrop-filter: blur(5px);
+      backdrop-filter: blur(5px);
+      animation: rise 0.55s ease;
+    }
+
+    @keyframes rise {
+      from { opacity: 0; transform: translateY(12px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(1.7rem, 4.8vw, 2.3rem);
+      line-height: 1.1;
+    }
+
+    .as-user {
+      color: var(--soft);
+      margin-top: 10px;
+      margin-bottom: 16px;
+    }
+
+    label {
+      display: block;
+      margin-top: 16px;
+      font-weight: 700;
+    }
+
+    input {
+      width: 100%;
+      margin-top: 8px;
+      border: 2px dashed #c9dfcf;
+      border-radius: 14px;
+      padding: 14px;
+      background: #fcfffd;
+      font-size: 0.98rem;
+    }
+
+    button {
+      margin-top: 22px;
+      border: 0;
+      border-radius: 13px;
+      padding: 12px 20px;
+      font-size: 1rem;
+      font-weight: 700;
+      color: #fff;
+      background: linear-gradient(90deg, var(--btn-1), var(--btn-2));
+      cursor: pointer;
+      box-shadow: 0 8px 18px rgba(22, 163, 74, 0.3);
+      transition: transform 0.15s ease, box-shadow 0.2s ease;
+    }
+
+    button:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 12px 24px rgba(22, 163, 74, 0.35);
+    }
+
+    .messages {
+      padding: 0;
+      margin: 0 0 14px;
+      display: grid;
+      gap: 8px;
+    }
+
+    .message {
+      padding: 10px 12px;
+      border-radius: 12px;
+      font-weight: 600;
+      border: 1px solid transparent;
+    }
+
+    .message.success {
+      background: var(--success-bg);
+      border-color: var(--success-border);
+      color: #166534;
+    }
+
+    .message.error {
+      background: var(--error-bg);
+      border-color: var(--error-border);
+      color: #9f1239;
+    }
+
+    .tv-link {
+      display: inline-block;
+      margin-top: 24px;
+      color: #0f766e;
+      text-decoration: none;
+      font-weight: 700;
+      border-bottom: 2px solid rgba(15, 118, 110, 0.2);
+      transition: border-color 0.2s ease;
+    }
+
+    .tv-link:hover {
+      border-color: rgba(15, 118, 110, 0.55);
+    }
   </style>
 </head>
 <body>
-  <h1>Upload photos to the TV</h1>
-  <p class="as-user">Uploading as <strong>{{ pseudo }}</strong></p>
+  <main class="card">
+    <h1>Upload photos to the TV</h1>
+    <p class="as-user">Uploading as <strong>{{ pseudo }}</strong></p>
 
-  {% if messages %}
-  <ul class="messages">
-    {% for message in messages %}
-    <li class="{{ message.tags }}">{{ message }}</li>
-    {% endfor %}
-  </ul>
-  {% endif %}
+    {% if messages %}
+    <div class="messages">
+      {% for message in messages %}
+      <div class="message {{ message.tags }}">{{ message }}</div>
+      {% endfor %}
+    </div>
+    {% endif %}
 
-  <form method="post" enctype="multipart/form-data">
-    {% csrf_token %}
-    <label for="images">Photos</label>
-    <input type="file" id="images" name="images" accept="image/*" multiple required>
-    <button type="submit">Upload</button>
-  </form>
+    <form method="post" enctype="multipart/form-data">
+      {% csrf_token %}
+      <label for="images">Photos</label>
+      <input type="file" id="images" name="images" accept="image/*" multiple required>
+      <button type="submit">Upload</button>
+    </form>
 
-  <a class="tv-link" href="{% url 'tv' %}">Go to TV slideshow &rarr;</a>
+    <a class="tv-link" href="{% url 'tv' %}">Go to TV slideshow &rarr;</a>
+  </main>
 </body>
 </html>
