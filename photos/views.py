@@ -28,6 +28,13 @@ def _drive_fix_summary(message, uploaded, failed):
     return summary
 
 
+def _dashboard_redirect(tab="events"):
+    response = redirect("dashboard")
+    if tab and tab != "events":
+        response["Location"] += f"?tab={tab}"
+    return response
+
+
 def _photo_payload(photo, user=None):
     liked = False
     if user is not None:
@@ -261,7 +268,7 @@ def dashboard_view(request):
     if request.method == "POST":
         if active_event is None:
             messages.error(request, "No active event yet — create one below first.")
-            return redirect("dashboard")
+            return _dashboard_redirect()
 
         if "recreate_drive_folder" in request.POST:
             ok, message, uploaded, failed = event_service.recreate_drive_folder(active_event)
@@ -272,7 +279,7 @@ def dashboard_view(request):
                 )
             else:
                 messages.error(request, f"Could not create a new Drive folder: {message}")
-            return redirect("dashboard")
+            return _dashboard_redirect(tab="features")
         if "toggle_drive_sharing" in request.POST:
             if not active_event.drive_folder_id:
                 messages.error(request, "Connect a Drive folder before sharing it.")
@@ -324,20 +331,7 @@ def dashboard_view(request):
             active_event.likes_enabled = not active_event.likes_enabled
             active_event.save(update_fields=["likes_enabled"])
             messages.success(request, "Likes " + ("enabled." if active_event.likes_enabled else "disabled."))
-        elif "update_drive_folder" in request.POST:
-            folder_id_or_url = request.POST.get("drive_folder_id_or_url", "").strip()
-            if folder_id_or_url:
-                ok, message, uploaded, failed = event_service.relink_drive_folder(active_event, folder_id_or_url)
-            else:
-                ok, message, uploaded, failed = False, "Provide an existing folder ID/URL to switch to.", 0, 0
-            if ok:
-                messages.success(
-                    request,
-                    _drive_fix_summary(f"Drive folder updated for '{active_event.name}': {message}", uploaded, failed),
-                )
-            else:
-                messages.error(request, f"Could not update Drive folder: {message}")
-        return redirect("dashboard")
+        return _dashboard_redirect(request, default_tab="features")
 
     events = list(Event.objects.all())
     for event in events:
@@ -359,6 +353,7 @@ def dashboard_view(request):
         photos = Photo.objects.none()
     guests_with_email = identities.exclude(email="").count()
     guests_shared = identities.filter(drive_shared=True).count()
+    active_tab = request.GET.get("tab", "events")
     return render(
         request,
         "photos/dashboard.html",
@@ -369,6 +364,7 @@ def dashboard_view(request):
             "photos": photos,
             "guests_with_email": guests_with_email,
             "guests_shared": guests_shared,
+            "active_tab": active_tab,
         },
     )
 
@@ -379,7 +375,7 @@ def dashboard_delete_photo(request, photo_id):
         photo = get_object_or_404(Photo, id=photo_id)
         photo.delete()
         messages.success(request, "Photo deleted.")
-    return redirect("dashboard")
+    return _dashboard_redirect(tab="photos")
 
 
 @staff_member_required
