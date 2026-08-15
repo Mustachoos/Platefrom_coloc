@@ -30,6 +30,7 @@ docker compose up --build
 - Application : http://localhost:8000
 - Écran TV : http://localhost:8000/tv/
 - Admin Django : http://localhost:8000/admin/
+- Dashboard staff : http://localhost:8000/dashboard/
 
 Au premier lancement, créer un compte admin si besoin :
 ```
@@ -60,7 +61,7 @@ Mise en place, à faire une seule fois :
 ### Acteurs
 - **Invité** : aucun compte, identifié uniquement par un pseudo lié à sa session navigateur
 - **Écran TV** : client passif qui affiche le flux de photos en direct
-- **Administrateur** : accès à l'admin Django
+- **Administrateur** : compte staff Django, avec deux points d'entrée — l'admin Django (`/admin/`, complet) et le dashboard staff (`/dashboard/`, vue opérationnelle simplifiée)
 
 ### Parcours et écrans
 
@@ -130,13 +131,23 @@ Mise en place, à faire une seule fois :
   - `drive_folder_name` : nom du dossier Drive de la soirée, pré-rempli à la date du jour (`DD/MM/YYYY`) mais modifiable
   - À chaque enregistrement avec `drive_enabled` coché, le dossier correspondant est automatiquement recherché (et réutilisé s'il existe déjà sous le dossier racine configuré) ou créé, puis son ID et son lien sont stockés en lecture seule (`drive_folder_id`, `drive_folder_url`)
   - En cas d'échec (credentials manquants/expirés, dossier racine introuvable...), un message d'erreur explicite s'affiche dans l'admin sans bloquer l'enregistrement des autres réglages
+  - `likes_enabled` : active/désactive le bouton like sur la galerie, l'API de like et le classement affiché sur l'écran TV
+
+#### 9. Dashboard staff — `/dashboard/`
+- Page dédiée, distincte de `/admin/`, réservée au staff (`staff_member_required` ; redirection vers l'écran de connexion Django si non authentifié)
+- **Invités** : tableau pseudo / email / statut de partage Drive / date d'arrivée
+- **Photos** : grille de toutes les photos avec suppression en un clic (n'importe quelle photo, pas seulement les siennes — contrairement à "Mes photos")
+- **Fonctionnalités annexes** : boutons on/off pour l'intégration Google Drive et pour les likes
+  - Activer Drive depuis ce panneau déclenche la même logique de création/connexion du dossier que dans l'admin Django
+  - Le changement d'état des likes est propagé en direct à l'écran TV via WebSocket (masque/affiche le classement sans rechargement)
+- Pensé comme le futur point d'entrée unique pour piloter les fonctionnalités optionnelles d'une soirée (voir l'objectif à terme en introduction)
 
 ### API interne (JSON)
 | Endpoint | Méthode | Description |
 |---|---|---|
 | `/api/photos/` | GET | Liste toutes les photos (id, url, pseudo, date, nombre de likes, statut liké pour l'utilisateur courant) |
-| `/api/photos/<id>/like/` | POST | Bascule le like/unlike pour l'utilisateur de la session courante |
-| `/api/settings/` | GET | Intervalle courant du diaporama |
+| `/api/photos/<id>/like/` | POST | Bascule le like/unlike pour l'utilisateur de la session courante ; 403 si les likes sont désactivés |
+| `/api/settings/` | GET | Intervalle courant du diaporama et statut des likes (`interval_seconds`, `likes_enabled`) |
 
 ### Canal temps réel — `/ws/tv/`
 Un unique canal WebSocket diffuse à tous les écrans TV connectés :
@@ -144,6 +155,7 @@ Un unique canal WebSocket diffuse à tous les écrans TV connectés :
 - `deleted` — une photo a été supprimée (url concernée)
 - `settings` — l'intervalle du diaporama a changé
 - `liked` — le nombre de likes d'une photo a changé
+- `likes_setting` — les likes ont été activés/désactivés (affiche ou masque le classement sur l'écran TV)
 
 ### Modèle de données
 - **Photo** — pseudo de l'auteur, fichier image, date d'envoi
