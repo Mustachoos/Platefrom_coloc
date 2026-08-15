@@ -121,11 +121,14 @@ def upload_view(request):
                 )
                 if event_settings.drive_enabled and event_settings.drive_folder_id:
                     try:
-                        drive_service.upload_photo(
+                        file_id = drive_service.upload_photo(
                             event_settings.drive_folder_id, photo.image.path, photo.filename
                         )
                     except drive_service.DriveError as exc:
                         logger.warning("Could not upload photo %s to Drive: %s", photo.id, exc)
+                    else:
+                        photo.drive_file_id = file_id
+                        photo.save(update_fields=["drive_file_id"])
             return redirect(f"{reverse('upload')}?uploaded=1")
         messages.error(request, "Please choose at least one photo.")
     just_uploaded = request.GET.get("uploaded") == "1"

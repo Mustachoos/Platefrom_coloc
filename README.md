@@ -97,7 +97,7 @@ Mise en place, à faire une seule fois :
 - Accessible uniquement avec un pseudo en session
 - Liste, par ordre chronologique, des photos envoyées par l'utilisateur courant
 - Suppression possible photo par photo ; un utilisateur ne peut supprimer que ses propres photos (vérifié par pseudo + identifiant, pas seulement par session)
-- La suppression efface le fichier physique et notifie l'écran TV en direct pour retirer la photo du diaporama en cours
+- La suppression efface le fichier physique, retire la photo de la corbeille Drive si elle y avait été copiée, et notifie l'écran TV en direct pour retirer la photo du diaporama en cours
 
 #### 5. Écran TV — `/tv/`
 - Page plein écran destinée à un téléviseur ou un moniteur connecté, sans interaction attendue
@@ -128,15 +128,16 @@ Mise en place, à faire une seule fois :
 - **Réglages du diaporama** (`SlideshowSettings`, entrée unique) : intervalle d'affichage en secondes (de 0,1 à 100) ; toute modification est propagée en direct à l'écran TV sans rechargement
 - **Réglages de l'événement** (`EventSettings`, entrée unique) :
   - `drive_enabled` : active/désactive toute l'intégration Google Drive (upload des photos + étape de partage par email)
-  - `drive_folder_name` : nom du dossier Drive de la soirée, pré-rempli à la date du jour (`DD/MM/YYYY`) mais modifiable
-  - À chaque enregistrement avec `drive_enabled` coché, le dossier correspondant est automatiquement recherché (et réutilisé s'il existe déjà sous le dossier racine configuré) ou créé, puis son ID et son lien sont stockés en lecture seule (`drive_folder_id`, `drive_folder_url`)
-  - En cas d'échec (credentials manquants/expirés, dossier racine introuvable...), un message d'erreur explicite s'affiche dans l'admin sans bloquer l'enregistrement des autres réglages
+  - `drive_folder_name` : nom du dossier Drive de la soirée, pré-rempli à la date du jour (`DD/MM/YYYY`) mais modifiable ; en changer et enregistrer recherche (ou crée) le dossier correspondant sous le dossier racine configuré
+  - `drive_folder_id` : éditable — pour pointer vers un dossier Drive déjà existant (ailleurs que sous le dossier racine, ou déjà rempli manuellement), on peut y coller directement son ID ou son URL complète (`https://drive.google.com/drive/folders/<ID>`) ; à l'enregistrement, l'app vérifie que le dossier existe et resynchronise `drive_folder_name`/`drive_folder_url` en conséquence. Coller un ID a priorité sur un changement de nom si les deux sont modifiés en même temps
+  - `drive_folder_url` : lien vers le dossier, en lecture seule, déduit automatiquement
+  - En cas d'échec (credentials manquants/expirés, dossier introuvable...), un message d'erreur explicite s'affiche dans l'admin sans bloquer l'enregistrement des autres réglages
   - `likes_enabled` : active/désactive le bouton like sur la galerie, l'API de like et le classement affiché sur l'écran TV
 
 #### 9. Dashboard staff — `/dashboard/`
 - Page dédiée, distincte de `/admin/`, réservée au staff (`staff_member_required` ; redirection vers l'écran de connexion Django si non authentifié)
 - **Invités** : tableau pseudo / email / statut de partage Drive / date d'arrivée
-- **Photos** : grille de toutes les photos avec suppression en un clic (n'importe quelle photo, pas seulement les siennes — contrairement à "Mes photos")
+- **Photos** : grille de toutes les photos avec suppression en un clic (n'importe quelle photo, pas seulement les siennes — contrairement à "Mes photos") ; comme pour une suppression par son auteur, la photo est aussi retirée (mise à la corbeille) du dossier Drive si elle y avait été copiée
 - **Fonctionnalités annexes** : boutons on/off pour l'intégration Google Drive et pour les likes
   - Activer Drive depuis ce panneau déclenche la même logique de création/connexion du dossier que dans l'admin Django
   - Le changement d'état des likes est propagé en direct à l'écran TV via WebSocket (masque/affiche le classement sans rechargement)

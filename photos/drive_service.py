@@ -12,6 +12,7 @@ reuses/refreshes that token; nothing here opens a browser.
 
 import logging
 import os
+import re
 
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
@@ -104,17 +105,38 @@ def get_or_create_event_folder(name):
 
 
 def upload_photo(folder_id, file_path, filename):
-    """Upload the file already saved on disk at file_path into folder_id."""
+    """Upload the file already saved on disk at file_path into folder_id.
+    Returns the created Drive file's id."""
     service = _get_service()
     try:
         media = MediaFileUpload(file_path, resumable=False)
-        service.files().create(
+        file = service.files().create(
             body={"name": filename, "parents": [folder_id]},
             media_body=media,
             fields="id",
         ).execute()
+        return file["id"]
     except HttpError as exc:
         raise DriveError(f"Could not upload '{filename}' to Drive: {exc}") from exc
+
+
+def trash_file(file_id):
+    """Move a Drive file to trash (soft delete, recoverable from Drive's Trash)."""
+    service = _get_service()
+    try:
+        service.files().update(fileId=file_id, body={"trashed": True}).execute()
+    except HttpError as exc:
+        raise DriveError(f"Could not remove Drive file '{file_id}': {exc}") from exc
+
+
+_FOLDER_URL_RE = re.compile(r"/folders/([a-zA-Z0-9_-]+)")
+
+
+def extract_folder_id(value):
+    """Accept either a bare Drive folder ID or a full folder URL and return the ID."""
+    value = value.strip()
+    match = _FOLDER_URL_RE.search(value)
+    return match.group(1) if match else value
 
 
 def connect_event_folder(event_settings):
@@ -134,6 +156,36 @@ def connect_event_folder(event_settings):
     event_settings.drive_folder_id = folder_id
     event_settings.drive_folder_url = folder_url
     return True, folder_url
+
+
+def connect_existing_folder(event_settings):
+    """Point event_settings at an existing Drive folder, identified by the
+    (possibly pasted-as-URL) id currently in drive_folder_id. Verifies the
+    folder exists and refreshes drive_folder_name/url to match it.
+    Returns (ok, message)."""
+    folder_id = extract_folder_id(event_settings.drive_folder_id)
+    service = _get_service()
+    try:
+        folder = service.files().get(
+            fileId=folder_id, fields="id, name, webViewLink, mimeType", supportsAllDrives=True
+        ).execute()
+    except HttpError as exc:
+        return False, f"Could not find Drive folder '{folder_id}': {exc}"
+
+    if folder.get("mimeType") != FOLDER_MIME_TYPE:
+        return False, f"'{folder_id}' is not a Drive folder."
+
+    from .models import EventSettings
+
+    EventSettings.objects.filter(pk=event_settings.pk).update(
+        drive_folder_id=folder["id"],
+        drive_folder_name=folder["name"],
+        drive_folder_url=folder.get("webViewLink", ""),
+    )
+    event_settings.drive_folder_id = folder["id"]
+    event_settings.drive_folder_name = folder["name"]
+    event_settings.drive_folder_url = folder.get("webViewLink", "")
+    return True, folder.get("webViewLink", "")
 
 
 def share_folder_with_email(folder_id, email):

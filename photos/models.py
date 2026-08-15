@@ -19,6 +19,7 @@ class Photo(models.Model):
     username = models.CharField(max_length=50)
     image = models.ImageField(upload_to=photo_upload_path)
     uploaded_at = models.DateTimeField(auto_now_add=True)
+    drive_file_id = models.CharField(max_length=100, blank=True)
 
     class Meta:
         ordering = ["-uploaded_at"]
@@ -100,7 +101,12 @@ class EventSettings(models.Model):
         help_text="Name of the Drive folder for this event. Reused if it already exists "
         "under the configured root folder; created otherwise.",
     )
-    drive_folder_id = models.CharField(max_length=100, blank=True)
+    drive_folder_id = models.CharField(
+        max_length=200,
+        blank=True,
+        help_text="Auto-filled from the folder name above. To point to a different/existing "
+        "folder instead, paste its Drive URL or ID here directly.",
+    )
     drive_folder_url = models.URLField(blank=True)
     likes_enabled = models.BooleanField(
         default=True,

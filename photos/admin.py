@@ -38,7 +38,7 @@ class LikeAdmin(admin.ModelAdmin):
 @admin.register(EventSettings)
 class EventSettingsAdmin(admin.ModelAdmin):
     list_display = ("drive_enabled", "drive_folder_name", "drive_folder_id", "likes_enabled")
-    readonly_fields = ("drive_folder_id", "drive_folder_url")
+    readonly_fields = ("drive_folder_url",)
 
     def has_add_permission(self, request):
         return not EventSettings.objects.exists()
@@ -50,7 +50,10 @@ class EventSettingsAdmin(admin.ModelAdmin):
         super().save_model(request, obj, form, change)
         if not obj.drive_enabled:
             return
-        ok, message = drive_service.connect_event_folder(obj)
+        if "drive_folder_id" in form.changed_data and obj.drive_folder_id.strip():
+            ok, message = drive_service.connect_existing_folder(obj)
+        else:
+            ok, message = drive_service.connect_event_folder(obj)
         if ok:
             self.message_user(request, f"Drive folder '{obj.drive_folder_name}' connected: {message}")
         else:
