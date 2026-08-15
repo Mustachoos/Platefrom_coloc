@@ -6,6 +6,7 @@ from . import views
 urlpatterns = [
     path("", RedirectView.as_view(pattern_name="upload", permanent=False)),
     path("pseudo/", views.choose_pseudo, name="choose-pseudo"),
+    path("pseudo/share-drive/", views.share_drive_view, name="share-drive"),
     path("upload/", views.upload_view, name="upload"),
     path("my-photos/", views.my_photos_view, name="my-photos"),
     path("my-photos/<int:photo_id>/delete/", views.delete_own_photo, name="delete-own-photo"),

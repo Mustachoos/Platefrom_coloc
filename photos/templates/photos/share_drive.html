@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Share the photo folder</title>
+  {% load static %}
+  <link rel="stylesheet" href="{% static 'photos/site.css' %}">
+</head>
+<body>
+  <main class="card">
+    <h1>Want the full-res photos?</h1>
+    <p class="hint">Leave your email and we'll share the event's Google Drive folder with you (read-only). You can also skip this.</p>
+
+    {% if messages %}
+    <div class="messages">
+      {% for message in messages %}
+      <div class="message {{ message.tags }}">{{ message }}</div>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    <form method="post">
+      {% csrf_token %}
+      <div class="form-row">
+        <label for="{{ form.email.id_for_label }}">Your email</label>
+        {{ form.email }}
+        {% if form.email.errors %}
+          <div class="message error">{{ form.email.errors }}</div>
+        {% endif %}
+      </div>
+      <div class="form-actions">
+        <button type="submit" class="btn primary">Share with me</button>
+        <button type="submit" name="skip" value="1" class="btn secondary">Skip</button>
+      </div>
+    </form>
+  </main>
+</body>
+</html>

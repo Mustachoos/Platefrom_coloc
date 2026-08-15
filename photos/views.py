@@ -1,4 +1,5 @@
 import io
+import logging
 import os
 
 import qrcode
@@ -10,9 +11,12 @@ from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 
-from .forms import PseudoForm
-from .models import Photo, SlideshowSettings, UserIdentity, Like
+from . import drive_service
+from .forms import PseudoForm, ShareDriveForm
+from .models import EventSettings, Photo, SlideshowSettings, UserIdentity, Like
 from django.shortcuts import get_object_or_404
+
+logger = logging.getLogger(__name__)
 
 
 def _photo_payload(photo, user=None):
@@ -55,10 +59,47 @@ def choose_pseudo(request):
                     form.add_error("pseudo", "That name is already taken, please choose another one.")
                 else:
                     request.session["pseudo"] = pseudo
+                    event_settings = EventSettings.get_solo()
+                    if event_settings.drive_enabled and event_settings.drive_folder_id:
+                        return redirect("share-drive")
                     return redirect("upload")
     else:
         form = PseudoForm()
     return render(request, "photos/choose_pseudo.html", {"form": form})
+
+
+def share_drive_view(request):
+    pseudo = request.session.get("pseudo")
+    if not pseudo:
+        return redirect("choose-pseudo")
+
+    event_settings = EventSettings.get_solo()
+    if not (event_settings.drive_enabled and event_settings.drive_folder_id):
+        return redirect("upload")
+
+    if request.method == "POST":
+        if "skip" in request.POST:
+            return redirect("upload")
+        form = ShareDriveForm(request.POST)
+        if form.is_valid():
+            email = form.cleaned_data["email"].strip()
+            if email:
+                user = _get_user_identity(request)
+                if user:
+                    try:
+                        drive_service.share_folder_with_email(event_settings.drive_folder_id, email)
+                    except drive_service.DriveError as exc:
+                        logger.warning("Could not share Drive folder with %s: %s", email, exc)
+                        messages.error(request, "Could not share the Drive folder, please try again.")
+                        return render(request, "photos/share_drive.html", {"form": form, "pseudo": pseudo})
+                    else:
+                        user.email = email
+                        user.drive_shared = True
+                        user.save(update_fields=["email", "drive_shared"])
+            return redirect("upload")
+    else:
+        form = ShareDriveForm()
+    return render(request, "photos/share_drive.html", {"form": form, "pseudo": pseudo})
 
 
 def upload_view(request):
@@ -70,12 +111,20 @@ def upload_view(request):
         images = request.FILES.getlist("images")
         if images:
             channel_layer = get_channel_layer()
+            event_settings = EventSettings.get_solo()
             for image in images:
                 photo = Photo.objects.create(username=pseudo, image=image)
                 async_to_sync(channel_layer.group_send)(
                     "tv_updates",
                     {"type": "photo.uploaded", "photo": _photo_payload(photo)},
                 )
+                if event_settings.drive_enabled and event_settings.drive_folder_id:
+                    try:
+                        drive_service.upload_photo(
+                            event_settings.drive_folder_id, photo.image.path, photo.filename
+                        )
+                    except drive_service.DriveError as exc:
+                        logger.warning("Could not upload photo %s to Drive: %s", photo.id, exc)
             return redirect(f"{reverse('upload')}?uploaded=1")
         messages.error(request, "Please choose at least one photo.")
     just_uploaded = request.GET.get("uploaded") == "1"

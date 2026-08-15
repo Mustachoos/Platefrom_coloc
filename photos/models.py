@@ -37,6 +37,8 @@ class Photo(models.Model):
 class UserIdentity(models.Model):
     pseudo = models.CharField(max_length=50, unique=True)
     session_key = models.CharField(max_length=40, unique=True)
+    email = models.EmailField(blank=True)
+    drive_shared = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
@@ -68,6 +70,45 @@ class SlideshowSettings(models.Model):
 
     def __str__(self):
         return f"Slideshow interval: {self.interval_seconds}s"
+
+    @classmethod
+    def get_solo(cls):
+        obj, _ = cls.objects.get_or_create(pk=1)
+        return obj
+
+
+def default_drive_folder_name():
+    return timezone.localtime().strftime("%d/%m/%Y")
+
+
+class EventSettings(models.Model):
+    """Per-event toggles and config. Singleton, like SlideshowSettings.
+
+    Meant to grow into the home for other optional features (chat,
+    whiteboard, ...) alongside drive_enabled, following the same on/off +
+    config pattern.
+    """
+
+    drive_enabled = models.BooleanField(
+        default=False,
+        help_text="When on, uploaded photos are also copied to a Google Drive folder, "
+        "and guests are offered to share that folder to their email.",
+    )
+    drive_folder_name = models.CharField(
+        max_length=200,
+        default=default_drive_folder_name,
+        help_text="Name of the Drive folder for this event. Reused if it already exists "
+        "under the configured root folder; created otherwise.",
+    )
+    drive_folder_id = models.CharField(max_length=100, blank=True)
+    drive_folder_url = models.URLField(blank=True)
+
+    class Meta:
+        verbose_name = "Event settings"
+        verbose_name_plural = "Event settings"
+
+    def __str__(self):
+        return f"Event settings (drive {'on' if self.drive_enabled else 'off'})"
 
     @classmethod
     def get_solo(cls):

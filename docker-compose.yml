@@ -19,6 +19,7 @@ services:
     volumes:
       - .:/app
       - ./data/media:/app/data/media
+      - ./credentials:/app/credentials:ro
     ports:
       - "8000:8000"
     environment:
@@ -27,7 +28,10 @@ services:
       DJANGO_DB_PASSWORD: coloc
       DJANGO_DB_HOST: db
       DJANGO_DB_PORT: "5432"
-      QR_HOST_IP: "192.168.1.13"
+      QR_HOST_IP: "10.66.197.188"
+      GOOGLE_OAUTH_CLIENT_SECRET_FILE: "/app/credentials/client_secret.json"
+      GOOGLE_OAUTH_TOKEN_FILE: "/app/credentials/token.json"
+      GOOGLE_DRIVE_ROOT_FOLDER_ID: "1XJVdF79oe8rNhTrX2ZCPQo40JXslCxWV"
     depends_on:
       db:
         condition: service_healthy
