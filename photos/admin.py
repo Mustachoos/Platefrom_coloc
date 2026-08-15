@@ -37,7 +37,7 @@ class LikeAdmin(admin.ModelAdmin):
 
 @admin.register(EventSettings)
 class EventSettingsAdmin(admin.ModelAdmin):
-    list_display = ("drive_enabled", "drive_folder_name", "drive_folder_id")
+    list_display = ("drive_enabled", "drive_folder_name", "drive_folder_id", "likes_enabled")
     readonly_fields = ("drive_folder_id", "drive_folder_url")
 
     def has_add_permission(self, request):
@@ -50,12 +50,8 @@ class EventSettingsAdmin(admin.ModelAdmin):
         super().save_model(request, obj, form, change)
         if not obj.drive_enabled:
             return
-        try:
-            folder_id, folder_url = drive_service.get_or_create_event_folder(obj.drive_folder_name)
-        except drive_service.DriveError as exc:
-            self.message_user(request, f"Google Drive folder not connected: {exc}", level="error")
-            return
-        EventSettings.objects.filter(pk=obj.pk).update(
-            drive_folder_id=folder_id, drive_folder_url=folder_url
-        )
-        self.message_user(request, f"Drive folder '{obj.drive_folder_name}' connected: {folder_url}")
+        ok, message = drive_service.connect_event_folder(obj)
+        if ok:
+            self.message_user(request, f"Drive folder '{obj.drive_folder_name}' connected: {message}")
+        else:
+            self.message_user(request, f"Google Drive folder not connected: {message}", level="error")

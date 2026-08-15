@@ -16,4 +16,6 @@ urlpatterns = [
     path("gallery/", views.gallery_view, name="gallery"),
     path("api/settings/", views.slideshow_settings_api, name="slideshow-settings-api"),
     path("qr/upload.png", views.upload_qr_code, name="upload-qr-code"),
+    path("dashboard/", views.dashboard_view, name="dashboard"),
+    path("dashboard/photos/<int:photo_id>/delete/", views.dashboard_delete_photo, name="dashboard-delete-photo"),
 ]

@@ -102,6 +102,10 @@ class EventSettings(models.Model):
     )
     drive_folder_id = models.CharField(max_length=100, blank=True)
     drive_folder_url = models.URLField(blank=True)
+    likes_enabled = models.BooleanField(
+        default=True,
+        help_text="When off, the heart/like button is hidden and the TV leaderboard is hidden.",
+    )
 
     class Meta:
         verbose_name = "Event settings"

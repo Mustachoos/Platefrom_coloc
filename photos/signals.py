@@ -3,7 +3,7 @@ from channels.layers import get_channel_layer
 from django.db.models.signals import post_delete, post_save
 from django.dispatch import receiver
 
-from .models import Photo, SlideshowSettings
+from .models import EventSettings, Photo, SlideshowSettings
 
 
 @receiver(post_delete, sender=Photo)
@@ -25,4 +25,13 @@ def notify_tv_of_interval_change(sender, instance, **kwargs):
     async_to_sync(channel_layer.group_send)(
         "tv_updates",
         {"type": "settings.changed", "interval_seconds": instance.interval_seconds},
+    )
+
+
+@receiver(post_save, sender=EventSettings)
+def notify_tv_of_likes_setting(sender, instance, **kwargs):
+    channel_layer = get_channel_layer()
+    async_to_sync(channel_layer.group_send)(
+        "tv_updates",
+        {"type": "likes.setting", "enabled": instance.likes_enabled},
     )

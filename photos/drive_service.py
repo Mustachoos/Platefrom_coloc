@@ -117,6 +117,25 @@ def upload_photo(folder_id, file_path, filename):
         raise DriveError(f"Could not upload '{filename}' to Drive: {exc}") from exc
 
 
+def connect_event_folder(event_settings):
+    """Create/find the Drive folder for this EventSettings and persist the
+    result. Returns (ok, message) — message is the folder url on success,
+    an error string otherwise. Shared by the Django admin and the dashboard."""
+    try:
+        folder_id, folder_url = get_or_create_event_folder(event_settings.drive_folder_name)
+    except DriveError as exc:
+        return False, str(exc)
+
+    from .models import EventSettings
+
+    EventSettings.objects.filter(pk=event_settings.pk).update(
+        drive_folder_id=folder_id, drive_folder_url=folder_url
+    )
+    event_settings.drive_folder_id = folder_id
+    event_settings.drive_folder_url = folder_url
+    return True, folder_url
+
+
 def share_folder_with_email(folder_id, email):
     service = _get_service()
     try:

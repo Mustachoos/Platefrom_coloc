@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Event dashboard</title>
+  {% load static %}
+  <link rel="stylesheet" href="{% static 'photos/site.css' %}">
+  <style>
+    body{margin:16px;max-width:1100px}
+    .panel{background:#fff;border-radius:14px;border:1px solid #edf2f7;padding:18px 20px;margin-bottom:20px;box-shadow:0 8px 20px rgba(31,52,72,0.06)}
+    .panel h2{margin:0 0 14px;font-size:1.15rem}
+    table{width:100%;border-collapse:collapse}
+    th,td{text-align:left;padding:8px 10px;border-bottom:1px solid #edf2f7;font-size:0.92rem}
+    th{color:var(--soft);font-weight:700}
+    .empty{color:var(--soft);font-style:italic}
+    .photos-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px}
+    .photo-card{border:1px solid #edf2f7;border-radius:10px;padding:8px;background:#fff}
+    .photo-card img{width:100%;height:110px;object-fit:cover;border-radius:6px;display:block}
+    .photo-card .meta{font-size:0.8rem;color:var(--soft);margin:6px 0}
+    .feature-row{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:12px 0;border-bottom:1px solid #edf2f7}
+    .feature-row:last-child{border-bottom:none}
+    .feature-name{font-weight:700}
+    .feature-status{font-size:0.85rem;color:var(--soft);margin-top:2px}
+    .status-badge{display:inline-block;padding:3px 10px;border-radius:999px;font-size:0.78rem;font-weight:700;margin-left:8px}
+    .status-on{background:#dff7e8;color:#166534}
+    .status-off{background:#f1f5f9;color:#556575}
+    .drive-link{color:#0f766e;font-weight:700;text-decoration:none}
+  </style>
+</head>
+<body>
+  <h1>Event dashboard</h1>
+  <p class="as-user">Signed in as staff. <a class="tv-link" href="{% url 'admin:index' %}">Django admin</a></p>
+
+  {% if messages %}
+  <div class="messages">
+    {% for message in messages %}
+    <div class="message {{ message.tags }}">{{ message }}</div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <div class="panel">
+    <h2>Optional features</h2>
+    <div class="feature-row">
+      <div>
+        <div class="feature-name">Google Drive backup <span class="status-badge {% if event_settings.drive_enabled %}status-on{% else %}status-off{% endif %}">{% if event_settings.drive_enabled %}ON{% else %}OFF{% endif %}</span></div>
+        <div class="feature-status">
+          {% if event_settings.drive_enabled and event_settings.drive_folder_url %}
+            Uploaded photos are copied to <a class="drive-link" href="{{ event_settings.drive_folder_url }}" target="_blank" rel="noopener">{{ event_settings.drive_folder_name }}</a>
+          {% elif event_settings.drive_enabled %}
+            Enabled, but the folder isn't connected yet.
+          {% else %}
+            Photos stay local only; the pseudo-to-email sharing step is skipped.
+          {% endif %}
+        </div>
+      </div>
+      <form method="post">
+        {% csrf_token %}
+        <button type="submit" name="toggle_drive" class="btn secondary small">{% if event_settings.drive_enabled %}Turn off{% else %}Turn on{% endif %}</button>
+      </form>
+    </div>
+
+    <div class="feature-row">
+      <div>
+        <div class="feature-name">Photo likes <span class="status-badge {% if event_settings.likes_enabled %}status-on{% else %}status-off{% endif %}">{% if event_settings.likes_enabled %}ON{% else %}OFF{% endif %}</span></div>
+        <div class="feature-status">Controls the heart button on the gallery and the top-liked leaderboard on the TV screen.</div>
+      </div>
+      <form method="post">
+        {% csrf_token %}
+        <button type="submit" name="toggle_likes" class="btn secondary small">{% if event_settings.likes_enabled %}Turn off{% else %}Turn on{% endif %}</button>
+      </form>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2>Guests ({{ identities|length }})</h2>
+    {% if identities %}
+    <table>
+      <thead><tr><th>Pseudo</th><th>Email</th><th>Drive shared</th><th>Joined</th></tr></thead>
+      <tbody>
+        {% for identity in identities %}
+        <tr>
+          <td>{{ identity.pseudo }}</td>
+          <td>{{ identity.email|default:"—" }}</td>
+          <td>{{ identity.drive_shared|yesno:"Yes,No" }}</td>
+          <td>{{ identity.created_at }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <p class="empty">No guest has joined yet.</p>
+    {% endif %}
+  </div>
+
+  <div class="panel">
+    <h2>Photos ({{ photos|length }})</h2>
+    {% if photos %}
+    <div class="photos-grid">
+      {% for photo in photos %}
+      <div class="photo-card">
+        <img src="{{ photo.image.url }}" alt="{{ photo.filename }}">
+        <div class="meta">{{ photo.username }} · {{ photo.uploaded_at|date:"d/m H:i" }}</div>
+        <form method="post" action="{% url 'dashboard-delete-photo' photo.id %}">
+          {% csrf_token %}
+          <button type="submit" class="btn delete small">Delete</button>
+        </form>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <p class="empty">No photo uploaded yet.</p>
+    {% endif %}
+  </div>
+</body>
+</html>

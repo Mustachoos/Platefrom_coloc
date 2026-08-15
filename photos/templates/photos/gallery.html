@@ -12,11 +12,12 @@
     .card{background:#fff;border-radius:10px;padding:8px;border:1px solid #edf2f7}
     .meta{display:flex;justify-content:space-between;align-items:center;margin-top:8px}
     .like-btn{background:#fff;color:#556575;border:1px solid #556575;padding:6px 10px;border-radius:8px;cursor:pointer}
+    .like-count-static{color:#556575;font-weight:700}
   </style>
 </head>
 <body>
   <h1>All photos</h1>
-  <p>Click the heart to like a photo.</p>
+  {% if likes_enabled %}<p>Click the heart to like a photo.</p>{% endif %}
   <div class="grid">
     {% for p in photos %}
     <div class="card" data-id="{{ p.id }}">
@@ -27,7 +28,11 @@
           <div style="font-size:0.85rem;color:#556575">{{ p.uploaded_at }}</div>
         </div>
         <div>
+          {% if likes_enabled %}
           <button class="like-btn">♥ <span class="count">{{ p.likes_count }}</span></button>
+          {% else %}
+          <span class="like-count-static">♥ {{ p.likes_count }}</span>
+          {% endif %}
         </div>
       </div>
     </div>
@@ -54,6 +59,7 @@ function updateCard(card, data){
 
 document.querySelectorAll('.card').forEach(card=>{
   const btn = card.querySelector('.like-btn');
+  if (!btn) return;
   btn.addEventListener('click', ()=>{
     const id = card.dataset.id;
     fetch(`/api/photos/${id}/like/`, {

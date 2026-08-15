@@ -6,6 +6,7 @@ import qrcode
 from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
 from django.contrib import messages
+from django.contrib.admin.views.decorators import staff_member_required
 from django.db import IntegrityError
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
@@ -165,6 +166,8 @@ def photo_list_api(request):
 def like_toggle_api(request, photo_id):
     if request.method != "POST":
         return JsonResponse({"error": "POST required"}, status=405)
+    if not EventSettings.get_solo().likes_enabled:
+        return JsonResponse({"error": "likes are disabled"}, status=403)
     user = _get_user_identity(request)
     if not user:
         return JsonResponse({"error": "identity required"}, status=403)
@@ -188,12 +191,14 @@ def gallery_view(request):
     user = _get_user_identity(request)
     photos = Photo.objects.order_by("-uploaded_at")
     payloads = [_photo_payload(photo, user=user) for photo in photos]
-    return render(request, "photos/gallery.html", {"photos": payloads})
+    likes_enabled = EventSettings.get_solo().likes_enabled
+    return render(request, "photos/gallery.html", {"photos": payloads, "likes_enabled": likes_enabled})
 
 
 def slideshow_settings_api(request):
-    settings_obj = SlideshowSettings.get_solo()
-    return JsonResponse({"interval_seconds": settings_obj.interval_seconds})
+    slideshow = SlideshowSettings.get_solo()
+    likes_enabled = EventSettings.get_solo().likes_enabled
+    return JsonResponse({"interval_seconds": slideshow.interval_seconds, "likes_enabled": likes_enabled})
 
 
 def upload_qr_code(request):
@@ -214,3 +219,43 @@ def upload_qr_code(request):
     buffer = io.BytesIO()
     image.save(buffer, format="PNG")
     return HttpResponse(buffer.getvalue(), content_type="image/png")
+
+
+@staff_member_required
+def dashboard_view(request):
+    event_settings = EventSettings.get_solo()
+
+    if request.method == "POST":
+        if "toggle_drive" in request.POST:
+            event_settings.drive_enabled = not event_settings.drive_enabled
+            event_settings.save(update_fields=["drive_enabled"])
+            if event_settings.drive_enabled:
+                ok, message = drive_service.connect_event_folder(event_settings)
+                if ok:
+                    messages.success(request, f"Google Drive connected: {event_settings.drive_folder_name}")
+                else:
+                    messages.error(request, f"Google Drive not connected: {message}")
+            else:
+                messages.success(request, "Google Drive integration turned off.")
+        elif "toggle_likes" in request.POST:
+            event_settings.likes_enabled = not event_settings.likes_enabled
+            event_settings.save(update_fields=["likes_enabled"])
+            messages.success(request, "Likes " + ("enabled." if event_settings.likes_enabled else "disabled."))
+        return redirect("dashboard")
+
+    identities = UserIdentity.objects.order_by("-created_at")
+    photos = Photo.objects.order_by("-uploaded_at")
+    return render(
+        request,
+        "photos/dashboard.html",
+        {"identities": identities, "photos": photos, "event_settings": event_settings},
+    )
+
+
+@staff_member_required
+def dashboard_delete_photo(request, photo_id):
+    if request.method == "POST":
+        photo = get_object_or_404(Photo, id=photo_id)
+        photo.delete()
+        messages.success(request, "Photo deleted.")
+    return redirect("dashboard")

@@ -14,6 +14,13 @@
   let intervalMs = DEFAULT_INTERVAL_MS;
   let overlayTimeoutId = null;
   let overlayAnimateTimeoutId = null;
+  const leaderboardEl = document.getElementById("leaderboard");
+
+  function applyLikesEnabled(enabled) {
+    if (!leaderboardEl) return;
+    leaderboardEl.style.display = enabled ? "" : "none";
+    if (enabled) renderLeaderboard();
+  }
   // queue for sequential new-photo overlays
   const overlayQueue = [];
   let overlayShowing = false;
@@ -139,6 +146,8 @@
           photos[idx].likes_count = data.likes_count;
         }
         renderLeaderboard();
+      } else if (data.event === "likes_setting") {
+        applyLikesEnabled(data.enabled);
       }
     };
     ws.onclose = () => {
@@ -154,7 +163,7 @@
     intervalMs = settingsData.interval_seconds * 1000;
     showCurrent();
     restartTimer();
-    renderLeaderboard();
+    applyLikesEnabled(settingsData.likes_enabled);
   });
 
   function renderLeaderboard() {
