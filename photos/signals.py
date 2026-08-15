@@ -6,7 +6,7 @@ from django.db.models.signals import post_delete, post_save
 from django.dispatch import receiver
 
 from . import drive_service
-from .models import EventSettings, Photo, SlideshowSettings
+from .models import Event, Photo, SlideshowSettings
 
 logger = logging.getLogger(__name__)
 
@@ -16,6 +16,12 @@ def remove_file_and_notify_tv(sender, instance, **kwargs):
     photo_url = instance.image.url if instance.image else None
     if instance.image:
         instance.image.delete(save=False)
+
+    # Set by event_service when clearing an outgoing event's local cache on
+    # switch: the Drive copy is the whole point of keeping it, and the TV
+    # is about to get a full-reload event.switched broadcast anyway.
+    if getattr(instance, "_local_cache_clear", False):
+        return
 
     if instance.drive_file_id:
         try:
@@ -39,8 +45,10 @@ def notify_tv_of_interval_change(sender, instance, **kwargs):
     )
 
 
-@receiver(post_save, sender=EventSettings)
+@receiver(post_save, sender=Event)
 def notify_tv_of_likes_setting(sender, instance, **kwargs):
+    if not instance.is_active:
+        return
     channel_layer = get_channel_layer()
     async_to_sync(channel_layer.group_send)(
         "tv_updates",

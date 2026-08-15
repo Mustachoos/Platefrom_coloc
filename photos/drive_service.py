@@ -10,6 +10,7 @@ writes a refresh token to GOOGLE_OAUTH_TOKEN_FILE. Every call in this module
 reuses/refreshes that token; nothing here opens a browser.
 """
 
+import io
 import logging
 import os
 import re
@@ -18,7 +19,7 @@ from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
-from googleapiclient.http import MediaFileUpload
+from googleapiclient.http import MediaFileUpload, MediaIoBaseDownload
 
 logger = logging.getLogger(__name__)
 
@@ -129,6 +130,51 @@ def trash_file(file_id):
         raise DriveError(f"Could not remove Drive file '{file_id}': {exc}") from exc
 
 
+def folder_exists(folder_id):
+    """Live check (never cached) that folder_id still exists, isn't trashed,
+    and is actually a folder. Any failure — not found, trashed, wrong type,
+    auth/network issue — is reported simply as False; callers only need to
+    know 'is it safe to rely on this folder right now'."""
+    if not folder_id:
+        return False
+    try:
+        service = _get_service()
+        folder = service.files().get(fileId=folder_id, fields="id, trashed, mimeType").execute()
+    except (HttpError, DriveError):
+        return False
+    return not folder.get("trashed", False) and folder.get("mimeType") == FOLDER_MIME_TYPE
+
+
+def list_folder_files(folder_id):
+    """List non-trashed, non-folder files directly inside folder_id."""
+    service = _get_service()
+    try:
+        results = service.files().list(
+            q=f"'{folder_id}' in parents and trashed = false and mimeType != '{FOLDER_MIME_TYPE}'",
+            fields="files(id, name)",
+            spaces="drive",
+            pageSize=1000,
+        ).execute()
+        return results.get("files", [])
+    except HttpError as exc:
+        raise DriveError(f"Could not list Drive folder '{folder_id}': {exc}") from exc
+
+
+def download_file(file_id):
+    """Return the raw bytes of a Drive file."""
+    service = _get_service()
+    try:
+        request = service.files().get_media(fileId=file_id)
+        buffer = io.BytesIO()
+        downloader = MediaIoBaseDownload(buffer, request)
+        done = False
+        while not done:
+            _, done = downloader.next_chunk()
+        return buffer.getvalue()
+    except HttpError as exc:
+        raise DriveError(f"Could not download Drive file '{file_id}': {exc}") from exc
+
+
 _FOLDER_URL_RE = re.compile(r"/folders/([a-zA-Z0-9_-]+)")
 
 
@@ -139,31 +185,12 @@ def extract_folder_id(value):
     return match.group(1) if match else value
 
 
-def connect_event_folder(event_settings):
-    """Create/find the Drive folder for this EventSettings and persist the
-    result. Returns (ok, message) — message is the folder url on success,
-    an error string otherwise. Shared by the Django admin and the dashboard."""
-    try:
-        folder_id, folder_url = get_or_create_event_folder(event_settings.drive_folder_name)
-    except DriveError as exc:
-        return False, str(exc)
-
-    from .models import EventSettings
-
-    EventSettings.objects.filter(pk=event_settings.pk).update(
-        drive_folder_id=folder_id, drive_folder_url=folder_url
-    )
-    event_settings.drive_folder_id = folder_id
-    event_settings.drive_folder_url = folder_url
-    return True, folder_url
-
-
-def connect_existing_folder(event_settings):
-    """Point event_settings at an existing Drive folder, identified by the
-    (possibly pasted-as-URL) id currently in drive_folder_id. Verifies the
-    folder exists and refreshes drive_folder_name/url to match it.
-    Returns (ok, message)."""
-    folder_id = extract_folder_id(event_settings.drive_folder_id)
+def connect_existing_folder(event):
+    """Point `event` at an existing Drive folder, identified by the (possibly
+    pasted-as-URL) id currently in event.drive_folder_id. Verifies the folder
+    exists and refreshes drive_folder_url to match it. The event's own name
+    is left untouched. Returns (ok, message)."""
+    folder_id = extract_folder_id(event.drive_folder_id)
     service = _get_service()
     try:
         folder = service.files().get(
@@ -175,27 +202,44 @@ def connect_existing_folder(event_settings):
     if folder.get("mimeType") != FOLDER_MIME_TYPE:
         return False, f"'{folder_id}' is not a Drive folder."
 
-    from .models import EventSettings
+    from .models import Event
 
-    EventSettings.objects.filter(pk=event_settings.pk).update(
-        drive_folder_id=folder["id"],
-        drive_folder_name=folder["name"],
-        drive_folder_url=folder.get("webViewLink", ""),
+    Event.objects.filter(pk=event.pk).update(
+        drive_folder_id=folder["id"], drive_folder_url=folder.get("webViewLink", "")
     )
-    event_settings.drive_folder_id = folder["id"]
-    event_settings.drive_folder_name = folder["name"]
-    event_settings.drive_folder_url = folder.get("webViewLink", "")
+    event.drive_folder_id = folder["id"]
+    event.drive_folder_url = folder.get("webViewLink", "")
     return True, folder.get("webViewLink", "")
 
 
-def share_folder_with_email(folder_id, email):
+def share_folder_with_email(folder_id, email, notify=True):
+    """Grant reader access on folder_id to email. Returns the new permission's id,
+    needed later to revoke that specific grant."""
     service = _get_service()
     try:
-        service.permissions().create(
+        permission = service.permissions().create(
             fileId=folder_id,
             body={"type": "user", "role": "reader", "emailAddress": email},
-            sendNotificationEmail=True,
+            sendNotificationEmail=notify,
             fields="id",
         ).execute()
+        return permission["id"]
     except HttpError as exc:
         raise DriveError(f"Could not share Drive folder with {email}: {exc}") from exc
+
+
+def revoke_folder_permission(folder_id, permission_id):
+    service = _get_service()
+    try:
+        service.permissions().delete(fileId=folder_id, permissionId=permission_id).execute()
+    except HttpError as exc:
+        raise DriveError(f"Could not revoke access (permission {permission_id}): {exc}") from exc
+
+
+def test_share(folder_id, email):
+    """Verify sharing folder_id with email would succeed, without leaving real
+    access behind: grants then immediately revokes a silent permission. Used
+    when the master sharing toggle is off, so guests still get instant
+    feedback if their email can't be granted access."""
+    permission_id = share_folder_with_email(folder_id, email, notify=False)
+    revoke_folder_permission(folder_id, permission_id)

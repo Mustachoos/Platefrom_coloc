@@ -15,7 +15,52 @@ def photo_upload_path(instance, filename):
     return f"photos/{username_part}_{time_part}_{unique_id}{ext}"
 
 
+def default_drive_folder_name():
+    return timezone.localtime().strftime("%d/%m/%Y")
+
+
+class Event(models.Model):
+    """One 'soirée': its own guests, photos, and Drive folder.
+
+    Exactly one Event has is_active=True at a time — that's the one the
+    public pages (upload, tv, gallery) read and write. A Drive folder is
+    mandatory: switching the active event always backs up/restores through
+    it, so local photos are never at risk of being silently lost.
+    """
+
+    name = models.CharField(max_length=200, unique=True, default=default_drive_folder_name)
+    is_active = models.BooleanField(default=False)
+    drive_folder_id = models.CharField(
+        max_length=200,
+        blank=True,
+        help_text="Auto-filled from the event name above. To point to a different/existing "
+        "folder instead, paste its Drive URL or ID here directly.",
+    )
+    drive_folder_url = models.URLField(blank=True)
+    drive_sharing_enabled = models.BooleanField(
+        default=False,
+        help_text="When on, every guest with an email on file is added as a reader on the "
+        "Drive folder. When off, that access is revoked for all of them.",
+    )
+    likes_enabled = models.BooleanField(
+        default=True,
+        help_text="When off, the heart/like button is hidden and the TV leaderboard is hidden.",
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return self.name
+
+    @classmethod
+    def get_active(cls):
+        return cls.objects.filter(is_active=True).first()
+
+
 class Photo(models.Model):
+    event = models.ForeignKey(Event, related_name="photos", on_delete=models.CASCADE)
     username = models.CharField(max_length=50)
     image = models.ImageField(upload_to=photo_upload_path)
     uploaded_at = models.DateTimeField(auto_now_add=True)
@@ -30,20 +75,26 @@ class Photo(models.Model):
     @property
     def filename(self):
         return os.path.basename(self.image.name)
+
     @property
     def likes_count(self):
         return self.likes.count()
 
 
 class UserIdentity(models.Model):
-    pseudo = models.CharField(max_length=50, unique=True)
-    session_key = models.CharField(max_length=40, unique=True)
+    event = models.ForeignKey(Event, related_name="identities", on_delete=models.CASCADE)
+    pseudo = models.CharField(max_length=50)
+    session_key = models.CharField(max_length=40)
     email = models.EmailField(blank=True)
     drive_shared = models.BooleanField(default=False)
+    drive_permission_id = models.CharField(max_length=100, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
+    class Meta:
+        unique_together = (("event", "pseudo"), ("event", "session_key"))
+
     def __str__(self):
-        return self.pseudo
+        return f"{self.pseudo} ({self.event.name})"
 
 
 class Like(models.Model):
@@ -71,54 +122,6 @@ class SlideshowSettings(models.Model):
 
     def __str__(self):
         return f"Slideshow interval: {self.interval_seconds}s"
-
-    @classmethod
-    def get_solo(cls):
-        obj, _ = cls.objects.get_or_create(pk=1)
-        return obj
-
-
-def default_drive_folder_name():
-    return timezone.localtime().strftime("%d/%m/%Y")
-
-
-class EventSettings(models.Model):
-    """Per-event toggles and config. Singleton, like SlideshowSettings.
-
-    Meant to grow into the home for other optional features (chat,
-    whiteboard, ...) alongside drive_enabled, following the same on/off +
-    config pattern.
-    """
-
-    drive_enabled = models.BooleanField(
-        default=False,
-        help_text="When on, uploaded photos are also copied to a Google Drive folder, "
-        "and guests are offered to share that folder to their email.",
-    )
-    drive_folder_name = models.CharField(
-        max_length=200,
-        default=default_drive_folder_name,
-        help_text="Name of the Drive folder for this event. Reused if it already exists "
-        "under the configured root folder; created otherwise.",
-    )
-    drive_folder_id = models.CharField(
-        max_length=200,
-        blank=True,
-        help_text="Auto-filled from the folder name above. To point to a different/existing "
-        "folder instead, paste its Drive URL or ID here directly.",
-    )
-    drive_folder_url = models.URLField(blank=True)
-    likes_enabled = models.BooleanField(
-        default=True,
-        help_text="When off, the heart/like button is hidden and the TV leaderboard is hidden.",
-    )
-
-    class Meta:
-        verbose_name = "Event settings"
-        verbose_name_plural = "Event settings"
-
-    def __str__(self):
-        return f"Event settings (drive {'on' if self.drive_enabled else 'off'})"
 
     @classmethod
     def get_solo(cls):

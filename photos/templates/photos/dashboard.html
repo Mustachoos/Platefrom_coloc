@@ -20,17 +20,36 @@
     .photo-card .meta{font-size:0.8rem;color:var(--soft);margin:6px 0}
     .feature-row{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:12px 0;border-bottom:1px solid #edf2f7}
     .feature-row:last-child{border-bottom:none}
+    .feature-row.stacked{flex-direction:column;align-items:stretch}
+    .feature-row-top{display:flex;align-items:center;justify-content:space-between;gap:16px}
     .feature-name{font-weight:700}
     .feature-status{font-size:0.85rem;color:var(--soft);margin-top:2px}
     .status-badge{display:inline-block;padding:3px 10px;border-radius:999px;font-size:0.78rem;font-weight:700;margin-left:8px}
     .status-on{background:#dff7e8;color:#166534}
     .status-off{background:#f1f5f9;color:#556575}
     .drive-link{color:#0f766e;font-weight:700;text-decoration:none}
+    .drive-folder-form{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end;margin-top:12px;padding-top:12px;border-top:1px dashed #edf2f7}
+    .drive-folder-form .field{display:flex;flex-direction:column;gap:4px;flex:1;min-width:220px}
+    .drive-folder-form label{font-size:0.78rem;font-weight:700;color:var(--soft)}
+    .drive-folder-form input{padding:8px 10px;border-radius:8px;border:1px solid #d4e4ee;font-size:0.9rem;width:100%}
+    .switch{position:relative;display:inline-block;width:46px;height:26px;min-width:46px;border-radius:999px;border:0;padding:0;cursor:pointer;background:#cbd5e1;transition:background .2s ease}
+    .switch:hover{transform:none;box-shadow:none}
+    .switch.on{background:linear-gradient(90deg,var(--btn-1),var(--btn-2))}
+    .switch .knob{position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,0.35);transition:transform .2s ease}
+    .switch.on .knob{transform:translateX(20px)}
+    .events-list{display:grid;gap:8px;margin-bottom:14px}
+    .event-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 12px;border:1px solid #edf2f7;border-radius:10px}
+    .event-row .name{font-weight:700}
+    .create-event-form{display:flex;gap:10px;align-items:flex-end;padding-top:12px;border-top:1px dashed #edf2f7}
+    .create-event-form .field{display:flex;flex-direction:column;gap:4px;flex:1}
+    .create-event-form label{font-size:0.78rem;font-weight:700;color:var(--soft)}
+    .create-event-form input{padding:8px 10px;border-radius:8px;border:1px solid #d4e4ee;font-size:0.9rem;width:100%}
+    .drive-error{color:#9a3412;font-weight:700}
   </style>
 </head>
 <body>
   <h1>Event dashboard</h1>
-  <p class="as-user">Signed in as staff. <a class="tv-link" href="{% url 'admin:index' %}">Django admin</a></p>
+  <p class="as-user">Signed in as staff.</p>
 
   {% if messages %}
   <div class="messages">
@@ -41,37 +60,104 @@
   {% endif %}
 
   <div class="panel">
-    <h2>Optional features</h2>
-    <div class="feature-row">
-      <div>
-        <div class="feature-name">Google Drive backup <span class="status-badge {% if event_settings.drive_enabled %}status-on{% else %}status-off{% endif %}">{% if event_settings.drive_enabled %}ON{% else %}OFF{% endif %}</span></div>
-        <div class="feature-status">
-          {% if event_settings.drive_enabled and event_settings.drive_folder_url %}
-            Uploaded photos are copied to <a class="drive-link" href="{{ event_settings.drive_folder_url }}" target="_blank" rel="noopener">{{ event_settings.drive_folder_name }}</a>
-          {% elif event_settings.drive_enabled %}
-            Enabled, but the folder isn't connected yet.
-          {% else %}
-            Photos stay local only; the pseudo-to-email sharing step is skipped.
-          {% endif %}
+    <h2>Events</h2>
+    <div class="events-list">
+      {% for event in events %}
+      <div class="event-row">
+        <div>
+          <span class="name">{{ event.name }}</span>
+          {% if event.is_active %}<span class="status-badge status-on">ACTIVE</span>{% endif %}
+          <div class="feature-status">
+            {% if event.drive_status == "ok" %}
+              {% if event.drive_count is not None %}{{ event.drive_count }} photo(s) on Drive{% else %}Drive unreachable — photo count unknown{% endif %}
+              · <a class="drive-link" href="{{ event.drive_folder_url }}" target="_blank" rel="noopener">Drive folder</a>
+            {% elif event.drive_status == "broken" %}
+              <span class="drive-error">⚠ Drive folder is deleted or unreachable</span>{% if event.is_active %} — fix it below{% endif %}
+            {% else %}
+              no Drive folder connected
+            {% endif %}
+          </div>
         </div>
+        {% if not event.is_active %}
+        <a class="btn secondary small" href="{% url 'event-switch' event.id %}">Switch to this event</a>
+        {% endif %}
       </div>
-      <form method="post">
+      {% empty %}
+      <p class="empty">No event created yet.</p>
+      {% endfor %}
+    </div>
+
+    <form method="post" action="{% url 'create-event' %}" class="create-event-form">
+      {% csrf_token %}
+      <div class="field">
+        <label for="name">New event name</label>
+        <input type="text" id="name" name="name" placeholder="e.g. 15/08/2026" required>
+      </div>
+      <button type="submit" class="btn secondary small">Create &amp; connect Drive folder</button>
+    </form>
+  </div>
+
+  {% if active_event %}
+  <div class="panel">
+    <h2>Optional features — "{{ active_event.name }}"</h2>
+    <div class="feature-row stacked">
+      <div class="feature-row-top">
+        <div>
+          <div class="feature-name">Google Drive backup</div>
+          <div class="feature-status">
+            {% if active_event.drive_status == "broken" %}
+              <span class="drive-error">⚠ This event's Drive folder is deleted or unreachable. New photos can't be backed up until it's fixed.</span>
+            {% elif active_event.drive_folder_url %}
+              Uploaded photos are copied to <a class="drive-link" href="{{ active_event.drive_folder_url }}" target="_blank" rel="noopener">{{ active_event.name }}</a>
+            {% else %}
+              Not connected yet — every event needs a Drive folder before it can be activated.
+            {% endif %}
+          </div>
+        </div>
+        {% if active_event.drive_status == "broken" %}
+        <form method="post">
+          {% csrf_token %}
+          <button type="submit" name="recreate_drive_folder" class="btn primary small">Create a new Drive folder</button>
+        </form>
+        {% endif %}
+      </div>
+
+      <form method="post" class="drive-folder-form">
         {% csrf_token %}
-        <button type="submit" name="toggle_drive" class="btn secondary small">{% if event_settings.drive_enabled %}Turn off{% else %}Turn on{% endif %}</button>
+        <div class="field">
+          <label for="drive_folder_id_or_url">Repoint to a different existing folder (ID or Drive URL)</label>
+          <input type="text" id="drive_folder_id_or_url" name="drive_folder_id_or_url" placeholder="https://drive.google.com/drive/folders/...">
+        </div>
+        <button type="submit" name="update_drive_folder" class="btn secondary small">Update folder</button>
       </form>
     </div>
 
     <div class="feature-row">
       <div>
-        <div class="feature-name">Photo likes <span class="status-badge {% if event_settings.likes_enabled %}status-on{% else %}status-off{% endif %}">{% if event_settings.likes_enabled %}ON{% else %}OFF{% endif %}</span></div>
+        <div class="feature-name">Share Drive with participants <span class="status-badge {% if active_event.drive_sharing_enabled %}status-on{% else %}status-off{% endif %}">{% if active_event.drive_sharing_enabled %}ON{% else %}OFF{% endif %}</span></div>
+        <div class="feature-status">
+          {{ guests_shared }} of {{ guests_with_email }} guest(s) with an email currently have read access.
+          {% if active_event.drive_sharing_enabled %}Turning this off revokes everyone's access.{% else %}Turning this on grants read access to every guest with an email on file.{% endif %}
+        </div>
+      </div>
+      <form method="post">
+        {% csrf_token %}
+        <button type="submit" name="toggle_drive_sharing" class="switch {% if active_event.drive_sharing_enabled %}on{% endif %}" aria-pressed="{{ active_event.drive_sharing_enabled|yesno:'true,false' }}" aria-label="Toggle Drive sharing with participants"><span class="knob"></span></button>
+      </form>
+    </div>
+
+    <div class="feature-row">
+      <div>
+        <div class="feature-name">Photo likes <span class="status-badge {% if active_event.likes_enabled %}status-on{% else %}status-off{% endif %}">{% if active_event.likes_enabled %}ON{% else %}OFF{% endif %}</span></div>
         <div class="feature-status">Controls the heart button on the gallery and the top-liked leaderboard on the TV screen.</div>
       </div>
       <form method="post">
         {% csrf_token %}
-        <button type="submit" name="toggle_likes" class="btn secondary small">{% if event_settings.likes_enabled %}Turn off{% else %}Turn on{% endif %}</button>
+        <button type="submit" name="toggle_likes" class="switch {% if active_event.likes_enabled %}on{% endif %}" aria-pressed="{{ active_event.likes_enabled|yesno:'true,false' }}" aria-label="Toggle photo likes"><span class="knob"></span></button>
       </form>
     </div>
   </div>
+  {% endif %}
 
   <div class="panel">
     <h2>Guests ({{ identities|length }})</h2>
@@ -90,7 +176,7 @@
       </tbody>
     </table>
     {% else %}
-    <p class="empty">No guest has joined yet.</p>
+    <p class="empty">No guest has joined the active event yet.</p>
     {% endif %}
   </div>
 
@@ -110,7 +196,7 @@
       {% endfor %}
     </div>
     {% else %}
-    <p class="empty">No photo uploaded yet.</p>
+    <p class="empty">No photo uploaded yet for the active event.</p>
     {% endif %}
   </div>
 </body>

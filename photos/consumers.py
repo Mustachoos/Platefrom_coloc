@@ -28,3 +28,6 @@ class PhotosConsumer(WebsocketConsumer):
 
     def likes_setting(self, event):
         self.send(text_data=json.dumps({"event": "likes_setting", "enabled": event["enabled"]}))
+
+    def event_switched(self, event):
+        self.send(text_data=json.dumps({"event": "event_switched"}))

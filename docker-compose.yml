@@ -19,7 +19,7 @@ services:
     volumes:
       - .:/app
       - ./data/media:/app/data/media
-      - ./credentials:/app/credentials:ro
+      - ./credentials:/app/credentials
     ports:
       - "8000:8000"
     environment:

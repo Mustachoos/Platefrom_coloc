@@ -148,6 +148,11 @@
         renderLeaderboard();
       } else if (data.event === "likes_setting") {
         applyLikesEnabled(data.enabled);
+      } else if (data.event === "event_switched") {
+        // The active event changed entirely (different photos, settings) —
+        // simplest correct thing is a full reload rather than trying to
+        // reconcile local state incrementally.
+        location.reload();
       }
     };
     ws.onclose = () => {

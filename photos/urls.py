@@ -18,4 +18,6 @@ urlpatterns = [
     path("qr/upload.png", views.upload_qr_code, name="upload-qr-code"),
     path("dashboard/", views.dashboard_view, name="dashboard"),
     path("dashboard/photos/<int:photo_id>/delete/", views.dashboard_delete_photo, name="dashboard-delete-photo"),
+    path("dashboard/events/create/", views.create_event_view, name="create-event"),
+    path("dashboard/events/<int:event_id>/switch/", views.event_switch_view, name="event-switch"),
 ]

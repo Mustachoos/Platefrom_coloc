@@ -5,16 +5,17 @@ Application web permettant aux invités d'un événement (soirée, anniversaire,
 ## Présentation générale
 
 ### Comment ça marche
-1. L'écran TV affiche la page `/tv/` avec un QR code visible en permanence.
-2. Un invité scanne le QR code avec son téléphone et arrive sur la page de choix de pseudo.
-3. Il choisit un pseudo (mémorisé pour sa session, pas de mot de passe). Si l'intégration Google Drive est activée, il peut ensuite laisser son email pour recevoir un accès en lecture au dossier Drive de la soirée (étape facultative, "Skip" possible).
-4. Il accède à la page d'upload et envoie une ou plusieurs photos, prises sur le moment ou depuis sa galerie.
-5. Les photos apparaissent en direct (WebSocket) sur l'écran TV : une bannière "Nouvelle photo de X" s'affiche, puis la photo rejoint le diaporama tournant. Si l'intégration Drive est active, chaque photo est aussi copiée dans le dossier Drive de la soirée.
-6. Les invités peuvent aussi parcourir une galerie de toutes les photos et les liker ; le top 3 des photos les plus aimées s'affiche en direct sur l'écran TV.
-7. Chacun peut consulter "Mes photos" et supprimer ses propres envois.
-8. Un administrateur peut ajuster la vitesse du diaporama et activer/connecter l'intégration Google Drive depuis l'admin Django, avec effet immédiat.
+1. Depuis le dashboard staff, un administrateur crée ou active l'**évènement** ("soirée") du moment — chaque évènement a ses propres invités, photos et dossier Drive, et un seul est actif à la fois.
+2. L'écran TV affiche la page `/tv/` avec un QR code visible en permanence, pointant vers l'évènement actif.
+3. Un invité scanne le QR code avec son téléphone et arrive sur la page de choix de pseudo.
+4. Il choisit un pseudo (mémorisé pour sa session, pas de mot de passe), puis peut laisser son email pour recevoir un accès en lecture au dossier Drive de la soirée (étape facultative, "Skip" possible).
+5. Il accède à la page d'upload et envoie une ou plusieurs photos, prises sur le moment ou depuis sa galerie.
+6. Les photos apparaissent en direct (WebSocket) sur l'écran TV : une bannière "Nouvelle photo de X" s'affiche, puis la photo rejoint le diaporama tournant. Chaque photo est aussi copiée dans le dossier Drive de l'évènement actif.
+7. Les invités peuvent aussi parcourir une galerie de toutes les photos et les liker ; le top 3 des photos les plus aimées s'affiche en direct sur l'écran TV.
+8. Chacun peut consulter "Mes photos" et supprimer ses propres envois.
+9. Un administrateur peut ajuster la vitesse du diaporama, gérer les évènements et piloter les fonctionnalités optionnelles (Drive, partage, likes) depuis le dashboard staff, avec effet immédiat.
 
-> À terme, l'objectif est une app entièrement personnalisable par soirée depuis l'admin : activer ou non le classement des likes, l'intégration Drive, un chat, un tableau blanc collectif, etc. Le classement des likes et l'intégration Drive sont les premières briques de ce système de fonctionnalités optionnelles.
+> À terme, l'objectif est une app entièrement personnalisable par évènement depuis le dashboard : activer ou non le classement des likes, l'intégration Drive, un chat, un tableau blanc collectif, etc. Le classement des likes et l'intégration Drive sont les premières briques de ce système de fonctionnalités optionnelles ; la gestion multi-évènements en est le second étage.
 
 ### Stack technique
 - **Backend** : Django 5 + Django Channels (WebSocket temps réel), servi en ASGI par Daphne
@@ -39,7 +40,7 @@ docker compose exec web python manage.py createsuperuser
 
 ### Configuration de l'intégration Google Drive (optionnelle)
 
-L'app peut copier chaque photo envoyée vers un dossier Google Drive dédié à la soirée, et proposer aux invités de partager ce dossier vers leur email. L'authentification se fait via **OAuth2 sur un compte Google personnel** (et non un compte de service) : un compte de service Google n'a aucun quota de stockage Drive propre en dehors d'un Drive Partagé, une fonctionnalité réservée aux comptes Google Workspace payants — inutilisable avec un Gmail personnel gratuit.
+L'app copie chaque photo envoyée vers un dossier Google Drive dédié à l'évènement actif, et propose aux invités de partager ce dossier vers leur email. Un dossier Drive est **obligatoire** pour qu'un évènement puisse être créé/activé : c'est ce qui permet de changer d'évènement sans jamais risquer de perdre des photos (voir la section Dashboard). L'authentification se fait via **OAuth2 sur un compte Google personnel** (et non un compte de service) : un compte de service Google n'a aucun quota de stockage Drive propre en dehors d'un Drive Partagé, une fonctionnalité réservée aux comptes Google Workspace payants — inutilisable avec un Gmail personnel gratuit.
 
 Mise en place, à faire une seule fois :
 
@@ -53,31 +54,33 @@ Mise en place, à faire une seule fois :
    pip install -r requirements.txt
    GOOGLE_OAUTH_CLIENT_SECRET_FILE=credentials/client_secret.json GOOGLE_OAUTH_TOKEN_FILE=credentials/token.json python manage.py google_drive_auth
    ```
-   Cela ouvre un navigateur pour valider l'accès avec votre compte Google, puis écrit le refresh token dans `credentials/token.json`. Ce fichier est ensuite monté (lecture seule) dans le conteneur `web` et réutilisé/rafraîchi automatiquement — plus jamais besoin de repasser par cette étape sauf révocation manuelle de l'accès.
-7. Dans l'admin Django (`/admin/`), ouvrir **Event settings**, cocher **Drive enabled**, ajuster si besoin le nom du dossier (par défaut la date du jour au format `DD/MM/YYYY`), puis enregistrer : le dossier est créé (ou retrouvé s'il existe déjà) automatiquement dans Drive.
+   Cela ouvre un navigateur pour valider l'accès avec votre compte Google, puis écrit le refresh token dans `credentials/token.json`. Ce fichier est ensuite monté dans le conteneur `web` et réutilisé/rafraîchi automatiquement (le fichier doit rester accessible en écriture au conteneur, le token d'accès expirant environ toutes les heures) — plus jamais besoin de repasser par cette étape sauf révocation manuelle de l'accès.
+7. Depuis le dashboard staff (`/dashboard/`), créer un évènement (nom au choix) : son dossier Drive est automatiquement créé (ou retrouvé s'il existe déjà sous le dossier racine) au moment de la création.
 
 ## Spécification fonctionnelle
 
 ### Acteurs
-- **Invité** : aucun compte, identifié uniquement par un pseudo lié à sa session navigateur
-- **Écran TV** : client passif qui affiche le flux de photos en direct
-- **Administrateur** : compte staff Django, avec deux points d'entrée — l'admin Django (`/admin/`, complet) et le dashboard staff (`/dashboard/`, vue opérationnelle simplifiée)
+- **Invité** : aucun compte, identifié uniquement par un pseudo lié à sa session navigateur **et à l'évènement actif au moment où il rejoint** — un même pseudo peut être repris à un évènement suivant
+- **Écran TV** : client passif qui affiche le flux de photos de l'évènement actif en direct
+- **Administrateur** : compte staff Django ; pilote les évènements et la soirée depuis le dashboard staff (`/dashboard/`) — `/admin/` reste accessible mais n'est plus l'interface utilisée au quotidien
 
 ### Parcours et écrans
 
 #### 1. Choix du pseudo — `/pseudo/`
+- Si aucun évènement n'est actif, affiche une page d'attente ("No event is live right now") au lieu du formulaire
 - Formulaire à un champ (nom, 50 caractères max)
-- Le pseudo doit être unique, insensible à la casse ; en cas de conflit, message d'erreur invitant à en choisir un autre
-- Une fois validé, le pseudo est associé à la session Django (table `UserIdentity`, liée à la clé de session) et stocké en session
-- Si un pseudo est déjà en session, redirection automatique vers `/upload/`
+- Le pseudo doit être unique **au sein de l'évènement actif**, insensible à la casse ; en cas de conflit, message d'erreur invitant à en choisir un autre — le même pseudo redevient disponible dès qu'on change d'évènement
+- Une fois validé, le pseudo est associé à la session Django et à l'évènement actif (table `UserIdentity`, liée à la clé de session + à l'évènement) et stocké en session
+- Si la session correspond déjà à une identité de l'évènement actif, redirection automatique vers `/upload/` (une session d'un évènement précédent, désormais inactif, ne compte pas : le pseudo est redemandé)
 - Lien direct vers la galerie sans avoir à choisir de pseudo
-- Une fois le pseudo validé : redirection vers `/upload/`, sauf si l'intégration Drive est activée et connectée, auquel cas redirection vers l'étape de partage Drive (`/pseudo/share-drive/`)
+- Une fois le pseudo validé, redirection systématique vers l'étape de partage Drive (`/pseudo/share-drive/`) — chaque évènement a toujours un dossier Drive connecté
 
-#### 2. Partage du dossier Drive — `/pseudo/share-drive/` (si Drive activé)
-- N'apparaît que si l'intégration Google Drive est activée dans l'admin et qu'un dossier a bien été connecté
+#### 2. Partage du dossier Drive — `/pseudo/share-drive/`
 - Propose un champ email facultatif, avec un bouton "Share with me" et un bouton "Skip"
-- Si un email est renseigné : ajoute cette adresse en lecteur ("reader") sur le dossier Drive de la soirée via l'API, avec notification par email envoyée par Google ; l'email est aussi enregistré sur l'identité de session (`UserIdentity.email`)
-- En cas d'échec de l'appel à l'API Drive, un message d'erreur s'affiche et l'invité peut réessayer ou continuer sans partage
+- Si un email est renseigné, l'email est toujours enregistré (`UserIdentity.email`), mais l'accès réel au dossier dépend du toggle global "Share Drive with participants" (voir dashboard) :
+  - Si le partage est actuellement **activé** : l'adresse est immédiatement ajoutée en lecteur ("reader") sur le dossier Drive, avec notification par email envoyée par Google ; l'ID de la permission créée est conservé (`UserIdentity.drive_permission_id`) pour pouvoir la révoquer plus tard
+  - Si le partage est actuellement **désactivé** : un test silencieux (octroi puis révocation immédiate d'une permission, sans notification) vérifie que cette adresse pourra bien être partagée le moment venu, sans lui laisser d'accès réel ; l'invité est averti en cas d'échec
+- En cas d'échec de l'appel à l'API Drive (partage ou test), un message d'erreur s'affiche et l'invité peut réessayer ou continuer sans partage
 - Dans tous les cas (email renseigné, skip, ou après un partage réussi), redirection vers `/upload/`
 
 #### 3. Upload de photos — `/upload/`
@@ -96,7 +99,7 @@ Mise en place, à faire une seule fois :
 #### 4. Mes photos — `/my-photos/`
 - Accessible uniquement avec un pseudo en session
 - Liste, par ordre chronologique, des photos envoyées par l'utilisateur courant
-- Suppression possible photo par photo ; un utilisateur ne peut supprimer que ses propres photos (vérifié par pseudo + identifiant, pas seulement par session)
+- Suppression possible photo par photo ; un utilisateur ne peut supprimer que ses propres photos de son évènement (vérifié par évènement + pseudo + identifiant, pas seulement par session)
 - La suppression efface le fichier physique, retire la photo de la corbeille Drive si elle y avait été copiée, et notifie l'écran TV en direct pour retirer la photo du diaporama en cours
 
 #### 5. Écran TV — `/tv/`
@@ -121,27 +124,36 @@ Mise en place, à faire une seule fois :
 - Si la variable d'environnement `QR_HOST_IP` est définie, cette IP est utilisée à la place du nom d'hôte de la requête — utile pour garantir que le QR code reste scannable sur le réseau local du logement même quand le serveur tourne dans un conteneur
 
 #### 8. Administration — `/admin/`
-- Interface Django Admin standard
-- **Photos** : consultation, filtrage par pseudo
-- **Identités** (`UserIdentity`) : pseudo, email (si renseigné pour le partage Drive), statut de partage, session, date de création
+- Interface Django Admin standard, gardée comme filet de secours technique — l'usage courant se fait depuis le dashboard staff (section suivante)
+- **Photos** : consultation, filtrage par évènement/pseudo
+- **Identités** (`UserIdentity`) : évènement, pseudo, email (si renseigné pour le partage Drive), statut de partage, session, date de création
 - **Likes** : consultation des likes posés
-- **Réglages du diaporama** (`SlideshowSettings`, entrée unique) : intervalle d'affichage en secondes (de 0,1 à 100) ; toute modification est propagée en direct à l'écran TV sans rechargement
-- **Réglages de l'événement** (`EventSettings`, entrée unique) :
-  - `drive_enabled` : active/désactive toute l'intégration Google Drive (upload des photos + étape de partage par email)
-  - `drive_folder_name` : nom du dossier Drive de la soirée, pré-rempli à la date du jour (`DD/MM/YYYY`) mais modifiable ; en changer et enregistrer recherche (ou crée) le dossier correspondant sous le dossier racine configuré
-  - `drive_folder_id` : éditable — pour pointer vers un dossier Drive déjà existant (ailleurs que sous le dossier racine, ou déjà rempli manuellement), on peut y coller directement son ID ou son URL complète (`https://drive.google.com/drive/folders/<ID>`) ; à l'enregistrement, l'app vérifie que le dossier existe et resynchronise `drive_folder_name`/`drive_folder_url` en conséquence. Coller un ID a priorité sur un changement de nom si les deux sont modifiés en même temps
-  - `drive_folder_url` : lien vers le dossier, en lecture seule, déduit automatiquement
-  - En cas d'échec (credentials manquants/expirés, dossier introuvable...), un message d'erreur explicite s'affiche dans l'admin sans bloquer l'enregistrement des autres réglages
-  - `likes_enabled` : active/désactive le bouton like sur la galerie, l'API de like et le classement affiché sur l'écran TV
+- **Réglages du diaporama** (`SlideshowSettings`, entrée unique, global à tous les évènements) : intervalle d'affichage en secondes (de 0,1 à 100) ; toute modification est propagée en direct à l'écran TV sans rechargement
+- **Events** (`Event`, une entrée par évènement) : nom, actif ou non, dossier Drive (ID en lecture seule), partage Drive, likes — les mêmes réglages que dans le dashboard, exposés ici en secours
 
 #### 9. Dashboard staff — `/dashboard/`
-- Page dédiée, distincte de `/admin/`, réservée au staff (`staff_member_required` ; redirection vers l'écran de connexion Django si non authentifié)
-- **Invités** : tableau pseudo / email / statut de partage Drive / date d'arrivée
-- **Photos** : grille de toutes les photos avec suppression en un clic (n'importe quelle photo, pas seulement les siennes — contrairement à "Mes photos") ; comme pour une suppression par son auteur, la photo est aussi retirée (mise à la corbeille) du dossier Drive si elle y avait été copiée
-- **Fonctionnalités annexes** : boutons on/off pour l'intégration Google Drive et pour les likes
-  - Activer Drive depuis ce panneau déclenche la même logique de création/connexion du dossier que dans l'admin Django
-  - Le changement d'état des likes est propagé en direct à l'écran TV via WebSocket (masque/affiche le classement sans rechargement)
-- Pensé comme le futur point d'entrée unique pour piloter les fonctionnalités optionnelles d'une soirée (voir l'objectif à terme en introduction)
+Page dédiée, distincte de `/admin/`, réservée au staff (`staff_member_required` ; redirection vers l'écran de connexion Django si non authentifié). C'est le point d'entrée unique pour piloter une soirée.
+
+- **Events** : liste de tous les évènements créés (nom, badge ACTIVE, nombre de photos, lien vers le dossier Drive), avec un bouton "Switch to this event" pour chacun des évènements inactifs
+  - **Créer un évènement** : formulaire avec un champ nom ; à la création, son dossier Drive est immédiatement recherché/créé sous le dossier racine configuré (voir `GOOGLE_DRIVE_ROOT_FOLDER_ID`) — un évènement ne peut pas être activé sans dossier Drive connecté
+  - Si un évènement du même nom existe déjà, il est réutilisé plutôt que dupliqué
+- **Changer d'évènement actif — confirmation obligatoire** (`/dashboard/events/<id>/switch/`) : avant tout changement, une page de confirmation dédiée s'affiche pour éviter toute perte de données :
+  - Elle affiche le nombre de photos de l'évènement actif actuel et combien d'entre elles ne sont **pas encore** sauvegardées sur Drive
+  - Si des photos ne sont pas sauvegardées, le bouton de confirmation est masqué : seul un bouton "Back up the N missing photo(s) now" est proposé, qui relance l'upload Drive des photos manquantes puis réaffiche la page
+  - Le changement ne devient possible qu'une fois toutes les photos de l'évènement sortant confirmées sur Drive (bandeau vert "Safe to switch")
+  - Au moment du switch effectif : le stockage local ne conserve jamais que l'évènement actif. Les photos de l'évènement sortant sont **supprimées du disque et de la base** (sans danger, puisqu'elles viennent d'être confirmées sur Drive), puis toutes les photos du dossier Drive du nouvel évènement actif sont **téléchargées** localement (pseudo reconstitué depuis le nom de fichier `<pseudo>_<HHhMM>_<uuid>.<ext>`) — Drive fait office de stockage durable, le local n'est qu'un cache de travail pour l'évènement en cours
+  - Rien n'est jamais perdu : la suppression locale d'un évènement sortant n'est déclenchée qu'une fois toutes ses photos confirmées sur Drive (cf. garde-fou ci-dessus), et sa copie Drive n'est elle-même jamais touchée par ce nettoyage local
+  - Une fois le switch effectué, tous les écrans TV connectés sont notifiés via WebSocket et rechargent automatiquement la page pour refléter le nouvel évènement
+- **Réglages de l'évènement actif** :
+  - **Google Drive backup** : toujours actif pour l'évènement actif (obligatoire) ; affiche le lien vers le dossier connecté
+  - **Repoint vers un dossier existant** : formulaire pour coller l'ID ou l'URL d'un dossier Drive déjà existant à la place de celui associé par défaut ; l'app vérifie que le dossier existe avant de l'adopter (le nom de l'évènement, lui, ne change pas)
+  - **Share Drive with participants** (toggle) :
+    - Activé → tous les invités de l'évènement actif ayant renseigné un email sont ajoutés en lecteur sur le dossier (ceux qui l'ont déjà ne sont pas re-partagés)
+    - Désactivé → l'accès est révoqué pour tous les invités actuellement partagés (`drive_permission_id` utilisé pour cibler la permission exacte à supprimer, puis effacé)
+    - Le panneau affiche le nombre d'invités actuellement partagés sur le nombre total ayant un email
+  - **Photo likes** (toggle) : le changement d'état est propagé en direct à l'écran TV via WebSocket (masque/affiche le classement sans rechargement)
+- **Invités** : tableau pseudo / email / statut de partage Drive / date d'arrivée, filtré sur l'évènement actif uniquement
+- **Photos** : grille des photos de l'évènement actif avec suppression en un clic (n'importe quelle photo, pas seulement les siennes — contrairement à "Mes photos") ; comme pour une suppression par son auteur, la photo est aussi retirée (mise à la corbeille) du dossier Drive si elle y avait été copiée
 
 ### API interne (JSON)
 | Endpoint | Méthode | Description |
@@ -157,21 +169,23 @@ Un unique canal WebSocket diffuse à tous les écrans TV connectés :
 - `settings` — l'intervalle du diaporama a changé
 - `liked` — le nombre de likes d'une photo a changé
 - `likes_setting` — les likes ont été activés/désactivés (affiche ou masque le classement sur l'écran TV)
+- `event_switched` — l'évènement actif a changé ; l'écran TV recharge entièrement la page pour repartir sur les nouvelles photos/réglages
 
 ### Modèle de données
-- **Photo** — pseudo de l'auteur, fichier image, date d'envoi
-- **UserIdentity** — pseudo (unique), clé de session (unique), email (facultatif, pour le partage Drive), statut de partage Drive, date de création ; fait office d'identité légère sans mot de passe
+- **Event** — un évènement/soirée : nom (unique), statut actif (un seul à la fois), dossier Drive (ID/lien), partage Drive actif ou non, likes activés ou non, date de création. Racine de tout le reste : photos et invités lui appartiennent
+- **Photo** — évènement, pseudo de l'auteur, fichier image, date d'envoi, ID du fichier Drive correspondant si copié (`drive_file_id`)
+- **UserIdentity** — évènement, pseudo et clé de session (uniques *au sein de l'évènement*, pas globalement), email (facultatif, pour le partage Drive), statut de partage Drive et ID de la permission Drive accordée (`drive_permission_id`, pour pouvoir la révoquer précisément), date de création ; fait office d'identité légère sans mot de passe
 - **Like** — association Photo ↔ UserIdentity (unique par paire), date
-- **SlideshowSettings** — entrée unique, intervalle d'affichage du diaporama en secondes
-- **EventSettings** — entrée unique, réglages de l'intégration Drive (activée ou non, nom/ID/lien du dossier de la soirée) ; vocation à accueillir les futurs interrupteurs de fonctionnalités (chat, tableau blanc...)
+- **SlideshowSettings** — entrée unique, intervalle d'affichage du diaporama en secondes, partagé par tous les évènements
 
 ### Règles métier notables
-- Aucune authentification classique : l'identité d'un invité repose entièrement sur sa session navigateur associée à un pseudo unique
-- Un pseudo ne peut être utilisé que par une seule session à la fois
-- Une photo ne peut être supprimée que par son auteur (vérifié par pseudo + identifiant de la photo)
-- Toute mutation (envoi, suppression, like, changement de réglage) est répercutée en temps réel sur l'écran TV via WebSocket, sans rechargement de page
+- Aucune authentification classique : l'identité d'un invité repose entièrement sur sa session navigateur associée à un pseudo, unique au sein de l'évènement auquel il a rejoint
+- Un pseudo ne peut être utilisé que par une seule session à la fois, mais redevient disponible dans un autre évènement
+- Une photo ne peut être supprimée que par son auteur, dans son évènement (vérifié par évènement + pseudo + identifiant de la photo)
+- Toute mutation (envoi, suppression, like, changement de réglage, changement d'évènement) est répercutée en temps réel sur l'écran TV via WebSocket, sans rechargement de page manuel
 - En mode développement (`DEBUG=True`, valeur par défaut du projet), les fichiers médias sont servis directement par Django
-- L'intégration Drive est entièrement optionnelle et best-effort : si elle échoue (credentials expirés, quota, réseau...), l'upload local de la photo et l'affichage sur l'écran TV ne sont jamais bloqués ; seule l'étape de partage par email affiche un message d'erreur visible par l'invité, puisqu'elle est une action explicite de sa part
+- Un évènement ne peut pas être créé ou activé sans dossier Drive connecté ; l'upload d'une photo vers Drive est best-effort (une erreur ponctuelle est journalisée côté serveur sans jamais bloquer l'upload local ni l'affichage sur l'écran TV), mais le passage à un autre évènement est lui explicitement bloqué tant que toutes les photos de l'évènement sortant ne sont pas confirmées sur Drive — c'est le garde-fou contre la perte de données
+- Changer d'évènement supprime les photos locales de l'évènement sortant (déjà confirmées sur Drive au préalable) et retélécharge celles de l'évènement entrant depuis son propre dossier Drive : le stockage local ne reflète toujours que l'évènement actif, Drive reste la copie durable de tous les évènements
 
 ## Configuration (variables d'environnement)
 | Variable | Rôle | Valeur par défaut |
