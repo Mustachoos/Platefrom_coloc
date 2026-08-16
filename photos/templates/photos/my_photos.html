@@ -7,9 +7,9 @@
   {% load static %}
   <link rel="stylesheet" href="{% static 'photos/site.css' %}">
 </head>
-<body class="has-footer-nav">
+<body class="has-footer-nav has-page-header">
+  {% include "photos/_page_header.html" with page_icon="photo" page_title="My photos" %}
   <main class="card">
-    <h1>My photos</h1>
     <p class="as-user">Signed in as <strong>{{ pseudo }}</strong></p>
     {% include "photos/_photos_segmented.html" %}
 
@@ -24,19 +24,17 @@
     {% if photos %}
     <div class="grid">
       {% for photo in photos %}
-      <div class="card" data-id="{{ photo.id }}">
+      <div class="photo-card" data-id="{{ photo.id }}">
         <img class="thumb" src="{{ photo.image.url }}" alt="{{ photo.filename }}">
         <div class="meta">
           <div>
-            <div style="font-weight:700">{{ photo.filename }}</div>
-            <div style="font-size:0.85rem;color:var(--soft)">{{ photo.uploaded_at }}</div>
+            <div class="username">{{ photo.filename }}</div>
+            <div class="timestamp">{{ photo.uploaded_at }}</div>
           </div>
-          <div style="display:flex;gap:8px;align-items:center">
-            <form method="post" action="{% url 'delete-own-photo' photo.id %}" style="display:inline">
-              {% csrf_token %}
-              <button type="submit" class="btn delete">Delete</button>
-            </form>
-          </div>
+          <form method="post" action="{% url 'delete-own-photo' photo.id %}">
+            {% csrf_token %}
+            <button type="submit" class="btn delete small">Delete</button>
+          </form>
         </div>
       </div>
       {% endfor %}

@@ -40,7 +40,8 @@ h1{margin:0;font-size:clamp(1.3rem,3.5vw,2.3rem);line-height:1.1}
 .as-user{color:var(--soft);margin-top:10px;margin-bottom:16px}
 
 /* Buttons */
-button, .btn{border:0;border-radius:13px;padding:12px 20px;font-size:1rem;font-weight:700;color:#fff;cursor:pointer;transition:transform .15s ease,box-shadow .2s ease}
+button, .btn{border:0;border-radius:13px;padding:12px 20px;font-size:1rem;font-weight:700;color:#fff;cursor:pointer;transition:transform .15s ease,box-shadow .2s ease;display:inline-flex;align-items:center;justify-content:center;gap:8px}
+button svg, .btn svg{flex:none}
 button:hover,.btn:hover{transform:translateY(-1px)}
 button.primary{background:linear-gradient(90deg,var(--btn-1),var(--btn-2));box-shadow:0 8px 18px rgba(22,163,74,0.3)}
 .btn.back{background:linear-gradient(90deg,var(--btn-1),var(--btn-2));box-shadow:0 8px 18px rgba(22,163,74,0.3)}
@@ -94,11 +95,25 @@ input[type=file],input[type=text],input[type=email],textarea,select{width:100%;p
   40%,60%{transform:translateX(8px)}
 }
 
-/* Gallery grid */
+/* Gallery grid — .photo-card is the compact per-photo tile, deliberately a
+   different class from the big page-level .card above (same name would
+   collide: two very different visual treatments — full padding/shadow/blur
+   vs a small flat tile — sharing one selector was the bug that made the
+   gallery/dashboard grids inconsistent). */
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px}
-.card .thumb{width:100%;height:160px;object-fit:cover;border-radius:8px}
-/* Card metadata layout */
-.card .meta{display:flex;justify-content:space-between;align-items:center;margin-top:8px}
+.photo-card{background:#fff;border:1px solid #edf2f7;border-radius:10px;padding:8px}
+.photo-card .thumb{width:100%;height:160px;object-fit:cover;border-radius:8px;display:block}
+.photo-card .meta{display:flex;justify-content:space-between;align-items:center;margin-top:8px}
+.photo-card .username{font-weight:700}
+.photo-card .timestamp{font-size:0.85rem;color:var(--soft)}
+
+/* Like button (gallery grid) */
+.like-btn{background:#fff;color:#556575;border:1px solid #556575;padding:6px 10px;border-radius:8px;cursor:pointer;display:inline-flex;align-items:center;gap:4px}
+.like-btn.liked{color:#ff6b6b;border-color:#ff6b6b}
+.like-btn .heart-filled{display:none}
+.like-btn.liked .heart-filled{display:inline-flex}
+.like-btn.liked .heart-outline{display:none}
+.like-count-static{color:#556575;font-weight:700;display:inline-flex;align-items:center;gap:4px}
 
 /* Upload button state when files are selected */
 .btn.ready{background:linear-gradient(90deg,var(--accent),#06b6d4);box-shadow:0 8px 18px rgba(14,165,233,0.2)}
@@ -106,6 +121,23 @@ input[type=file],input[type=text],input[type=email],textarea,select{width:100%;p
 
 /* Ensure media responds */
 @media(max-width:760px){body{padding:12px}.card{width:100%;padding:16px}}
+
+/* Persistent top header (guest pages): mirrors .footer-nav's fixed-position
+   technique below for the same reason — position:fixed anchors to the true
+   visible viewport, avoiding the Android height:100%-taller-than-visible
+   trap that flow-positioned bars fall into. Fixed, explicit height (not
+   content-driven) for the same single-source-of-truth reason as
+   .footer-nav's height: whiteboard reads this same 56px into its own
+   --wb-header-h layout math, so change both together. */
+.page-header{position:fixed;top:0;left:0;right:0;box-sizing:border-box;height:56px;display:flex;align-items:center;gap:10px;background:var(--card);border-bottom:1px solid var(--card-border);padding:0 18px;padding-top:env(safe-area-inset-top);z-index:20}
+.page-header-icon{display:flex;color:var(--btn-1)}
+.page-header h1{font-size:1.05rem;margin:0;line-height:1.1}
+/* 56px header + a deliberate 20px breathing gap before content starts.
+   Don't rely on a centered-page's flex centering to fake this gap (it only
+   looks right by accident there, and vanishes on non-centered pages like
+   the gallery) — this is the one real, consistent source of the gap for
+   every page that includes the header. */
+body.has-page-header{padding-top:calc(56px + 20px + env(safe-area-inset-top))}
 
 /* Persistent bottom nav (guest pages: Upload / Photos / Whiteboard).
    position:fixed is deliberate, not incidental: mobile browsers anchor
@@ -120,6 +152,7 @@ input[type=file],input[type=text],input[type=email],textarea,select{width:100%;p
    change this value and that one together. */
 .footer-nav{position:fixed;left:0;right:0;bottom:0;box-sizing:border-box;height:56px;display:flex;align-items:center;justify-content:center;gap:28px;background:var(--card);border-top:1px solid var(--card-border);padding:0 16px;padding-bottom:env(safe-area-inset-bottom);z-index:20}
 .footer-nav-item{display:flex;flex-direction:column;align-items:center;gap:2px;color:var(--soft);text-decoration:none;font-size:0.78rem;font-weight:700;padding:4px 14px;border-radius:8px}
+.footer-nav-item svg{display:block;stroke:currentColor}
 .footer-nav-item.active{color:var(--btn-1)}
 body.has-footer-nav{padding-bottom:calc(56px + env(safe-area-inset-bottom))}
 

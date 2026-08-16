@@ -12,6 +12,7 @@
   <meta name="theme-color" content="#ffffff">
   <title>Whiteboard</title>
   {% load static %}
+  {% load icons %}
   <link rel="stylesheet" href="{% static 'photos/site.css' %}">
   <style>
     /* Every piece of chrome here is position:fixed, anchored with explicit
@@ -24,7 +25,10 @@
        viewport instead, so they don't have that problem. */
     html,body{margin:0;padding:0;overflow:hidden;background:linear-gradient(140deg,var(--bg-1),var(--bg-2))}
     body{
-      --wb-header-h: 52px;
+      /* Matches .page-header's real height (site.css) — that partial is
+         shared across every guest page, so this stays in sync with it the
+         same way --wb-footer-nav-h stays in sync with .footer-nav. */
+      --wb-header-h: 56px;
       --wb-footer-nav-h: 56px;
       --wb-fab-gap: 16px;
       --wb-fab-tools-size: 48px;
@@ -32,11 +36,6 @@
       --wb-fab-stack-gap: 12px;
       --wb-frame-inset: 10px;
     }
-
-    .wb-header{position:fixed;top:0;left:0;right:0;z-index:10;box-sizing:border-box;height:calc(var(--wb-header-h) + env(safe-area-inset-top));display:flex;align-items:center;justify-content:space-between;gap:12px;padding:0 14px;padding-top:env(safe-area-inset-top);background:var(--card)}
-    .wb-header h1{font-size:0.98rem;margin:0}
-    .wb-header .as-user{margin:0;font-size:0.78rem;color:var(--soft)}
-    .wb-header a.tv-link{margin:0;font-size:0.85rem}
 
     /* No bottom action bar anymore — the upload/tools controls are floating
        buttons over the canvas (see .fab-cluster below), so the canvas only
@@ -63,27 +62,38 @@
     .zoom-controls button{width:38px;height:38px;padding:0;border-radius:10px;background:var(--card);color:var(--ink);border:1px solid var(--card-border);display:flex;align-items:center;justify-content:center;box-shadow:0 6px 16px rgba(0,0,0,0.35)}
     .zoom-controls button:hover{transform:none}
 
-    /* Floating button cluster, bottom-right, above the footer-nav: the
-       primary "save" action and the pen-options trigger, same visual
-       language, nothing spanning the full width of the screen. */
+    /* Floating button pair, bottom-right, above the footer-nav: the primary
+       "save" action (thumb-reachable, always visible) and the trigger for
+       the tools sheet below. Colors reuse the same tokens as every other
+       primary/neutral button in the app (--btn-1/--btn-2 gradient, --card
+       surface) instead of the app-specific dark FAB styling this used to
+       have, so it reads as the same app as Upload/Gallery, not a separate
+       tool bolted on. */
     .fab-cluster{position:fixed;right:16px;bottom:calc(var(--wb-footer-nav-h) + var(--wb-fab-gap) + env(safe-area-inset-bottom));z-index:9;display:flex;flex-direction:column;align-items:center;gap:var(--wb-fab-stack-gap)}
-    .fab{border-radius:50%;background:var(--card);color:var(--ink);border:1px solid var(--card-border);box-shadow:0 8px 20px rgba(0,0,0,0.4);display:flex;align-items:center;justify-content:center;padding:0}
+    .fab{border-radius:50%;background:var(--card);color:var(--ink);border:1px solid var(--card-border);box-shadow:0 10px 24px rgba(31,52,72,0.22);display:flex;align-items:center;justify-content:center;padding:0}
     .fab:hover{transform:none}
     #options-toggle{width:var(--wb-fab-tools-size);height:var(--wb-fab-tools-size)}
     #options-toggle.active{background:linear-gradient(90deg,var(--btn-1),var(--btn-2));color:#fff;border-color:transparent}
-    #upload-btn{width:var(--wb-fab-save-size);height:var(--wb-fab-save-size);background:linear-gradient(90deg,var(--btn-1),var(--btn-2));color:#fff;border-color:transparent;box-shadow:0 8px 20px rgba(22,163,74,0.4);flex-direction:column;gap:0}
+    #upload-btn{width:var(--wb-fab-save-size);height:var(--wb-fab-save-size);background:linear-gradient(90deg,var(--btn-1),var(--btn-2));color:#fff;border-color:transparent;box-shadow:0 10px 24px rgba(22,163,74,0.4);flex-direction:column;gap:0}
     #upload-btn:disabled{opacity:0.55;cursor:not-allowed}
     #upload-btn:disabled:hover{transform:none}
+    #save-icon{display:inline-flex}
     #save-timer{font-size:0.68rem;font-weight:700;line-height:1}
 
-    #upload-status{position:fixed;right:16px;bottom:calc(var(--wb-footer-nav-h) + var(--wb-fab-gap) + var(--wb-fab-save-size) + var(--wb-fab-stack-gap) + var(--wb-fab-tools-size) + var(--wb-fab-stack-gap) + env(safe-area-inset-bottom));background:var(--card);padding:8px 14px;border-radius:999px;font-size:0.82rem;font-weight:700;color:var(--soft);box-shadow:0 6px 16px rgba(0,0,0,0.3);opacity:0;pointer-events:none;transition:opacity .2s ease,transform .2s ease;transform:translateY(4px);white-space:nowrap;z-index:9;max-width:min(70vw,320px);text-align:right}
+    #upload-status{position:fixed;right:16px;bottom:calc(var(--wb-footer-nav-h) + var(--wb-fab-gap) + var(--wb-fab-save-size) + var(--wb-fab-stack-gap) + env(safe-area-inset-bottom));background:var(--card);padding:8px 14px;border-radius:999px;font-size:0.82rem;font-weight:700;color:var(--soft);box-shadow:0 6px 16px rgba(31,52,72,0.2);opacity:0;pointer-events:none;transition:opacity .2s ease,transform .2s ease;transform:translateY(4px);white-space:nowrap;z-index:9;max-width:min(70vw,320px);text-align:right}
     #upload-status.visible{opacity:1;transform:translateY(0)}
 
-    /* Floating card (not a full-width bottom sheet): anchored above the
-       tools button, completely hidden (opacity+scale+pointer-events, no
-       leftover sliver) until opened. */
-    .options-panel{position:fixed;right:16px;bottom:calc(var(--wb-footer-nav-h) + var(--wb-fab-gap) + var(--wb-fab-save-size) + var(--wb-fab-stack-gap) + var(--wb-fab-tools-size) + var(--wb-fab-stack-gap) + env(safe-area-inset-bottom));width:min(88vw,320px);background:var(--card);border-radius:16px;box-shadow:0 16px 40px rgba(0,0,0,0.45);padding:14px;transform-origin:bottom right;transform:scale(.92) translateY(8px);opacity:0;pointer-events:none;transition:transform .18s ease,opacity .18s ease;z-index:8;max-height:min(60vh,480px);overflow-y:auto;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
-    .options-panel.open{transform:scale(1) translateY(0);opacity:1;pointer-events:auto}
+    /* Tools bottom sheet — replaces the old corner-anchored popover.
+       Full-width, slides up from above the footer-nav: bigger touch
+       targets for swatches/sliders and a more standard mobile "tool
+       drawer" pattern than a small floating card pinned to one corner.
+       Still fully collapsible: translateY(100%) + pointer-events:none
+       pushes it entirely off-screen (behind the opaque, higher z-index
+       footer-nav) when closed, same "must disappear completely" guarantee
+       as before, just via a different transform. */
+    .options-panel{position:fixed;left:0;right:0;bottom:calc(var(--wb-footer-nav-h) + env(safe-area-inset-bottom));background:var(--card);border-radius:20px 20px 0 0;box-shadow:0 -12px 32px rgba(31,52,72,0.22);padding:14px 18px calc(14px + env(safe-area-inset-bottom));transform:translateY(100%);pointer-events:none;transition:transform .22s ease;z-index:8;max-height:min(65vh,520px);overflow-y:auto;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+    .options-panel.open{transform:translateY(0);pointer-events:auto}
+    .options-panel .as-user{margin:0 0 10px;font-size:0.85rem}
     .tool-group{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:10px 0;border-bottom:1px solid rgba(0,0,0,0.06)}
     .tool-group:last-child{border-bottom:none}
     .tool-group-label{font-size:0.78rem;font-weight:700;color:var(--soft);min-width:70px}
@@ -108,24 +118,19 @@
     #pen-size-label{font-size:0.85rem;color:var(--soft);min-width:44px}
 
     /* Landscape phones: vertical space is scarce, trim the chrome further.
-       --wb-footer-nav-h is NOT touched here — the shared .footer-nav
-       (site.css) is a fixed 56px on every page, always; changing it only
-       here would silently drift back out of sync with what's actually
-       rendered, which is exactly the bug this fixes. */
+       --wb-footer-nav-h and --wb-header-h are NOT touched here — both the
+       shared .footer-nav and .page-header (site.css) are a fixed 56px on
+       every page, always; changing either only here would silently drift
+       back out of sync with what's actually rendered, which is exactly the
+       bug this fixes. Only the whiteboard-local FAB sizes shrink. */
     @media(max-height:480px) and (orientation:landscape){
-      body{--wb-header-h:40px;--wb-fab-tools-size:40px;--wb-fab-save-size:48px}
-      .wb-header .as-user{display:none}
+      body{--wb-fab-tools-size:40px;--wb-fab-save-size:48px}
       .options-panel{max-height:70vh}
     }
   </style>
 </head>
 <body>
-  <div class="wb-header">
-    <div>
-      <h1>Whiteboard</h1>
-      <p class="as-user">Drawing as <strong>{{ pseudo }}</strong></p>
-    </div>
-  </div>
+  {% include "photos/_page_header.html" with page_icon="palette" page_title="Whiteboard" %}
 
   <div class="wb-stage" id="wb-stage">
     <div class="canvas-viewport" id="canvas-viewport">
@@ -136,38 +141,24 @@
         </div>
       </div>
       <div class="zoom-controls">
-        <button type="button" id="zoom-in-btn" aria-label="Zoom in">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-        </button>
-        <button type="button" id="zoom-out-btn" aria-label="Zoom out">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-        </button>
-        <button type="button" id="zoom-reset-btn" aria-label="Fit to screen">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8v-2a2 2 0 0 1 2 -2h2"></path><path d="M4 16v2a2 2 0 0 0 2 2h2"></path><path d="M16 4h2a2 2 0 0 1 2 2v2"></path><path d="M16 20h2a2 2 0 0 0 2 -2v-2"></path></svg>
-        </button>
+        <button type="button" id="zoom-in-btn" aria-label="Zoom in">{% icon 'zoom-in' size=18 %}</button>
+        <button type="button" id="zoom-out-btn" aria-label="Zoom out">{% icon 'zoom-out' size=18 %}</button>
+        <button type="button" id="zoom-reset-btn" aria-label="Fit to screen">{% icon 'maximize' size=18 %}</button>
       </div>
     </div>
   </div>
 
   <div class="fab-cluster">
     <button type="button" id="upload-btn" class="fab" aria-label="Add to the whiteboard">
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" id="save-icon"><polyline points="4 12 9 17 20 6"></polyline></svg>
+      <span id="save-icon">{% icon 'check' size=20 %}</span>
       <span id="save-timer" style="display:none"></span>
     </button>
-    <button type="button" id="options-toggle" class="fab" aria-label="Pen options">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <line x1="4" y1="7" x2="20" y2="7"></line>
-        <line x1="4" y1="13" x2="20" y2="13"></line>
-        <line x1="4" y1="19" x2="20" y2="19"></line>
-        <circle cx="9" cy="7" r="2.2" fill="currentColor" stroke="none"></circle>
-        <circle cx="16" cy="13" r="2.2" fill="currentColor" stroke="none"></circle>
-        <circle cx="11" cy="19" r="2.2" fill="currentColor" stroke="none"></circle>
-      </svg>
-    </button>
+    <button type="button" id="options-toggle" class="fab" aria-label="Pen options">{% icon 'adjustments-horizontal' size=20 %}</button>
   </div>
   <div id="upload-status"></div>
 
   <div class="options-panel" id="options-panel">
+    <p class="as-user">Drawing as <strong>{{ pseudo }}</strong></p>
     <div class="tool-group">
       <span class="tool-group-label">Mode</span>
       <div class="mode-switch">
@@ -193,10 +184,7 @@
         <input type="range" id="hue-slider" min="0" max="359" value="0" aria-label="Hue">
       </div>
       <div class="hue-preview" id="hue-preview" style="background:#ff0000"></div>
-      <button type="button" id="eyedropper-btn" class="btn secondary small">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 7l6 6"></path><path d="M4 20l4 -1l10 -10a2.121 2.121 0 0 0 -3 -3l-10 10z"></path></svg>
-        Pipette
-      </button>
+      <button type="button" id="eyedropper-btn" class="btn secondary small">{% icon 'color-picker' size=16 %} Pipette</button>
     </div>
 
     <div class="tool-group">
@@ -207,14 +195,8 @@
 
     <div class="tool-group">
       <span class="tool-group-label">Canvas</span>
-      <button type="button" id="pan-btn" class="btn secondary small">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="5 9 2 12 5 15"></polyline><polyline points="9 5 12 2 15 5"></polyline><polyline points="15 19 12 22 9 19"></polyline><polyline points="19 9 22 12 19 15"></polyline><line x1="2" y1="12" x2="22" y2="12"></line><line x1="12" y1="2" x2="12" y2="22"></line></svg>
-        Pan
-      </button>
-      <button type="button" id="clear-btn" class="btn secondary small">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 20h-10.5l-4.21 -4.3a1 1 0 0 1 0 -1.41l10 -10a1 1 0 0 1 1.41 0l5 5a1 1 0 0 1 0 1.41l-9.2 9.3"></path><path d="M18 13.3l-6.3 -6.3"></path></svg>
-        Clear
-      </button>
+      <button type="button" id="pan-btn" class="btn secondary small">{% icon 'hand-move' size=16 %} Pan</button>
+      <button type="button" id="clear-btn" class="btn secondary small">{% icon 'eraser' size=16 %} Clear</button>
     </div>
   </div>
 

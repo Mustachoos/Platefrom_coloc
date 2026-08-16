@@ -5,12 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Upload photos</title>
   {% load static %}
+  {% load icons %}
   <link rel="stylesheet" href="{% static 'photos/site.css' %}">
 </head>
-<body class="centered-page has-footer-nav">
+<body class="centered-page has-footer-nav has-page-header">
+  {% include "photos/_page_header.html" with page_icon="upload" page_title="Upload photos" %}
   <main class="card">
     <div class="upload-top">
-      <h1>Upload photos to the TV</h1>
       <p class="as-user">Uploading as <strong>{{ pseudo }}</strong></p>
 
       {% if messages %}
@@ -36,8 +37,8 @@
         <input type="file" id="images" name="images" accept="image/*" style="display:none">
         <input type="file" id="camera-input" accept="image/*" capture="environment" style="display:none">
         <div class="form-actions">
-          <button type="button" id="choose-btn" class="btn secondary">&#128444;&#65039; Choose a photo</button>
-          <button type="button" id="camera-btn" class="btn secondary">&#128247; Take a photo</button>
+          <button type="button" id="choose-btn" class="btn secondary">{% icon 'photo' size=18 %} Choose a photo</button>
+          <button type="button" id="camera-btn" class="btn secondary">{% icon 'camera' size=18 %} Take a photo</button>
         </div>
       </div>
 
