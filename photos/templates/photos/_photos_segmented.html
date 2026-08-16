@@ -1,0 +1,4 @@
+<div class="segmented">
+  <a href="{% url 'gallery' %}" class="segmented-item{% if request.resolver_match.url_name == 'gallery' %} active{% endif %}">All photos</a>
+  <a href="{% url 'my-photos' %}" class="segmented-item{% if request.resolver_match.url_name == 'my-photos' %} active{% endif %}">My photos</a>
+</div>

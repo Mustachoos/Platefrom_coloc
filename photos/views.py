@@ -11,12 +11,15 @@ from django.db import IntegrityError
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
+from django.utils import timezone
 
-from . import drive_service, event_service
+from . import drive_service, event_service, whiteboard_service
 from .forms import PseudoForm, ShareDriveForm
-from .models import Event, Photo, SlideshowSettings, UserIdentity, Like
+from .models import Event, Like, Photo, SlideshowSettings, UserIdentity, WhiteboardDrawing
 
 logger = logging.getLogger(__name__)
+
+WHITEBOARD_COOLDOWN_SECONDS = 30
 
 
 def _drive_fix_summary(message, uploaded, failed):
@@ -163,11 +166,87 @@ def upload_view(request):
             return redirect(f"{reverse('upload')}?uploaded=1")
         messages.error(request, "Please choose at least one photo.")
     just_uploaded = request.GET.get("uploaded") == "1"
-    return render(request, "photos/upload.html", {"pseudo": pseudo, "just_uploaded": just_uploaded})
+    return render(
+        request,
+        "photos/upload.html",
+        {"pseudo": pseudo, "just_uploaded": just_uploaded, "whiteboard_enabled": active_event.whiteboard_enabled},
+    )
 
 
 def tv_view(request):
     return render(request, "photos/tv.html")
+
+
+def whiteboard_draw_view(request):
+    active_event = Event.get_active()
+    if active_event is None or not active_event.whiteboard_enabled:
+        return render(request, "photos/no_active_event.html")
+    user = _get_user_identity(request)
+    if not user:
+        return redirect("choose-pseudo")
+
+    last = (
+        WhiteboardDrawing.objects.filter(event=active_event, username=user.pseudo)
+        .order_by("-uploaded_at")
+        .first()
+    )
+    cooldown_remaining = 0
+    if last:
+        elapsed = (timezone.now() - last.uploaded_at).total_seconds()
+        cooldown_remaining = max(0, WHITEBOARD_COOLDOWN_SECONDS - elapsed)
+
+    return render(
+        request,
+        "photos/whiteboard_draw.html",
+        {
+            "pseudo": user.pseudo,
+            "board_image_url": active_event.whiteboard_image.url if active_event.whiteboard_image else "",
+            "board_width": whiteboard_service.WIDTH,
+            "board_height": whiteboard_service.HEIGHT,
+            "pen_max": whiteboard_service.WIDTH // 10,
+            "cooldown_remaining": cooldown_remaining,
+            "cooldown_seconds": WHITEBOARD_COOLDOWN_SECONDS,
+            "whiteboard_enabled": True,
+        },
+    )
+
+
+def whiteboard_upload_view(request):
+    if request.method != "POST":
+        return JsonResponse({"error": "POST required"}, status=405)
+    active_event = Event.get_active()
+    if not active_event or not active_event.whiteboard_enabled:
+        return JsonResponse({"error": "The whiteboard is disabled."}, status=403)
+    user = _get_user_identity(request)
+    if not user:
+        return JsonResponse({"error": "identity required"}, status=403)
+
+    last = (
+        WhiteboardDrawing.objects.filter(event=active_event, username=user.pseudo)
+        .order_by("-uploaded_at")
+        .first()
+    )
+    if last:
+        elapsed = (timezone.now() - last.uploaded_at).total_seconds()
+        if elapsed < WHITEBOARD_COOLDOWN_SECONDS:
+            return JsonResponse(
+                {"error": "cooldown", "retry_after": round(WHITEBOARD_COOLDOWN_SECONDS - elapsed, 1)},
+                status=429,
+            )
+
+    image = request.FILES.get("drawing")
+    if not image:
+        return JsonResponse({"error": "No drawing provided."}, status=400)
+
+    drawing = WhiteboardDrawing.objects.create(event=active_event, username=user.pseudo, image=image)
+    whiteboard_service.add_layer(active_event, drawing)
+
+    channel_layer = get_channel_layer()
+    async_to_sync(channel_layer.group_send)(
+        "tv_updates",
+        {"type": "whiteboard.updated", "url": active_event.whiteboard_image.url},
+    )
+    return JsonResponse({"ok": True})
 
 
 def my_photos_view(request):
@@ -175,7 +254,11 @@ def my_photos_view(request):
     if not user:
         return redirect("choose-pseudo")
     photos = Photo.objects.filter(event=user.event, username=user.pseudo).order_by("uploaded_at")
-    return render(request, "photos/my_photos.html", {"pseudo": user.pseudo, "photos": photos})
+    return render(
+        request,
+        "photos/my_photos.html",
+        {"pseudo": user.pseudo, "photos": photos, "whiteboard_enabled": user.event.whiteboard_enabled},
+    )
 
 
 def delete_own_photo(request, photo_id):
@@ -231,14 +314,28 @@ def gallery_view(request):
     photos_qs = Photo.objects.filter(event=active_event).order_by("-uploaded_at") if active_event else Photo.objects.none()
     payloads = [_photo_payload(photo, user=user) for photo in photos_qs]
     likes_enabled = active_event.likes_enabled if active_event else True
-    return render(request, "photos/gallery.html", {"photos": payloads, "likes_enabled": likes_enabled})
+    whiteboard_enabled = active_event.whiteboard_enabled if active_event else False
+    return render(
+        request,
+        "photos/gallery.html",
+        {"photos": payloads, "likes_enabled": likes_enabled, "whiteboard_enabled": whiteboard_enabled},
+    )
 
 
 def slideshow_settings_api(request):
     slideshow = SlideshowSettings.get_solo()
     active_event = Event.get_active()
     likes_enabled = active_event.likes_enabled if active_event else True
-    return JsonResponse({"interval_seconds": slideshow.interval_seconds, "likes_enabled": likes_enabled})
+    tv_layout = active_event.tv_layout if active_event else Event.TV_LAYOUT_SLIDESHOW
+    whiteboard_image_url = active_event.whiteboard_image.url if active_event and active_event.whiteboard_image else ""
+    return JsonResponse(
+        {
+            "interval_seconds": slideshow.interval_seconds,
+            "likes_enabled": likes_enabled,
+            "tv_layout": tv_layout,
+            "whiteboard_image_url": whiteboard_image_url,
+        }
+    )
 
 
 def upload_qr_code(request):
@@ -327,11 +424,39 @@ def dashboard_view(request):
                     if failed:
                         summary += f", {failed} failed"
                     messages.success(request, summary)
-        elif "toggle_likes" in request.POST:
+            return _dashboard_redirect(tab="features")
+        if "toggle_likes" in request.POST:
             active_event.likes_enabled = not active_event.likes_enabled
             active_event.save(update_fields=["likes_enabled"])
             messages.success(request, "Likes " + ("enabled." if active_event.likes_enabled else "disabled."))
-        return _dashboard_redirect(request, default_tab="features")
+            return _dashboard_redirect(tab="features")
+        if "toggle_whiteboard" in request.POST:
+            active_event.whiteboard_enabled = not active_event.whiteboard_enabled
+            update_fields = ["whiteboard_enabled"]
+            if not active_event.whiteboard_enabled and active_event.tv_layout == Event.TV_LAYOUT_WHITEBOARD:
+                # The TV can't keep showing a whiteboard that just got turned off.
+                active_event.tv_layout = Event.TV_LAYOUT_SLIDESHOW
+                update_fields.append("tv_layout")
+                channel_layer = get_channel_layer()
+                async_to_sync(channel_layer.group_send)("tv_updates", {"type": "tv_layout.changed"})
+            active_event.save(update_fields=update_fields)
+            messages.success(request, "Whiteboard " + ("enabled." if active_event.whiteboard_enabled else "disabled."))
+            return _dashboard_redirect(tab="features")
+        if "set_tv_layout" in request.POST:
+            layout = request.POST.get("set_tv_layout")
+            valid_layouts = dict(Event.TV_LAYOUT_CHOICES)
+            if layout not in valid_layouts:
+                messages.error(request, "Unknown TV layout.")
+            elif layout == Event.TV_LAYOUT_WHITEBOARD and not active_event.whiteboard_enabled:
+                messages.error(request, "Enable the whiteboard feature first.")
+            else:
+                active_event.tv_layout = layout
+                active_event.save(update_fields=["tv_layout"])
+                channel_layer = get_channel_layer()
+                async_to_sync(channel_layer.group_send)("tv_updates", {"type": "tv_layout.changed"})
+                messages.success(request, f"TV now shows the {valid_layouts[layout].lower()}.")
+            return _dashboard_redirect(tab="tv-layout")
+        return _dashboard_redirect(tab="features")
 
     events = list(Event.objects.all())
     for event in events:
@@ -348,9 +473,11 @@ def dashboard_view(request):
         active_event = next(e for e in events if e.pk == active_event.pk)  # reuse the drive_status-annotated instance
         identities = active_event.identities.order_by("-created_at")
         photos = active_event.photos.order_by("-uploaded_at")
+        whiteboard_drawings = active_event.whiteboard_drawings.order_by("-uploaded_at")
     else:
         identities = UserIdentity.objects.none()
         photos = Photo.objects.none()
+        whiteboard_drawings = WhiteboardDrawing.objects.none()
     guests_with_email = identities.exclude(email="").count()
     guests_shared = identities.filter(drive_shared=True).count()
     active_tab = request.GET.get("tab", "events")
@@ -362,6 +489,7 @@ def dashboard_view(request):
             "active_event": active_event,
             "identities": identities,
             "photos": photos,
+            "whiteboard_drawings": whiteboard_drawings,
             "guests_with_email": guests_with_email,
             "guests_shared": guests_shared,
             "active_tab": active_tab,
@@ -376,6 +504,22 @@ def dashboard_delete_photo(request, photo_id):
         photo.delete()
         messages.success(request, "Photo deleted.")
     return _dashboard_redirect(tab="photos")
+
+
+@staff_member_required
+def dashboard_delete_whiteboard_drawing(request, drawing_id):
+    if request.method == "POST":
+        drawing = get_object_or_404(WhiteboardDrawing, id=drawing_id)
+        event = drawing.event
+        drawing.delete()
+        whiteboard_service.rebuild_board(event)
+        channel_layer = get_channel_layer()
+        async_to_sync(channel_layer.group_send)(
+            "tv_updates",
+            {"type": "whiteboard.updated", "url": event.whiteboard_image.url if event.whiteboard_image else ""},
+        )
+        messages.success(request, "Drawing removed from the whiteboard.")
+    return _dashboard_redirect(tab="whiteboard")
 
 
 @staff_member_required

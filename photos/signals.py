@@ -6,7 +6,7 @@ from django.db.models.signals import post_delete, post_save
 from django.dispatch import receiver
 
 from . import drive_service
-from .models import Event, Photo, SlideshowSettings
+from .models import Event, Photo, SlideshowSettings, WhiteboardDrawing
 
 logger = logging.getLogger(__name__)
 
@@ -34,6 +34,12 @@ def remove_file_and_notify_tv(sender, instance, **kwargs):
         "tv_updates",
         {"type": "photo.deleted", "url": photo_url},
     )
+
+
+@receiver(post_delete, sender=WhiteboardDrawing)
+def remove_whiteboard_drawing_file(sender, instance, **kwargs):
+    if instance.image:
+        instance.image.delete(save=False)
 
 
 @receiver(post_save, sender=SlideshowSettings)

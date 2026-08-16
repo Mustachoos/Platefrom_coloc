@@ -11,6 +11,8 @@ urlpatterns = [
     path("my-photos/", views.my_photos_view, name="my-photos"),
     path("my-photos/<int:photo_id>/delete/", views.delete_own_photo, name="delete-own-photo"),
     path("tv/", views.tv_view, name="tv"),
+    path("whiteboard/", views.whiteboard_draw_view, name="whiteboard-draw"),
+    path("whiteboard/upload/", views.whiteboard_upload_view, name="whiteboard-upload"),
     path("api/photos/", views.photo_list_api, name="photo-list-api"),
     path("api/photos/<int:photo_id>/like/", views.like_toggle_api, name="photo-like-api"),
     path("gallery/", views.gallery_view, name="gallery"),
@@ -18,6 +20,11 @@ urlpatterns = [
     path("qr/upload.png", views.upload_qr_code, name="upload-qr-code"),
     path("dashboard/", views.dashboard_view, name="dashboard"),
     path("dashboard/photos/<int:photo_id>/delete/", views.dashboard_delete_photo, name="dashboard-delete-photo"),
+    path(
+        "dashboard/whiteboard/<int:drawing_id>/delete/",
+        views.dashboard_delete_whiteboard_drawing,
+        name="dashboard-delete-whiteboard-drawing",
+    ),
     path("dashboard/events/create/", views.create_event_view, name="create-event"),
     path("dashboard/events/<int:event_id>/switch/", views.event_switch_view, name="event-switch"),
 ]

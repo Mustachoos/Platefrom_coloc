@@ -23,7 +23,14 @@
 }
 *{box-sizing:border-box}
 html,body{margin:0;padding:0;min-height:100vh;font-family:"Trebuchet MS","Segoe UI",sans-serif;color:var(--ink);}
-body{background:linear-gradient(140deg,var(--bg-1),var(--bg-2));padding:22px;}
+body{
+  background:linear-gradient(140deg,var(--bg-1),var(--bg-2));
+  padding:22px;
+  padding-top:max(22px, env(safe-area-inset-top));
+  padding-bottom:max(22px, env(safe-area-inset-bottom));
+  padding-left:max(22px, env(safe-area-inset-left));
+  padding-right:max(22px, env(safe-area-inset-right));
+}
 body.centered-page{display:flex;align-items:center;justify-content:center}
 
 /* Card used by most pages */
@@ -63,7 +70,7 @@ input[type=file],input[type=text],input[type=email],textarea,select{width:100%;p
 .btn.small{padding:8px 12px;font-size:0.95rem;border-radius:10px}
 .btn.large{padding:18px 32px;font-size:1.25rem;border-radius:16px;width:100%}
 .upload-actions{display:flex;flex-direction:column;align-items:center;gap:14px;margin-top:18px}
-.upload-links{display:flex;gap:12px;justify-content:center}
+.upload-links{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
 
 /* Upload page: status box gets breathing room, controls grouped below it */
 .upload-center{margin:36px 0}
@@ -100,8 +107,31 @@ input[type=file],input[type=text],input[type=email],textarea,select{width:100%;p
 /* Ensure media responds */
 @media(max-width:760px){body{padding:12px}.card{width:100%;padding:16px}}
 
+/* Persistent bottom nav (guest pages: Upload / Photos / Whiteboard).
+   position:fixed is deliberate, not incidental: mobile browsers anchor
+   fixed elements to the actual visible viewport, so this stays correctly
+   above the OS/browser chrome even when the page's own height computation
+   (100%/100vh) ends up taller than what's really on screen — the classic
+   mobile-web trap. Don't change this to flow/flex positioning. */
+/* Fixed, explicit height (not content-driven padding) so every page that
+   includes this partial gets pixel-identical footer height — the
+   whiteboard page in particular reads this same 56px into its own
+   --wb-footer-nav-h to stack its other fixed bars correctly above it;
+   change this value and that one together. */
+.footer-nav{position:fixed;left:0;right:0;bottom:0;box-sizing:border-box;height:56px;display:flex;align-items:center;justify-content:center;gap:28px;background:var(--card);border-top:1px solid var(--card-border);padding:0 16px;padding-bottom:env(safe-area-inset-bottom);z-index:20}
+.footer-nav-item{display:flex;flex-direction:column;align-items:center;gap:2px;color:var(--soft);text-decoration:none;font-size:0.78rem;font-weight:700;padding:4px 14px;border-radius:8px}
+.footer-nav-item.active{color:var(--btn-1)}
+body.has-footer-nav{padding-bottom:calc(56px + env(safe-area-inset-bottom))}
+
+/* Segmented control: switches between two related views (e.g. All photos /
+   My photos) so they can share a single footer-nav destination */
+.segmented{display:flex;gap:2px;background:#f1f5f9;border-radius:12px;padding:4px;margin:0 auto 20px;max-width:320px}
+.segmented-item{flex:1;text-align:center;padding:8px 14px;border-radius:8px;font-weight:700;font-size:0.85rem;color:var(--soft);text-decoration:none}
+.segmented-item.active{background:#fff;color:var(--ink);box-shadow:0 2px 8px rgba(31,52,72,0.12)}
+
 /* TV page specific backgrounds and decorations */
 .tv-page{
+  --tv-right-width: clamp(300px, 22vw, 460px);
   background: radial-gradient(circle at 15% 10%, rgba(34,197,94,0.22), transparent 38%), radial-gradient(circle at 84% 18%, rgba(251,146,60,0.2), transparent 34%), linear-gradient(145deg,var(--sky-1),var(--sky-2));
   color: var(--ink-strong);
   height:100vh;overflow:hidden;padding:0;margin:0;
@@ -114,30 +144,34 @@ input[type=file],input[type=text],input[type=email],textarea,select{width:100%;p
 
 .tv-page::before,.tv-page::after{animation:float 18s ease-in-out infinite}
 
-/* TV sidebar / leaderboard */
-.tv-sidebar{width:100%;background:var(--card);border:1px solid var(--card-border);padding:12px;border-radius:12px;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);box-shadow:0 12px 30px rgba(28,43,57,0.14);z-index:4}
-.tv-sidebar strong{display:block;margin-bottom:8px;color:var(--soft-ink);font-weight:700}
-.leaderboard-item{display:flex;gap:10px;align-items:center;margin-bottom:8px}
-.leaderboard-thumb{width:72px;height:54px;object-fit:cover;border-radius:8px;border:1px solid rgba(0,0,0,0.06)}
+/* TV sidebar / leaderboard — sized for 10-foot viewing: bigger than a
+   desktop page would need, since a TV is watched from across the room */
+.tv-sidebar{width:100%;background:var(--card);border:1px solid var(--card-border);padding:clamp(14px,1.4vw,22px);border-radius:12px;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);box-shadow:0 12px 30px rgba(28,43,57,0.14);z-index:4}
+.tv-sidebar strong{display:block;margin-bottom:10px;color:var(--soft-ink);font-weight:700;font-size:clamp(1.1rem,1.5vw,1.5rem)}
+.leaderboard-item{display:flex;gap:14px;align-items:center;margin-bottom:12px}
+.leaderboard-thumb{width:clamp(72px,6vw,110px);height:clamp(54px,4.5vw,82px);object-fit:cover;border-radius:8px;border:1px solid rgba(0,0,0,0.06)}
 .leaderboard-meta{flex:1}
-.leaderboard-username{font-weight:700}
-.leaderboard-count{font-size:0.9rem;color:#556575;margin-top:4px}
+.leaderboard-username{font-weight:700;font-size:clamp(1rem,1.25vw,1.3rem)}
+.leaderboard-count{font-size:clamp(0.95rem,1.1vw,1.15rem);color:#556575;margin-top:4px}
 
 /* New photo announcement overlay */
 .new-photo-overlay{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%) scale(.98);background:var(--card);border:1px solid var(--card-border);padding:16px;border-radius:14px;display:flex;gap:16px;align-items:center;box-shadow:0 22px 48px rgba(20,30,48,0.22);opacity:0;pointer-events:none;transition:opacity .25s ease,transform .35s cubic-bezier(.2,.9,.3,1);z-index:6;max-width:90vw}
 .new-photo-overlay.visible{opacity:1;transform:translate(-50%,-50%) scale(1)}
 .new-photo-big{width:60%;max-width:560px;height:auto;border-radius:10px;object-fit:cover;border:1px solid rgba(0,0,0,0.06)}
-.new-photo-username{font-weight:800;color:var(--ink);font-size:1.1rem}
-.new-photo-sub{font-size:0.95rem;color:var(--soft);margin-top:6px}
+.new-photo-username{font-weight:800;color:var(--ink);font-size:clamp(1.2rem,1.8vw,1.8rem)}
+.new-photo-sub{font-size:clamp(1rem,1.3vw,1.3rem);color:var(--soft);margin-top:6px}
 .new-photo-animate{animation:popfloat 1s ease both}
 @keyframes popfloat{0%{transform:translate(-50%,-50%) translateY(18px) scale(.96);opacity:0}60%{transform:translate(-50%,-50%) translateY(-6px) scale(1.02);opacity:1}100%{transform:translate(-50%,-50%) translateY(0) scale(1)}}
 
-/* Two-column TV layout: left = frame/photo, right = controls/leaderboard */
-.tv-content{display:flex;gap:20px;height:100vh;padding:28px;align-items:center}
+/* Two-column TV layout: left = frame/photo, right = controls/leaderboard.
+   Padding and the right column scale with viewport width so the layout
+   keeps sensible proportions from a small 1080p set up to a large 4K one,
+   and stays clear of the overscan-prone edges. */
+.tv-content{display:flex;gap:clamp(16px,2vw,36px);height:100vh;padding:clamp(20px,3vw,56px);align-items:center}
 .tv-left{flex:1;position:relative;display:flex;align-items:center;justify-content:center}
-.tv-right{width:340px;display:flex;flex-direction:column;gap:24px;justify-content:center;align-items:center;padding-top:0}
+.tv-right{width:var(--tv-right-width);display:flex;flex-direction:column;gap:24px;justify-content:center;align-items:center;padding-top:0}
 .tv-left .frame{pointer-events:auto}
-.tv-left .slide-wrap{width:100%;max-width:calc(100vw - 380px);position:relative;overflow:visible;display:flex;align-items:center;justify-content:center}
+.tv-left .slide-wrap{width:100%;max-width:calc(100vw - var(--tv-right-width) - 100px);position:relative;overflow:visible;display:flex;align-items:center;justify-content:center}
 .tv-left .slide-wrap .frame{display:none !important}
 .tv-left #slide{max-width:100%;max-height:84vh;border-radius:12px;object-fit:contain;display:block;border:6px solid #fff;box-shadow:0 12px 30px rgba(20,30,48,0.12)}
 .new-photo-big{width:60%;max-width:560px;height:auto;border-radius:12px;object-fit:cover;border:6px solid #fff;box-shadow:0 18px 40px rgba(20,30,48,0.16)}

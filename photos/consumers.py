@@ -31,3 +31,9 @@ class PhotosConsumer(WebsocketConsumer):
 
     def event_switched(self, event):
         self.send(text_data=json.dumps({"event": "event_switched"}))
+
+    def whiteboard_updated(self, event):
+        self.send(text_data=json.dumps({"event": "whiteboard_updated", "url": event["url"]}))
+
+    def tv_layout_changed(self, event):
+        self.send(text_data=json.dumps({"event": "tv_layout_changed"}))

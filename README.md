@@ -13,9 +13,10 @@ Application web permettant aux invités d'un événement (soirée, anniversaire,
 6. Les photos apparaissent en direct (WebSocket) sur l'écran TV : une bannière "Nouvelle photo de X" s'affiche, puis la photo rejoint le diaporama tournant. Chaque photo est aussi copiée dans le dossier Drive de l'évènement actif.
 7. Les invités peuvent aussi parcourir une galerie de toutes les photos et les liker ; le top 3 des photos les plus aimées s'affiche en direct sur l'écran TV.
 8. Chacun peut consulter "Mes photos" et supprimer ses propres envois.
-9. Un administrateur peut ajuster la vitesse du diaporama, gérer les évènements et piloter les fonctionnalités optionnelles (Drive, partage, likes) depuis le dashboard staff, avec effet immédiat.
+9. Un administrateur peut ajuster la vitesse du diaporama, gérer les évènements et piloter les fonctionnalités optionnelles (Drive, partage, likes, whiteboard) depuis le dashboard staff, avec effet immédiat.
+10. Si le whiteboard est activé, les invités peuvent dessiner sur un tableau collectif depuis leur téléphone ; leurs envois s'empilent sur un même tableau, affichable en direct sur l'écran TV.
 
-> À terme, l'objectif est une app entièrement personnalisable par évènement depuis le dashboard : activer ou non le classement des likes, l'intégration Drive, un chat, un tableau blanc collectif, etc. Le classement des likes et l'intégration Drive sont les premières briques de ce système de fonctionnalités optionnelles ; la gestion multi-évènements en est le second étage.
+> À terme, l'objectif est une app entièrement personnalisable par évènement depuis le dashboard : activer ou non le classement des likes, l'intégration Drive, un chat, un tableau blanc collectif, etc. Le classement des likes, l'intégration Drive et le whiteboard collectif sont les premières briques de ce système de fonctionnalités optionnelles ; la gestion multi-évènements en est le second étage.
 
 ### Stack technique
 - **Backend** : Django 5 + Django Channels (WebSocket temps réel), servi en ASGI par Daphne
@@ -96,34 +97,51 @@ Mise en place, à faire une seule fois :
 - Message "Upload successful" affiché puis retour automatique à l'état vide après 3 secondes
 - Liens rapides vers "Mes photos" et "Gallery"
 
-#### 4. Mes photos — `/my-photos/`
+#### 4. Whiteboard — `/whiteboard/`
+- Visible depuis `/upload/` uniquement quand la fonctionnalité "Whiteboard" est activée pour l'évènement actif (bouton "🎨 Whiteboard") ; sinon la page redirige vers l'écran d'attente si on y accède directement
+- Le tableau est au format 4/3 (1200×900 px en interne, affiché de façon responsive)
+- Deux calques superposés : le tableau collectif actuel en arrière-plan (lecture seule, sert de repère visuel et de source pour la pipette), et un calque transparent au premier plan où l'invité dessine réellement
+- Stylo à taille réglable, de 1px jusqu'à 1/10 de la largeur du tableau (120px)
+- Deux modes de couleur :
+  - **Simple** : 5 couleurs prédéfinies (noir, blanc, bleu, vert, rouge)
+  - **Artiste** : palette complète (sélecteur de couleur natif) + pipette, qui récupère la couleur à l'endroit cliqué sur le tableau (arrière-plan + propre dessin en cours)
+  - Bouton "Clear" pour effacer son dessin en cours avant envoi (sans toucher au tableau collectif)
+- Le tableau collectif n'est **pas** mis à jour en direct pendant que l'invité dessine : rien n'est envoyé tant qu'il n'a pas cliqué sur "Add to the whiteboard"
+- À l'envoi, seul le calque transparent (le dessin de l'invité, pas l'arrière-plan) est exporté en PNG et envoyé au serveur, qui le superpose sur le tableau collectif existant ; tous les écrans TV en mode whiteboard sont notifiés en direct via WebSocket
+- Un invité doit attendre 30 secondes entre deux envois ; le bouton d'envoi affiche un compte à rebours et reste désactivé pendant ce délai
+
+#### 5. Mes photos — `/my-photos/`
 - Accessible uniquement avec un pseudo en session
 - Liste, par ordre chronologique, des photos envoyées par l'utilisateur courant
 - Suppression possible photo par photo ; un utilisateur ne peut supprimer que ses propres photos de son évènement (vérifié par évènement + pseudo + identifiant, pas seulement par session)
 - La suppression efface le fichier physique, retire la photo de la corbeille Drive si elle y avait été copiée, et notifie l'écran TV en direct pour retirer la photo du diaporama en cours
 
-#### 5. Écran TV — `/tv/`
+#### 6. Écran TV — `/tv/`
 - Page plein écran destinée à un téléviseur ou un moniteur connecté, sans interaction attendue
-- Au chargement, récupère la liste actuelle des photos et l'intervalle du diaporama
-- Diaporama automatique en fondu enchaîné, intervalle configurable (5 secondes par défaut)
-- Message "Waiting for photos…" tant qu'aucune photo n'a été envoyée
-- QR code permanent pointant vers `/upload/`, pour que tout nouvel invité puisse rejoindre à tout moment
-- Bannière "New photo from &lt;pseudo&gt;" : à chaque upload, une superposition centrale annonce la nouvelle photo pendant 3 secondes ; les annonces sont mises en file si plusieurs photos arrivent en même temps, indépendamment du cycle du diaporama de fond
-- Classement latéral (leaderboard) du top 3 des photos les plus likées, mis à jour en direct
+- Le rectangle principal affiche soit le diaporama photo, soit le whiteboard collectif, selon le réglage "TV layout" choisi dans le dashboard pour l'évènement actif
+- **Mode diaporama** (par défaut) :
+  - Au chargement, récupère la liste actuelle des photos et l'intervalle du diaporama
+  - Diaporama automatique en fondu enchaîné, intervalle configurable (5 secondes par défaut)
+  - Message "Waiting for photos…" tant qu'aucune photo n'a été envoyée
+  - Bannière "New photo from &lt;pseudo&gt;" : à chaque upload, une superposition centrale annonce la nouvelle photo pendant 3 secondes ; les annonces sont mises en file si plusieurs photos arrivent en même temps, indépendamment du cycle du diaporama de fond
+  - Classement latéral (leaderboard) du top 3 des photos les plus likées, mis à jour en direct
+- **Mode whiteboard** : affiche l'image composite du tableau collectif de l'évènement actif, mise à jour en direct (sans rechargement) à chaque nouveau dessin ajouté ; message "Waiting for drawings…" tant qu'aucun dessin n'a été envoyé
+- QR code permanent pointant vers `/upload/`, pour que tout nouvel invité puisse rejoindre à tout moment, quel que soit le mode affiché
+- Changer de layout depuis le dashboard notifie l'écran TV via WebSocket, qui réinterroge ses réglages et bascule instantanément entre les deux modes, sans rechargement de page
 - Connexion WebSocket permanente, avec reconnexion automatique toutes les 3 secondes en cas de coupure
 
-#### 6. Galerie — `/gallery/`
+#### 7. Galerie — `/gallery/`
 - Page publique, accessible sans avoir choisi de pseudo
 - Affiche toutes les photos de tous les invités, les plus récentes en premier
 - Chaque photo peut être likée / unlikée (cœur cliquable, bascule)
 - Aimer une photo nécessite une identité de session valide (donc d'être passé par le choix de pseudo au préalable) ; sinon la tentative échoue
 - Chaque like/unlike met à jour en direct le classement affiché sur l'écran TV
 
-#### 7. QR code d'upload — `/qr/upload.png`
+#### 8. QR code d'upload — `/qr/upload.png`
 - Génère à la volée une image PNG encodant l'URL absolue de la page `/upload/`
 - Si la variable d'environnement `QR_HOST_IP` est définie, cette IP est utilisée à la place du nom d'hôte de la requête — utile pour garantir que le QR code reste scannable sur le réseau local du logement même quand le serveur tourne dans un conteneur
 
-#### 8. Administration — `/admin/`
+#### 9. Administration — `/admin/`
 - Interface Django Admin standard, gardée comme filet de secours technique — l'usage courant se fait depuis le dashboard staff (section suivante)
 - **Photos** : consultation, filtrage par évènement/pseudo
 - **Identités** (`UserIdentity`) : évènement, pseudo, email (si renseigné pour le partage Drive), statut de partage, session, date de création
@@ -131,8 +149,10 @@ Mise en place, à faire une seule fois :
 - **Réglages du diaporama** (`SlideshowSettings`, entrée unique, global à tous les évènements) : intervalle d'affichage en secondes (de 0,1 à 100) ; toute modification est propagée en direct à l'écran TV sans rechargement
 - **Events** (`Event`, une entrée par évènement) : nom, actif ou non, dossier Drive (ID en lecture seule), partage Drive, likes — les mêmes réglages que dans le dashboard, exposés ici en secours
 
-#### 9. Dashboard staff — `/dashboard/`
+#### 10. Dashboard staff — `/dashboard/`
 Page dédiée, distincte de `/admin/`, réservée au staff (`staff_member_required` ; redirection vers l'écran de connexion Django si non authentifié). C'est le point d'entrée unique pour piloter une soirée.
+
+La page est organisée en onglets (CSS pur, sans JavaScript) : **Events**, **Optional features**, **TV layout**, **Whiteboard**, **Guests**, **Photos**. L'onglet actif est conservé après chaque action grâce à un paramètre `?tab=` porté par la redirection qui suit chaque soumission de formulaire.
 
 - **Events** : liste de tous les évènements créés (nom, badge ACTIVE, nombre de photos, lien vers le dossier Drive), avec un bouton "Switch to this event" pour chacun des évènements inactifs
   - **Créer un évènement** : formulaire avec un champ nom ; à la création, son dossier Drive est immédiatement recherché/créé sous le dossier racine configuré (voir `GOOGLE_DRIVE_ROOT_FOLDER_ID`) — un évènement ne peut pas être activé sans dossier Drive connecté
@@ -145,13 +165,15 @@ Page dédiée, distincte de `/admin/`, réservée au staff (`staff_member_requir
   - Rien n'est jamais perdu : la suppression locale d'un évènement sortant n'est déclenchée qu'une fois toutes ses photos confirmées sur Drive (cf. garde-fou ci-dessus), et sa copie Drive n'est elle-même jamais touchée par ce nettoyage local
   - Une fois le switch effectué, tous les écrans TV connectés sont notifiés via WebSocket et rechargent automatiquement la page pour refléter le nouvel évènement
 - **Réglages de l'évènement actif** :
-  - **Google Drive backup** : toujours actif pour l'évènement actif (obligatoire) ; affiche le lien vers le dossier connecté
-  - **Repoint vers un dossier existant** : formulaire pour coller l'ID ou l'URL d'un dossier Drive déjà existant à la place de celui associé par défaut ; l'app vérifie que le dossier existe avant de l'adopter (le nom de l'évènement, lui, ne change pas)
+  - **Google Drive backup** : toujours actif pour l'évènement actif (obligatoire) ; affiche le lien vers le dossier connecté, ou un message d'erreur si le dossier a été supprimé/est injoignable, avec un bouton pour en recréer un neuf (les photos locales non confirmées y sont aussitôt re-uploadées)
   - **Share Drive with participants** (toggle) :
     - Activé → tous les invités de l'évènement actif ayant renseigné un email sont ajoutés en lecteur sur le dossier (ceux qui l'ont déjà ne sont pas re-partagés)
     - Désactivé → l'accès est révoqué pour tous les invités actuellement partagés (`drive_permission_id` utilisé pour cibler la permission exacte à supprimer, puis effacé)
     - Le panneau affiche le nombre d'invités actuellement partagés sur le nombre total ayant un email
   - **Photo likes** (toggle) : le changement d'état est propagé en direct à l'écran TV via WebSocket (masque/affiche le classement sans rechargement)
+  - **Whiteboard** (toggle) : active/désactive le bouton "Whiteboard" sur `/upload/` pour les invités de l'évènement actif ; le désactiver alors que l'écran TV est en mode whiteboard bascule automatiquement ce dernier en mode diaporama
+- **TV layout** : deux cartes cliquables ("Photo slideshow" / "Collective whiteboard") pour choisir ce qu'affiche le rectangle principal de l'écran TV pour l'évènement actif ; la carte whiteboard est désactivée tant que la fonctionnalité Whiteboard n'est pas activée ; tout changement est propagé en direct à l'écran TV via WebSocket
+- **Whiteboard** : aperçu de l'image composite actuelle du tableau collectif, et historique de tous les dessins envoyés (pseudo, heure d'envoi) avec un bouton de suppression individuel ; supprimer un dessin recalcule entièrement le tableau composite à partir des dessins restants (dans l'ordre chronologique) et notifie l'écran TV
 - **Invités** : tableau pseudo / email / statut de partage Drive / date d'arrivée, filtré sur l'évènement actif uniquement
 - **Photos** : grille des photos de l'évènement actif avec suppression en un clic (n'importe quelle photo, pas seulement les siennes — contrairement à "Mes photos") ; comme pour une suppression par son auteur, la photo est aussi retirée (mise à la corbeille) du dossier Drive si elle y avait été copiée
 
@@ -160,7 +182,8 @@ Page dédiée, distincte de `/admin/`, réservée au staff (`staff_member_requir
 |---|---|---|
 | `/api/photos/` | GET | Liste toutes les photos (id, url, pseudo, date, nombre de likes, statut liké pour l'utilisateur courant) |
 | `/api/photos/<id>/like/` | POST | Bascule le like/unlike pour l'utilisateur de la session courante ; 403 si les likes sont désactivés |
-| `/api/settings/` | GET | Intervalle courant du diaporama et statut des likes (`interval_seconds`, `likes_enabled`) |
+| `/api/settings/` | GET | Intervalle du diaporama, statut des likes, layout TV actif et URL de l'image du tableau (`interval_seconds`, `likes_enabled`, `tv_layout`, `whiteboard_image_url`) |
+| `/whiteboard/upload/` | POST | Envoie le calque dessiné (PNG transparent, champ `drawing`) ; 403 si le whiteboard est désactivé ou sans identité, 429 avec `retry_after` si le délai de 30s n'est pas écoulé |
 
 ### Canal temps réel — `/ws/tv/`
 Un unique canal WebSocket diffuse à tous les écrans TV connectés :
@@ -169,11 +192,14 @@ Un unique canal WebSocket diffuse à tous les écrans TV connectés :
 - `settings` — l'intervalle du diaporama a changé
 - `liked` — le nombre de likes d'une photo a changé
 - `likes_setting` — les likes ont été activés/désactivés (affiche ou masque le classement sur l'écran TV)
+- `whiteboard_updated` — le tableau collectif a changé (nouveau dessin ajouté, ou dessin supprimé depuis le dashboard) ; porte la nouvelle URL de l'image composite
+- `tv_layout_changed` — le layout TV de l'évènement actif a changé ; l'écran TV réinterroge `/api/settings/` et bascule entre diaporama et whiteboard sans rechargement complet
 - `event_switched` — l'évènement actif a changé ; l'écran TV recharge entièrement la page pour repartir sur les nouvelles photos/réglages
 
 ### Modèle de données
-- **Event** — un évènement/soirée : nom (unique), statut actif (un seul à la fois), dossier Drive (ID/lien), partage Drive actif ou non, likes activés ou non, date de création. Racine de tout le reste : photos et invités lui appartiennent
+- **Event** — un évènement/soirée : nom (unique), statut actif (un seul à la fois), dossier Drive (ID/lien), partage Drive actif ou non, likes activés ou non, whiteboard activé ou non, layout TV (`slideshow` ou `whiteboard`), image composite du tableau collectif, date de création. Racine de tout le reste : photos, invités et dessins lui appartiennent
 - **Photo** — évènement, pseudo de l'auteur, fichier image, date d'envoi, ID du fichier Drive correspondant si copié (`drive_file_id`)
+- **WhiteboardDrawing** — évènement, pseudo de l'auteur, calque PNG transparent envoyé, date d'envoi ; chaque ligne est un calque individuel du tableau collectif, conservé séparément (et non fondu directement dans le composite) pour permettre la suppression ciblée d'un seul dessin
 - **UserIdentity** — évènement, pseudo et clé de session (uniques *au sein de l'évènement*, pas globalement), email (facultatif, pour le partage Drive), statut de partage Drive et ID de la permission Drive accordée (`drive_permission_id`, pour pouvoir la révoquer précisément), date de création ; fait office d'identité légère sans mot de passe
 - **Like** — association Photo ↔ UserIdentity (unique par paire), date
 - **SlideshowSettings** — entrée unique, intervalle d'affichage du diaporama en secondes, partagé par tous les évènements
@@ -186,6 +212,8 @@ Un unique canal WebSocket diffuse à tous les écrans TV connectés :
 - En mode développement (`DEBUG=True`, valeur par défaut du projet), les fichiers médias sont servis directement par Django
 - Un évènement ne peut pas être créé ou activé sans dossier Drive connecté ; l'upload d'une photo vers Drive est best-effort (une erreur ponctuelle est journalisée côté serveur sans jamais bloquer l'upload local ni l'affichage sur l'écran TV), mais le passage à un autre évènement est lui explicitement bloqué tant que toutes les photos de l'évènement sortant ne sont pas confirmées sur Drive — c'est le garde-fou contre la perte de données
 - Changer d'évènement supprime les photos locales de l'évènement sortant (déjà confirmées sur Drive au préalable) et retélécharge celles de l'évènement entrant depuis son propre dossier Drive : le stockage local ne reflète toujours que l'évènement actif, Drive reste la copie durable de tous les évènements
+- Le tableau collectif n'est jamais fusionné en une seule fois de façon définitive : chaque dessin reste un calque à part (`WhiteboardDrawing`), et l'image composite affichée est recalculée depuis zéro (tous les calques restants, du plus ancien au plus récent) à chaque suppression — c'est ce qui permet de retirer un seul dessin sans perdre les autres
+- Le délai de 30 secondes entre deux envois de dessin est appliqué par pseudo et par évènement, vérifié côté serveur (pas seulement dans l'interface)
 
 ## Configuration (variables d'environnement)
 | Variable | Rôle | Valeur par défaut |

@@ -2,12 +2,12 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Upload photos</title>
   {% load static %}
   <link rel="stylesheet" href="{% static 'photos/site.css' %}">
 </head>
-<body class="centered-page">
+<body class="centered-page has-footer-nav">
   <main class="card">
     <div class="upload-top">
       <h1>Upload photos to the TV</h1>
@@ -43,10 +43,6 @@
 
       <div class="upload-actions">
         <button id="upload-btn" type="submit" class="btn neutral large">Upload</button>
-        <div class="upload-links">
-          <a class="btn secondary" href="{% url 'my-photos' %}">My photos</a>
-          <a class="btn secondary" href="{% url 'gallery' %}">Gallery</a>
-        </div>
       </div>
     </form>
 
@@ -153,5 +149,6 @@
       })();
     </script>
   </main>
+  {% include "photos/_footer_nav.html" %}
 </body>
 </html>

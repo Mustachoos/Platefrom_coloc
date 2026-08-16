@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Event dashboard</title>
   {% load static %}
   <link rel="stylesheet" href="{% static 'photos/site.css' %}">
@@ -42,18 +42,49 @@
     .create-event-form input{padding:8px 10px;border-radius:8px;border:1px solid #d4e4ee;font-size:0.9rem;width:100%}
     .drive-error{color:#9a3412;font-weight:700}
     .tab-radio{display:none}
+    .tab-select{display:none}
     .tab-bar{display:flex;gap:4px;margin-bottom:20px;border-bottom:2px solid #edf2f7;flex-wrap:wrap}
     .tab-btn{display:inline-block;padding:10px 18px;cursor:pointer;font-weight:700;font-size:0.95rem;color:var(--soft);border-bottom:3px solid transparent;margin-bottom:-2px;-webkit-user-select:none;user-select:none}
     .tab-btn:hover{color:#1f3448}
     .tab-panel{display:none}
     #tab-events:checked ~ .tab-bar label[for="tab-events"],
     #tab-features:checked ~ .tab-bar label[for="tab-features"],
+    #tab-tv-layout:checked ~ .tab-bar label[for="tab-tv-layout"],
+    #tab-whiteboard:checked ~ .tab-bar label[for="tab-whiteboard"],
     #tab-guests:checked ~ .tab-bar label[for="tab-guests"],
     #tab-photos:checked ~ .tab-bar label[for="tab-photos"]{color:#1f3448;border-bottom-color:var(--btn-1)}
     #tab-events:checked ~ #panel-events,
     #tab-features:checked ~ #panel-features,
+    #tab-tv-layout:checked ~ #panel-tv-layout,
+    #tab-whiteboard:checked ~ #panel-whiteboard,
     #tab-guests:checked ~ #panel-guests,
     #tab-photos:checked ~ #panel-photos{display:block}
+    .layout-options{display:flex;gap:12px;flex-wrap:wrap}
+    .layout-option{flex:1;min-width:180px;border:2px solid #edf2f7;border-radius:12px;padding:16px;text-align:center;cursor:pointer;background:#fff;color:var(--ink);font-weight:400}
+    .layout-option.selected{border-color:var(--btn-1);background:#f0fdf4}
+    .layout-option.disabled{opacity:0.5;cursor:not-allowed}
+    .layout-option strong{display:block;margin-bottom:4px}
+    .layout-option span{font-size:0.82rem;color:var(--soft)}
+    .board-preview{max-width:100%;border-radius:12px;border:1px solid #edf2f7;margin-bottom:14px;display:block}
+    .drawings-list{display:grid;gap:8px}
+    .drawing-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:8px 10px;border:1px solid #edf2f7;border-radius:10px}
+    .drawing-row .meta{font-size:0.88rem}
+    .table-scroll{overflow-x:auto}
+
+    /* Mobile: a wrapping row of 6 tabs is cramped and hard to scan, so swap
+       it for a native select — a more familiar "pick a section" control on
+       a phone — and let panels/rows that assume desktop width stack instead. */
+    @media(max-width:720px){
+      body{margin:10px}
+      h1{font-size:1.25rem}
+      .panel{padding:14px 14px}
+      .tab-bar{display:none}
+      .tab-select{display:block;width:100%;margin-bottom:18px;padding:12px 14px;border-radius:12px;border:2px solid #d4e4ee;background:#fff;font-size:1rem;font-weight:700;color:var(--ink)}
+      .event-row{flex-direction:column;align-items:stretch;gap:10px}
+      .event-row .btn{text-align:center}
+      .layout-option{min-width:140px}
+      .feature-row{flex-wrap:wrap}
+    }
   </style>
 </head>
 <body>
@@ -70,15 +101,33 @@
 
   <input type="radio" name="dashboard-tab" id="tab-events" class="tab-radio" {% if active_tab == "events" %}checked{% endif %}>
   <input type="radio" name="dashboard-tab" id="tab-features" class="tab-radio" {% if active_tab == "features" %}checked{% endif %}>
+  <input type="radio" name="dashboard-tab" id="tab-tv-layout" class="tab-radio" {% if active_tab == "tv-layout" %}checked{% endif %}>
+  <input type="radio" name="dashboard-tab" id="tab-whiteboard" class="tab-radio" {% if active_tab == "whiteboard" %}checked{% endif %}>
   <input type="radio" name="dashboard-tab" id="tab-guests" class="tab-radio" {% if active_tab == "guests" %}checked{% endif %}>
   <input type="radio" name="dashboard-tab" id="tab-photos" class="tab-radio" {% if active_tab == "photos" %}checked{% endif %}>
 
   <div class="tab-bar">
     <label for="tab-events" class="tab-btn">Events</label>
     <label for="tab-features" class="tab-btn">Optional features</label>
+    <label for="tab-tv-layout" class="tab-btn">TV layout</label>
+    <label for="tab-whiteboard" class="tab-btn">Whiteboard ({{ whiteboard_drawings|length }})</label>
     <label for="tab-guests" class="tab-btn">Guests ({{ identities|length }})</label>
     <label for="tab-photos" class="tab-btn">Photos ({{ photos|length }})</label>
   </div>
+
+  <select id="tab-select" class="tab-select" aria-label="Dashboard section">
+    <option value="events" {% if active_tab == "events" %}selected{% endif %}>Events</option>
+    <option value="features" {% if active_tab == "features" %}selected{% endif %}>Optional features</option>
+    <option value="tv-layout" {% if active_tab == "tv-layout" %}selected{% endif %}>TV layout</option>
+    <option value="whiteboard" {% if active_tab == "whiteboard" %}selected{% endif %}>Whiteboard ({{ whiteboard_drawings|length }})</option>
+    <option value="guests" {% if active_tab == "guests" %}selected{% endif %}>Guests ({{ identities|length }})</option>
+    <option value="photos" {% if active_tab == "photos" %}selected{% endif %}>Photos ({{ photos|length }})</option>
+  </select>
+  <script>
+    document.getElementById('tab-select').addEventListener('change', function () {
+      document.getElementById('tab-' + this.value).checked = true;
+    });
+  </script>
 
   <div class="panel tab-panel" id="panel-events">
     <h2>Events</h2>
@@ -168,25 +217,83 @@
         <button type="submit" name="toggle_likes" class="switch {% if active_event.likes_enabled %}on{% endif %}" aria-pressed="{{ active_event.likes_enabled|yesno:'true,false' }}" aria-label="Toggle photo likes"><span class="knob"></span></button>
       </form>
     </div>
+
+    <div class="feature-row">
+      <div>
+        <div class="feature-name">Whiteboard <span class="status-badge {% if active_event.whiteboard_enabled %}status-on{% else %}status-off{% endif %}">{% if active_event.whiteboard_enabled %}ON{% else %}OFF{% endif %}</span></div>
+        <div class="feature-status">When on, guests get a button on the home page to draw on the collective whiteboard.</div>
+      </div>
+      <form method="post">
+        {% csrf_token %}
+        <button type="submit" name="toggle_whiteboard" class="switch {% if active_event.whiteboard_enabled %}on{% endif %}" aria-pressed="{{ active_event.whiteboard_enabled|yesno:'true,false' }}" aria-label="Toggle whiteboard"><span class="knob"></span></button>
+      </form>
+    </div>
+  </div>
+
+  <div class="panel tab-panel" id="panel-tv-layout">
+    <h2>TV layout</h2>
+    <p class="feature-status">Choose what's shown in the main rectangle on the TV screen.</p>
+    <form method="post" class="layout-options">
+      {% csrf_token %}
+      <button
+        type="submit" name="set_tv_layout" value="slideshow"
+        class="layout-option {% if active_event.tv_layout == 'slideshow' %}selected{% endif %}"
+      >
+        <strong>Photo slideshow</strong>
+        <span>Cycles through uploaded photos</span>
+      </button>
+      <button
+        type="submit" name="set_tv_layout" value="whiteboard"
+        class="layout-option {% if active_event.tv_layout == 'whiteboard' %}selected{% endif %} {% if not active_event.whiteboard_enabled %}disabled{% endif %}"
+        {% if not active_event.whiteboard_enabled %}disabled{% endif %}
+      >
+        <strong>Collective whiteboard</strong>
+        <span>{% if active_event.whiteboard_enabled %}Shows the drawn-on board{% else %}Enable the whiteboard feature first{% endif %}</span>
+      </button>
+    </form>
+  </div>
+
+  <div class="panel tab-panel" id="panel-whiteboard">
+    <h2>Whiteboard ({{ whiteboard_drawings|length }})</h2>
+    {% if active_event.whiteboard_image %}
+    <img class="board-preview" src="{{ active_event.whiteboard_image.url }}" alt="Current whiteboard">
+    {% else %}
+    <p class="empty">No drawing uploaded yet for the active event.</p>
+    {% endif %}
+    {% if whiteboard_drawings %}
+    <div class="drawings-list">
+      {% for drawing in whiteboard_drawings %}
+      <div class="drawing-row">
+        <div class="meta">{{ drawing.username }} · {{ drawing.uploaded_at|date:"d/m H:i" }}</div>
+        <form method="post" action="{% url 'dashboard-delete-whiteboard-drawing' drawing.id %}">
+          {% csrf_token %}
+          <button type="submit" class="btn delete small">Delete</button>
+        </form>
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
   </div>
   {% endif %}
 
   <div class="panel tab-panel" id="panel-guests">
     <h2>Guests ({{ identities|length }})</h2>
     {% if identities %}
-    <table>
-      <thead><tr><th>Pseudo</th><th>Email</th><th>Drive shared</th><th>Joined</th></tr></thead>
-      <tbody>
-        {% for identity in identities %}
-        <tr>
-          <td>{{ identity.pseudo }}</td>
-          <td>{{ identity.email|default:"—" }}</td>
-          <td>{{ identity.drive_shared|yesno:"Yes,No" }}</td>
-          <td>{{ identity.created_at }}</td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th>Pseudo</th><th>Email</th><th>Drive shared</th><th>Joined</th></tr></thead>
+        <tbody>
+          {% for identity in identities %}
+          <tr>
+            <td>{{ identity.pseudo }}</td>
+            <td>{{ identity.email|default:"—" }}</td>
+            <td>{{ identity.drive_shared|yesno:"Yes,No" }}</td>
+            <td>{{ identity.created_at }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
     {% else %}
     <p class="empty">No guest has joined the active event yet.</p>
     {% endif %}

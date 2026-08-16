@@ -3,7 +3,7 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Photo gallery</title>
   {% load static %}
   <link rel="stylesheet" href="{% static 'photos/site.css' %}">
@@ -15,8 +15,9 @@
     .like-count-static{color:#556575;font-weight:700}
   </style>
 </head>
-<body>
+<body class="has-footer-nav">
   <h1>All photos</h1>
+  {% include "photos/_photos_segmented.html" %}
   {% if likes_enabled %}<p>Click the heart to like a photo.</p>{% endif %}
   <div class="grid">
     {% for p in photos %}
@@ -74,5 +75,6 @@ document.querySelectorAll('.card').forEach(card=>{
   });
 });
 </script>
+{% include "photos/_footer_nav.html" %}
 </body>
 </html>

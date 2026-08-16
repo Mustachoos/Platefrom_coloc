@@ -2,22 +2,27 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Coloc TV</title>
   {% load static %}
   <link rel="stylesheet" href="{% static 'photos/site.css' %}">
   <style>
     /* Minimal layout tweaks kept here; visual tokens live in site.css */
+    /* Sized for 10-foot viewing (a TV watched from across the room needs
+       noticeably bigger text/targets than the same layout on a monitor);
+       clamp()+vw keeps proportions sane from a small 1080p set to a large 4K one. */
     .frame { position: absolute; inset: 0; border-radius:24px; border:2px solid rgba(255,255,255,0.7); box-shadow:0 20px 45px rgba(26,42,57,0.18); pointer-events:none; z-index:1 }
-    .top-bar { position: fixed; z-index:3; top:28px; left:34px; display:flex; align-items:center; gap:12px; background:var(--card); border:1px solid var(--card-border); border-radius:999px; padding:10px 16px; -webkit-backdrop-filter:blur(6px); backdrop-filter:blur(6px); box-shadow:0 10px 30px rgba(27,43,56,0.12) }
-    .dot { width:11px; height:11px; border-radius:50%; background:var(--mint); box-shadow:0 0 0 7px rgba(34,197,94,0.2); animation:pulse 2s ease infinite }
+    .top-bar { position: fixed; z-index:3; top:clamp(20px,2.5vw,40px); left:clamp(20px,2.5vw,40px); display:flex; align-items:center; gap:14px; background:var(--card); border:1px solid var(--card-border); border-radius:999px; padding:clamp(10px,1vw,16px) clamp(16px,1.6vw,26px); -webkit-backdrop-filter:blur(6px); backdrop-filter:blur(6px); box-shadow:0 10px 30px rgba(27,43,56,0.12) }
+    .dot { width:clamp(11px,1vw,16px); height:clamp(11px,1vw,16px); border-radius:50%; background:var(--mint); box-shadow:0 0 0 7px rgba(34,197,94,0.2); animation:pulse 2s ease infinite }
     @keyframes pulse { 0%{box-shadow:0 0 0 0 rgba(34,197,94,0.32)} 70%{box-shadow:0 0 0 11px rgba(34,197,94,0)} 100%{box-shadow:0 0 0 0 rgba(34,197,94,0)} }
-    .title{font-size:1rem;letter-spacing:0.02em;font-weight:700;color:var(--ink)}
+    .title{font-size:clamp(1.1rem,1.4vw,1.6rem);letter-spacing:0.02em;font-weight:700;color:var(--ink)}
     #slide{position:relative;z-index:2;object-fit:contain;opacity:0;transition:opacity .8s ease;display:block;max-width:100%;max-height:84vh}
-    #empty{position:absolute;z-index:3;top:50%;left:50%;transform:translate(-50%,-50%);font-size:clamp(1.3rem,2.2vw,2rem);font-weight:700;color:var(--soft-ink);text-align:center;background:var(--card);border:1px solid var(--card-border);border-radius:18px;padding:18px 24px;box-shadow:0 12px 30px rgba(24,40,54,0.15);-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px)}
-    #qr-box{position:static;z-index:3;background:var(--card);border:1px solid var(--card-border);padding:12px;border-radius:16px;text-align:center;box-shadow:0 12px 30px rgba(28,43,57,0.14);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
-    #qr-box img{display:block;width:128px;height:128px;border-radius:8px}
-    #qr-box span{display:block;margin-top:8px;font-size:0.78rem;font-weight:600;letter-spacing:0.02em;color:var(--soft-ink)}
+    #empty{position:absolute;z-index:3;top:50%;left:50%;transform:translate(-50%,-50%);font-size:clamp(1.3rem,2.4vw,2.4rem);font-weight:700;color:var(--soft-ink);text-align:center;background:var(--card);border:1px solid var(--card-border);border-radius:18px;padding:18px 24px;box-shadow:0 12px 30px rgba(24,40,54,0.15);-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px)}
+    #board-slide{position:relative;z-index:2;object-fit:contain;border-radius:12px;display:block;max-width:100%;max-height:84vh;border:6px solid #fff;box-shadow:0 12px 30px rgba(20,30,48,0.12)}
+    #board-empty{position:absolute;z-index:3;top:50%;left:50%;transform:translate(-50%,-50%);font-size:clamp(1.3rem,2.4vw,2.4rem);font-weight:700;color:var(--soft-ink);text-align:center;background:var(--card);border:1px solid var(--card-border);border-radius:18px;padding:18px 24px;box-shadow:0 12px 30px rgba(24,40,54,0.15);-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px)}
+    #qr-box{position:static;z-index:3;background:var(--card);border:1px solid var(--card-border);padding:clamp(12px,1.2vw,20px);border-radius:16px;text-align:center;box-shadow:0 12px 30px rgba(28,43,57,0.14);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+    #qr-box img{display:block;width:clamp(128px,10vw,190px);height:clamp(128px,10vw,190px);border-radius:8px;margin:0 auto}
+    #qr-box span{display:block;margin-top:10px;font-size:clamp(0.85rem,1vw,1.1rem);font-weight:600;letter-spacing:0.02em;color:var(--soft-ink)}
     @media(max-width:760px){.frame{inset:10px;border-radius:16px}.top-bar{top:16px;left:16px;padding:8px 12px}#qr-box{top:auto;right:16px;bottom:16px;padding:10px}#qr-box img{width:88px;height:88px}#empty{width:min(88vw,460px)}}
   </style>
 </head>
@@ -28,7 +33,7 @@
   </div>
   <div class="tv-content">
     <div class="tv-left">
-      <div class="slide-wrap">
+      <div class="slide-wrap" id="slideshow-wrap">
         <div class="frame" aria-hidden="true"></div>
         <img id="slide" alt="">
         <div id="empty">Waiting for photos&hellip;</div>
@@ -40,6 +45,11 @@
             <div id="new-photo-sub" class="new-photo-sub">Just uploaded</div>
           </div>
         </div>
+      </div>
+      <div class="slide-wrap" id="whiteboard-wrap" style="display:none">
+        <div class="frame" aria-hidden="true"></div>
+        <img id="board-slide" alt="Collective whiteboard">
+        <div id="board-empty">Waiting for drawings&hellip;</div>
       </div>
     </div>
     <div class="tv-right">

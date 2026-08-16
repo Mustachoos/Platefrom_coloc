@@ -5,8 +5,36 @@
   const newPhotoOverlay = document.getElementById("new-photo-overlay");
   const newPhotoImg = document.getElementById("new-photo-img");
   const newPhotoUsername = document.getElementById("new-photo-username");
+  const slideshowWrap = document.getElementById("slideshow-wrap");
+  const whiteboardWrap = document.getElementById("whiteboard-wrap");
+  const boardSlide = document.getElementById("board-slide");
+  const boardEmpty = document.getElementById("board-empty");
   const DEFAULT_INTERVAL_MS = 5000;
   const NEW_PHOTO_DISPLAY_MS = 3000;
+
+  function applyWhiteboardImage(url) {
+    if (!boardSlide || !boardEmpty) return;
+    if (url) {
+      boardSlide.src = url;
+      boardSlide.style.display = "block";
+      boardEmpty.style.display = "none";
+    } else {
+      boardSlide.style.display = "none";
+      boardEmpty.style.display = "block";
+    }
+  }
+
+  function applyTvLayout(layout, whiteboardImageUrl) {
+    if (!slideshowWrap || !whiteboardWrap) return;
+    if (layout === "whiteboard") {
+      slideshowWrap.style.display = "none";
+      whiteboardWrap.style.display = "flex";
+      applyWhiteboardImage(whiteboardImageUrl);
+    } else {
+      whiteboardWrap.style.display = "none";
+      slideshowWrap.style.display = "flex";
+    }
+  }
 
   let photos = [];
   let index = 0;
@@ -148,6 +176,14 @@
         renderLeaderboard();
       } else if (data.event === "likes_setting") {
         applyLikesEnabled(data.enabled);
+      } else if (data.event === "whiteboard_updated") {
+        applyWhiteboardImage(data.url);
+      } else if (data.event === "tv_layout_changed") {
+        // Simplest correct thing: refetch settings and swap the visible
+        // panel, rather than trying to track layout state incrementally.
+        fetch("/api/settings/")
+          .then((response) => response.json())
+          .then((settingsData) => applyTvLayout(settingsData.tv_layout, settingsData.whiteboard_image_url));
       } else if (data.event === "event_switched") {
         // The active event changed entirely (different photos, settings) —
         // simplest correct thing is a full reload rather than trying to
@@ -169,6 +205,7 @@
     showCurrent();
     restartTimer();
     applyLikesEnabled(settingsData.likes_enabled);
+    applyTvLayout(settingsData.tv_layout, settingsData.whiteboard_image_url);
   });
 
   function renderLeaderboard() {

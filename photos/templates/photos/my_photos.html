@@ -2,16 +2,16 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>My photos</title>
   {% load static %}
   <link rel="stylesheet" href="{% static 'photos/site.css' %}">
 </head>
-<body>
+<body class="has-footer-nav">
   <main class="card">
-    <a class="tv-link" href="{% url 'upload' %}">&larr; Back to upload</a>
     <h1>My photos</h1>
     <p class="as-user">Signed in as <strong>{{ pseudo }}</strong></p>
+    {% include "photos/_photos_segmented.html" %}
 
     {% if messages %}
     <div class="messages">
@@ -45,5 +45,6 @@
     <p class="empty">You haven't uploaded any photos yet.</p>
     {% endif %}
   </main>
+  {% include "photos/_footer_nav.html" %}
 </body>
 </html>

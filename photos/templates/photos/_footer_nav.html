@@ -1,0 +1,7 @@
+<nav class="footer-nav">
+  <a href="{% url 'upload' %}" class="footer-nav-item{% if request.resolver_match.url_name == 'upload' %} active{% endif %}">Upload</a>
+  <a href="{% url 'gallery' %}" class="footer-nav-item{% if request.resolver_match.url_name == 'gallery' or request.resolver_match.url_name == 'my-photos' %} active{% endif %}">Photos</a>
+  {% if whiteboard_enabled %}
+  <a href="{% url 'whiteboard-draw' %}" class="footer-nav-item{% if request.resolver_match.url_name == 'whiteboard-draw' %} active{% endif %}">Whiteboard</a>
+  {% endif %}
+</nav>

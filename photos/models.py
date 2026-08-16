@@ -19,6 +19,17 @@ def default_drive_folder_name():
     return timezone.localtime().strftime("%d/%m/%Y")
 
 
+def whiteboard_upload_path(instance, filename):
+    username_part = slugify(instance.username) or "user"
+    time_part = timezone.localtime().strftime("%Hh%M")
+    unique_id = uuid.uuid4().hex[:8]
+    return f"whiteboard/{username_part}_{time_part}_{unique_id}.png"
+
+
+def whiteboard_board_path(instance, filename):
+    return f"whiteboard/boards/board_{instance.pk}_{uuid.uuid4().hex[:8]}.png"
+
+
 class Event(models.Model):
     """One 'soirée': its own guests, photos, and Drive folder.
 
@@ -46,6 +57,18 @@ class Event(models.Model):
         default=True,
         help_text="When off, the heart/like button is hidden and the TV leaderboard is hidden.",
     )
+    whiteboard_enabled = models.BooleanField(
+        default=False,
+        help_text="When on, guests get a button on the home page to draw on the collective whiteboard.",
+    )
+    TV_LAYOUT_SLIDESHOW = "slideshow"
+    TV_LAYOUT_WHITEBOARD = "whiteboard"
+    TV_LAYOUT_CHOICES = [
+        (TV_LAYOUT_SLIDESHOW, "Photo slideshow"),
+        (TV_LAYOUT_WHITEBOARD, "Collective whiteboard"),
+    ]
+    tv_layout = models.CharField(max_length=20, choices=TV_LAYOUT_CHOICES, default=TV_LAYOUT_SLIDESHOW)
+    whiteboard_image = models.ImageField(upload_to=whiteboard_board_path, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -79,6 +102,25 @@ class Photo(models.Model):
     @property
     def likes_count(self):
         return self.likes.count()
+
+
+class WhiteboardDrawing(models.Model):
+    """One guest's contribution to the collective whiteboard: a transparent
+    PNG layer, stacked on top of every earlier surviving layer (oldest
+    first) to render the current board. Storing layers separately (rather
+    than only keeping the flattened board) is what lets an admin delete a
+    single guest's drawing out of the middle of the stack."""
+
+    event = models.ForeignKey(Event, related_name="whiteboard_drawings", on_delete=models.CASCADE)
+    username = models.CharField(max_length=50)
+    image = models.ImageField(upload_to=whiteboard_upload_path)
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["uploaded_at"]
+
+    def __str__(self):
+        return f"{self.username} - {self.uploaded_at:%Y-%m-%d %H:%M}"
 
 
 class UserIdentity(models.Model):
