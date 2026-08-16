@@ -9,6 +9,8 @@
   const whiteboardWrap = document.getElementById("whiteboard-wrap");
   const boardSlide = document.getElementById("board-slide");
   const boardEmpty = document.getElementById("board-empty");
+  // Tabler "heart-filled" icon, inlined (no cross-file <use> — see photos/templatetags/icons.py for why)
+  const HEART_ICON = '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" style="vertical-align:-2px"><path d="M6.979 3.074a6 6 0 0 1 4.988 1.425l.037 .033l.034 -.03a6 6 0 0 1 4.733 -1.44l.246 .036a6 6 0 0 1 3.364 10.008l-.18 .185l-.048 .041l-7.45 7.379a1 1 0 0 1 -1.313 .082l-.094 -.082l-7.493 -7.422a6 6 0 0 1 3.176 -10.215z" /></svg>';
   const DEFAULT_INTERVAL_MS = 5000;
   const NEW_PHOTO_DISPLAY_MS = 3000;
 
@@ -217,7 +219,7 @@
     topList.innerHTML = top
       .map(
         (p) =>
-          `<div class="leaderboard-item"><img class="leaderboard-thumb" src="${p.url}" alt="thumb"><div class="leaderboard-meta"><div class="leaderboard-username">${p.username}</div><div class="leaderboard-count">${p.likes_count} ♥</div></div></div>`
+          `<div class="leaderboard-item"><img class="leaderboard-thumb" src="${p.url}" alt="thumb"><div class="leaderboard-meta"><div class="leaderboard-username">${p.username}</div><div class="leaderboard-count">${HEART_ICON} ${p.likes_count}</div></div></div>`
       )
       .join("");
   }

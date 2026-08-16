@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Switch event</title>
   {% load static %}
+  {% load icons %}
   <link rel="stylesheet" href="{% static 'photos/site.css' %}">
   <style>
     .warning{background:#fff7ed;border:1px solid #fdba74;color:#9a3412;border-radius:12px;padding:14px 16px;margin:16px 0;font-weight:600}
@@ -14,11 +15,12 @@
     .option p{margin:0 0 10px;color:var(--soft);font-size:0.92rem}
     .option-inline{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
     .option-inline input{flex:1;min-width:220px;padding:10px 12px;border-radius:10px;border:1px solid #d4e4ee}
+    .tv-link{display:inline-flex;align-items:center;gap:4px}
   </style>
 </head>
 <body>
   <main class="card">
-    <a class="tv-link" href="{% url 'dashboard' %}">&larr; Cancel</a>
+    <a class="tv-link" href="{% url 'dashboard' %}">{% icon 'arrow-left' size=16 %} Cancel</a>
     <h1>Switch to "{{ target.name }}"?</h1>
 
     {% if messages %}

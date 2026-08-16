@@ -1,7 +1,14 @@
+{% load icons %}
 <nav class="footer-nav">
-  <a href="{% url 'upload' %}" class="footer-nav-item{% if request.resolver_match.url_name == 'upload' %} active{% endif %}">Upload</a>
-  <a href="{% url 'gallery' %}" class="footer-nav-item{% if request.resolver_match.url_name == 'gallery' or request.resolver_match.url_name == 'my-photos' %} active{% endif %}">Photos</a>
+  <a href="{% url 'upload' %}" class="footer-nav-item{% if request.resolver_match.url_name == 'upload' %} active{% endif %}">
+    {% icon 'upload' size=20 %}<span>Upload</span>
+  </a>
+  <a href="{% url 'gallery' %}" class="footer-nav-item{% if request.resolver_match.url_name == 'gallery' or request.resolver_match.url_name == 'my-photos' %} active{% endif %}">
+    {% icon 'photo' size=20 %}<span>Photos</span>
+  </a>
   {% if whiteboard_enabled %}
-  <a href="{% url 'whiteboard-draw' %}" class="footer-nav-item{% if request.resolver_match.url_name == 'whiteboard-draw' %} active{% endif %}">Whiteboard</a>
+  <a href="{% url 'whiteboard-draw' %}" class="footer-nav-item{% if request.resolver_match.url_name == 'whiteboard-draw' %} active{% endif %}">
+    {% icon 'palette' size=20 %}<span>Whiteboard</span>
+  </a>
   {% endif %}
 </nav>
