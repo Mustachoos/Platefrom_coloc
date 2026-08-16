@@ -1,6 +1,7 @@
 import io
 import logging
 import os
+import re
 
 import qrcode
 from asgiref.sync import async_to_sync
@@ -174,7 +175,9 @@ def upload_view(request):
 
 
 def tv_view(request):
-    return render(request, "photos/tv.html")
+    active_event = Event.get_active()
+    wifi_qr_shown = bool(active_event and active_event.wifi_qr_enabled and active_event.wifi_ssid)
+    return render(request, "photos/tv.html", {"wifi_qr_shown": wifi_qr_shown})
 
 
 def whiteboard_draw_view(request):
@@ -203,7 +206,7 @@ def whiteboard_draw_view(request):
             "board_image_url": active_event.whiteboard_image.url if active_event.whiteboard_image else "",
             "board_width": whiteboard_service.WIDTH,
             "board_height": whiteboard_service.HEIGHT,
-            "pen_max": whiteboard_service.WIDTH // 10,
+            "pen_max": whiteboard_service.WIDTH // 300,
             "cooldown_remaining": cooldown_remaining,
             "cooldown_seconds": WHITEBOARD_COOLDOWN_SECONDS,
             "whiteboard_enabled": True,
@@ -358,6 +361,36 @@ def upload_qr_code(request):
     return HttpResponse(buffer.getvalue(), content_type="image/png")
 
 
+_WIFI_QR_ESCAPE_RE = re.compile(r'([\\;,"])')
+
+
+def _wifi_qr_escape(value):
+    # Per the WIFI: QR payload convention (no formal RFC, but universally
+    # implemented this way): backslash, semicolon, comma and double-quote
+    # are field/record separators or quoting characters, so a literal one
+    # inside the SSID/password has to be backslash-escaped.
+    return _WIFI_QR_ESCAPE_RE.sub(r"\\\1", value)
+
+
+def wifi_qr_code(request):
+    active_event = Event.get_active()
+    if not active_event or not active_event.wifi_qr_enabled or not active_event.wifi_ssid:
+        return HttpResponse(status=404)
+    ssid = active_event.wifi_ssid
+    if active_event.wifi_security == Event.WIFI_SECURITY_NOPASS:
+        payload = f"WIFI:T:nopass;S:{_wifi_qr_escape(ssid)};;"
+    else:
+        payload = (
+            f"WIFI:T:{active_event.wifi_security};"
+            f"S:{_wifi_qr_escape(ssid)};"
+            f"P:{_wifi_qr_escape(active_event.wifi_password)};;"
+        )
+    image = qrcode.make(payload)
+    buffer = io.BytesIO()
+    image.save(buffer, format="PNG")
+    return HttpResponse(buffer.getvalue(), content_type="image/png")
+
+
 @staff_member_required
 def dashboard_view(request):
     active_event = Event.get_active()
@@ -442,6 +475,27 @@ def dashboard_view(request):
             active_event.save(update_fields=update_fields)
             messages.success(request, "Whiteboard " + ("enabled." if active_event.whiteboard_enabled else "disabled."))
             return _dashboard_redirect(tab="features")
+        if "save_wifi_config" in request.POST:
+            active_event.wifi_ssid = request.POST.get("wifi_ssid", "").strip()
+            active_event.wifi_password = request.POST.get("wifi_password", "")
+            security = request.POST.get("wifi_security", Event.WIFI_SECURITY_WPA)
+            valid_security = dict(Event.WIFI_SECURITY_CHOICES)
+            active_event.wifi_security = security if security in valid_security else Event.WIFI_SECURITY_WPA
+            if not active_event.wifi_ssid and active_event.wifi_qr_enabled:
+                # Nothing left to encode — turn the QR code back off rather
+                # than leave it on pointing at an empty network name.
+                active_event.wifi_qr_enabled = False
+            active_event.save(update_fields=["wifi_ssid", "wifi_password", "wifi_security", "wifi_qr_enabled"])
+            messages.success(request, "Wi-Fi details saved.")
+            return _dashboard_redirect(tab="features")
+        if "toggle_wifi_qr" in request.POST:
+            if not active_event.wifi_qr_enabled and not active_event.wifi_ssid:
+                messages.error(request, "Enter a Wi-Fi network name first.")
+            else:
+                active_event.wifi_qr_enabled = not active_event.wifi_qr_enabled
+                active_event.save(update_fields=["wifi_qr_enabled"])
+                messages.success(request, "Wi-Fi QR code " + ("enabled." if active_event.wifi_qr_enabled else "disabled."))
+            return _dashboard_redirect(tab="features")
         if "set_tv_layout" in request.POST:
             layout = request.POST.get("set_tv_layout")
             valid_layouts = dict(Event.TV_LAYOUT_CHOICES)
@@ -493,6 +547,7 @@ def dashboard_view(request):
             "guests_with_email": guests_with_email,
             "guests_shared": guests_shared,
             "active_tab": active_tab,
+            "wifi_security_choices": Event.WIFI_SECURITY_CHOICES,
         },
     )
 

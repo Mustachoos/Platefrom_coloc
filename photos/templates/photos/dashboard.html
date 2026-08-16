@@ -40,8 +40,11 @@
     .create-event-form{display:flex;gap:10px;align-items:flex-end;padding-top:12px;border-top:1px dashed #edf2f7}
     .create-event-form .field{display:flex;flex-direction:column;gap:4px;flex:1}
     .create-event-form label{font-size:0.78rem;font-weight:700;color:var(--soft)}
-    .create-event-form input{padding:8px 10px;border-radius:8px;border:1px solid #d4e4ee;font-size:0.9rem;width:100%}
+    .create-event-form input,.create-event-form select{padding:8px 10px;border-radius:8px;border:1px solid #d4e4ee;font-size:0.9rem;width:100%;background:#fff}
     .drive-error{color:#9a3412;font-weight:700;display:inline-flex;align-items:center;gap:4px}
+    .wifi-qr-preview{display:flex;align-items:center;gap:10px;margin-top:12px}
+    .wifi-qr-preview img{width:84px;height:84px;border-radius:8px;border:1px solid #edf2f7}
+    .wifi-qr-preview span{font-size:0.82rem;color:var(--soft)}
     .tab-radio{display:none}
     .tab-select{display:none}
     .tab-bar{display:flex;gap:4px;margin-bottom:20px;border-bottom:2px solid #edf2f7;flex-wrap:wrap}
@@ -229,6 +232,45 @@
         {% csrf_token %}
         <button type="submit" name="toggle_whiteboard" class="switch {% if active_event.whiteboard_enabled %}on{% endif %}" aria-pressed="{{ active_event.whiteboard_enabled|yesno:'true,false' }}" aria-label="Toggle whiteboard"><span class="knob"></span></button>
       </form>
+    </div>
+
+    <div class="feature-row stacked">
+      <div class="feature-row-top">
+        <div>
+          <div class="feature-name">Wi-Fi QR code <span class="status-badge {% if active_event.wifi_qr_enabled %}status-on{% else %}status-off{% endif %}">{% if active_event.wifi_qr_enabled %}ON{% else %}OFF{% endif %}</span></div>
+          <div class="feature-status">When on, a second QR code to join the Wi-Fi is shown next to the upload QR code on the TV screen — guests need to be on the network before they can reach the app anyway.</div>
+        </div>
+        <form method="post">
+          {% csrf_token %}
+          <button type="submit" name="toggle_wifi_qr" class="switch {% if active_event.wifi_qr_enabled %}on{% endif %}" aria-pressed="{{ active_event.wifi_qr_enabled|yesno:'true,false' }}" aria-label="Toggle Wi-Fi QR code"><span class="knob"></span></button>
+        </form>
+      </div>
+      <form method="post" class="create-event-form">
+        {% csrf_token %}
+        <div class="field">
+          <label for="wifi_ssid">Network name (SSID)</label>
+          <input type="text" id="wifi_ssid" name="wifi_ssid" value="{{ active_event.wifi_ssid }}" placeholder="e.g. Chez Axel">
+        </div>
+        <div class="field">
+          <label for="wifi_password">Password</label>
+          <input type="text" id="wifi_password" name="wifi_password" value="{{ active_event.wifi_password }}" placeholder="Leave blank if open">
+        </div>
+        <div class="field">
+          <label for="wifi_security">Security</label>
+          <select id="wifi_security" name="wifi_security">
+            {% for value, label in wifi_security_choices %}
+            <option value="{{ value }}" {% if active_event.wifi_security == value %}selected{% endif %}>{{ label }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <button type="submit" name="save_wifi_config" class="btn secondary small">Save</button>
+      </form>
+      {% if active_event.wifi_qr_enabled and active_event.wifi_ssid %}
+      <div class="wifi-qr-preview">
+        <img src="{% url 'wifi-qr-code' %}" alt="Wi-Fi QR code preview">
+        <span>Preview — this is exactly what guests will scan on the TV screen.</span>
+      </div>
+      {% endif %}
     </div>
   </div>
 

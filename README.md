@@ -151,7 +151,7 @@ Mise en place, à faire une seule fois :
   - Bannière "New photo from &lt;pseudo&gt;" : à chaque upload, une superposition centrale annonce la nouvelle photo pendant 3 secondes ; les annonces sont mises en file si plusieurs photos arrivent en même temps, indépendamment du cycle du diaporama de fond
   - Classement latéral (leaderboard) du top 3 des photos les plus likées, mis à jour en direct
 - **Mode whiteboard** : affiche l'image composite du tableau collectif de l'évènement actif, mise à jour en direct (sans rechargement) à chaque nouveau dessin ajouté ; message "Waiting for drawings…" tant qu'aucun dessin n'a été envoyé
-- QR code permanent pointant vers `/upload/`, pour que tout nouvel invité puisse rejoindre à tout moment, quel que soit le mode affiché
+- QR code permanent pointant vers `/upload/`, pour que tout nouvel invité puisse rejoindre à tout moment, quel que soit le mode affiché — accompagné, si le QR Wi-Fi est activé pour l'évènement actif (dashboard, onglet "Optional features"), d'un second QR code juste à sa gauche pour rejoindre le Wi-Fi (nécessaire de toute façon : un invité ne peut pas atteindre l'IP locale du serveur avant d'être sur le même réseau)
 - Changer de layout depuis le dashboard notifie l'écran TV via WebSocket, qui réinterroge ses réglages et bascule instantanément entre les deux modes, sans rechargement de page
 - Connexion WebSocket permanente, avec reconnexion automatique toutes les 3 secondes en cas de coupure
 
@@ -165,6 +165,12 @@ Mise en place, à faire une seule fois :
 #### 8. QR code d'upload — `/qr/upload.png`
 - Génère à la volée une image PNG encodant l'URL absolue de la page `/upload/`
 - Si la variable d'environnement `QR_HOST_IP` est définie, cette IP est utilisée à la place du nom d'hôte de la requête — utile pour garantir que le QR code reste scannable sur le réseau local du logement même quand le serveur tourne dans un conteneur (typiquement l'écran TV charge `/tv/` via `localhost`, ce qui donnerait un QR code inutilisable pour un téléphone sans cette variable). Voir [Lancer le projet](#lancer-le-projet) : `scripts/update-lan-ip.ps1` détecte et renseigne cette IP automatiquement, plutôt que de la coder en dur dans `docker-compose.yml`.
+
+#### 8bis. QR code Wi-Fi — `/qr/wifi.png`
+- Génère à la volée une image PNG au format standard `WIFI:T:<sécurité>;S:<SSID>;P:<mot de passe>;;`, reconnu nativement par l'appareil photo d'iOS et d'Android (propose directement "Rejoindre le réseau" au scan)
+- Configuré par évènement (pas globalement) depuis le dashboard staff, onglet "Optional features" : nom du réseau (SSID), mot de passe, type de sécurité (`WPA`/`WPA2`/`WPA3`, `WEP`, ou réseau ouvert), plus un interrupteur séparé pour activer/désactiver l'affichage sur l'écran TV — les infos peuvent être enregistrées sans activer le QR code tout de suite, et un aperçu du QR code s'affiche dans le dashboard une fois activé, pour vérifier qu'il est correct avant de le montrer aux invités
+- Renvoie une 404 si le QR Wi-Fi n'est pas activé pour l'évènement actif (ou si aucun SSID n'est renseigné) — dans ce cas l'écran TV n'affiche que le QR code d'upload, comme avant
+- Un unique QR code qui rejoindrait le Wi-Fi **puis** ouvrirait l'app n'est pas réalisable : les QR codes `WIFI:` et les QR codes URL sont deux types d'action distincts et mutuellement exclusifs pour l'appareil photo du téléphone, il n'existe pas de format standard qui enchaîne les deux. D'où deux QR codes séparés, affichés côte à côte sur `/tv/`.
 
 #### 9. Administration — `/admin/`
 - Interface Django Admin standard, gardée comme filet de secours technique — l'usage courant se fait depuis le dashboard staff (section suivante)
@@ -222,7 +228,7 @@ Un unique canal WebSocket diffuse à tous les écrans TV connectés :
 - `event_switched` — l'évènement actif a changé ; l'écran TV recharge entièrement la page pour repartir sur les nouvelles photos/réglages
 
 ### Modèle de données
-- **Event** — un évènement/soirée : nom (unique), statut actif (un seul à la fois), dossier Drive (ID/lien), partage Drive actif ou non, likes activés ou non, whiteboard activé ou non, layout TV (`slideshow` ou `whiteboard`), image composite du tableau collectif, date de création. Racine de tout le reste : photos, invités et dessins lui appartiennent
+- **Event** — un évènement/soirée : nom (unique), statut actif (un seul à la fois), dossier Drive (ID/lien), partage Drive actif ou non, likes activés ou non, whiteboard activé ou non, layout TV (`slideshow` ou `whiteboard`), image composite du tableau collectif, QR Wi-Fi activé ou non avec ses SSID/mot de passe/type de sécurité, date de création. Racine de tout le reste : photos, invités et dessins lui appartiennent
 - **Photo** — évènement, pseudo de l'auteur, fichier image, date d'envoi, ID du fichier Drive correspondant si copié (`drive_file_id`)
 - **WhiteboardDrawing** — évènement, pseudo de l'auteur, calque PNG transparent envoyé, date d'envoi ; chaque ligne est un calque individuel du tableau collectif, conservé séparément (et non fondu directement dans le composite) pour permettre la suppression ciblée d'un seul dessin
 - **UserIdentity** — évènement, pseudo et clé de session (uniques *au sein de l'évènement*, pas globalement), email (facultatif, pour le partage Drive), statut de partage Drive et ID de la permission Drive accordée (`drive_permission_id`, pour pouvoir la révoquer précisément), date de création ; fait office d'identité légère sans mot de passe

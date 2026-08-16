@@ -20,10 +20,11 @@
     #empty{position:absolute;z-index:3;top:50%;left:50%;transform:translate(-50%,-50%);font-size:clamp(1.3rem,2.4vw,2.4rem);font-weight:700;color:var(--soft-ink);text-align:center;background:var(--card);border:1px solid var(--card-border);border-radius:18px;padding:18px 24px;box-shadow:0 12px 30px rgba(24,40,54,0.15);-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px)}
     #board-slide{position:relative;z-index:2;object-fit:contain;border-radius:12px;display:block;max-width:100%;max-height:84vh;border:6px solid #fff;box-shadow:0 12px 30px rgba(20,30,48,0.12)}
     #board-empty{position:absolute;z-index:3;top:50%;left:50%;transform:translate(-50%,-50%);font-size:clamp(1.3rem,2.4vw,2.4rem);font-weight:700;color:var(--soft-ink);text-align:center;background:var(--card);border:1px solid var(--card-border);border-radius:18px;padding:18px 24px;box-shadow:0 12px 30px rgba(24,40,54,0.15);-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px)}
-    #qr-box{position:static;z-index:3;background:var(--card);border:1px solid var(--card-border);padding:clamp(12px,1.2vw,20px);border-radius:16px;text-align:center;box-shadow:0 12px 30px rgba(28,43,57,0.14);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
-    #qr-box img{display:block;width:clamp(128px,10vw,190px);height:clamp(128px,10vw,190px);border-radius:8px;margin:0 auto}
-    #qr-box span{display:block;margin-top:10px;font-size:clamp(0.85rem,1vw,1.1rem);font-weight:600;letter-spacing:0.02em;color:var(--soft-ink)}
-    @media(max-width:760px){.frame{inset:10px;border-radius:16px}.top-bar{top:16px;left:16px;padding:8px 12px}#qr-box{top:auto;right:16px;bottom:16px;padding:10px}#qr-box img{width:88px;height:88px}#empty{width:min(88vw,460px)}}
+    .qr-row{position:static;z-index:3;display:flex;gap:clamp(10px,1vw,16px)}
+    .qr-card{background:var(--card);border:1px solid var(--card-border);padding:clamp(12px,1.2vw,20px);border-radius:16px;text-align:center;box-shadow:0 12px 30px rgba(28,43,57,0.14);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+    .qr-card img{display:block;width:clamp(128px,10vw,190px);height:clamp(128px,10vw,190px);border-radius:8px;margin:0 auto}
+    .qr-card span{display:block;margin-top:10px;font-size:clamp(0.85rem,1vw,1.1rem);font-weight:600;letter-spacing:0.02em;color:var(--soft-ink)}
+    @media(max-width:760px){.frame{inset:10px;border-radius:16px}.top-bar{top:16px;left:16px;padding:8px 12px}.qr-row{top:auto;right:16px;bottom:16px;gap:8px}.qr-card{padding:10px}.qr-card img{width:88px;height:88px}#empty{width:min(88vw,460px)}}
   </style>
 </head>
 <body class="tv-page">
@@ -53,9 +54,17 @@
       </div>
     </div>
     <div class="tv-right">
-      <div id="qr-box">
-        <img src="{% url 'upload-qr-code' %}" alt="QR code to upload photos">
-        <span>Scan to upload</span>
+      <div class="qr-row">
+        {% if wifi_qr_shown %}
+        <div class="qr-card">
+          <img src="{% url 'wifi-qr-code' %}" alt="QR code to join the Wi-Fi">
+          <span>Scan to join Wi-Fi</span>
+        </div>
+        {% endif %}
+        <div class="qr-card">
+          <img src="{% url 'upload-qr-code' %}" alt="QR code to upload photos">
+          <span>Scan to upload</span>
+        </div>
       </div>
       <aside class="tv-sidebar" id="leaderboard">
         <strong>Top liked photos</strong>
