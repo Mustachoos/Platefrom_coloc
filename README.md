@@ -34,6 +34,31 @@ docker compose up --build
 - Admin Django : http://localhost:8000/admin/
 - Dashboard staff : http://localhost:8000/dashboard/
 
+Le QR code d'upload affiché sur `/tv/` a besoin de connaître l'IP locale de la machine qui héberge le serveur (voir section QR code plus bas) — sans quoi il pointerait vers `localhost`, inutilisable depuis le téléphone d'un invité. Cette IP est lue depuis la variable d'environnement `QR_HOST_IP` (fichier `.env` à la racine, non versionné, chargé automatiquement par `docker compose`), renseignée par un script qui détecte l'IP LAN actuelle de la machine plutôt que de la coder en dur dans `docker-compose.yml` :
+
+- **Windows (PowerShell)** :
+  ```powershell
+  .\scripts\update-lan-ip.ps1
+  docker compose up -d
+  ```
+  ou en une seule commande (détecte l'IP puis lance `docker compose up --build`) :
+  ```powershell
+  .\scripts\start.ps1
+  ```
+- **macOS / Linux (bash)** :
+  ```bash
+  ./scripts/update-lan-ip.sh
+  docker compose up -d
+  ```
+  ou en une seule commande :
+  ```bash
+  ./scripts/start.sh
+  ```
+
+Les deux versions font la même chose (trouver l'interface réseau qui a une route par défaut, donc celle réellement connectée au routeur, et écrire son IP dans `.env`) mais ne sont pas interchangeables : les cmdlets PowerShell utilisées (`Get-NetIPConfiguration`) n'existent que sur Windows, y compris sous PowerShell Core installé sur Mac.
+
+À relancer après un changement de réseau (nouvelle box, nouveau Wi-Fi, renouvellement DHCP) — l'ancienne IP hardcodée dans `docker-compose.yml` devenait périmée à chaque changement de réseau, ce que ces scripts évitent.
+
 Au premier lancement, créer un compte admin si besoin :
 ```
 docker compose exec web python manage.py createsuperuser
@@ -139,7 +164,7 @@ Mise en place, à faire une seule fois :
 
 #### 8. QR code d'upload — `/qr/upload.png`
 - Génère à la volée une image PNG encodant l'URL absolue de la page `/upload/`
-- Si la variable d'environnement `QR_HOST_IP` est définie, cette IP est utilisée à la place du nom d'hôte de la requête — utile pour garantir que le QR code reste scannable sur le réseau local du logement même quand le serveur tourne dans un conteneur
+- Si la variable d'environnement `QR_HOST_IP` est définie, cette IP est utilisée à la place du nom d'hôte de la requête — utile pour garantir que le QR code reste scannable sur le réseau local du logement même quand le serveur tourne dans un conteneur (typiquement l'écran TV charge `/tv/` via `localhost`, ce qui donnerait un QR code inutilisable pour un téléphone sans cette variable). Voir [Lancer le projet](#lancer-le-projet) : `scripts/update-lan-ip.ps1` détecte et renseigne cette IP automatiquement, plutôt que de la coder en dur dans `docker-compose.yml`.
 
 #### 9. Administration — `/admin/`
 - Interface Django Admin standard, gardée comme filet de secours technique — l'usage courant se fait depuis le dashboard staff (section suivante)
