@@ -15,12 +15,23 @@ import io
 from django.core.files.base import ContentFile
 from PIL import Image
 
-WIDTH = 1200
-HEIGHT = 900  # 4:3
+WIDTH = 3600
+HEIGHT = 2700  # 4:3, 3x the original 1200x900 for a sharper board
 
 
 def _blank_board():
     return Image.new("RGBA", (WIDTH, HEIGHT), (255, 255, 255, 255))
+
+
+def _ensure_size(image):
+    # Drawings/boards saved before a resolution change are a different
+    # size than the current WIDTH/HEIGHT, and Image.alpha_composite
+    # requires both images to match exactly. Resize rather than reject
+    # them so existing whiteboard content survives a resolution bump
+    # instead of crashing on the next upload or delete.
+    if image.size != (WIDTH, HEIGHT):
+        image = image.resize((WIDTH, HEIGHT), Image.LANCZOS)
+    return image
 
 
 def _save_board(event, board):
@@ -34,10 +45,10 @@ def _save_board(event, board):
 def add_layer(event, drawing):
     """Composite one freshly uploaded drawing on top of the current board."""
     if event.whiteboard_image:
-        board = Image.open(event.whiteboard_image.path).convert("RGBA")
+        board = _ensure_size(Image.open(event.whiteboard_image.path).convert("RGBA"))
     else:
         board = _blank_board()
-    layer = Image.open(drawing.image.path).convert("RGBA")
+    layer = _ensure_size(Image.open(drawing.image.path).convert("RGBA"))
     board = Image.alpha_composite(board, layer)
     _save_board(event, board)
 
@@ -46,6 +57,6 @@ def rebuild_board(event):
     """Recompute the board from every surviving drawing, oldest first."""
     board = _blank_board()
     for drawing in event.whiteboard_drawings.order_by("uploaded_at"):
-        layer = Image.open(drawing.image.path).convert("RGBA")
+        layer = _ensure_size(Image.open(drawing.image.path).convert("RGBA"))
         board = Image.alpha_composite(board, layer)
     _save_board(event, board)
