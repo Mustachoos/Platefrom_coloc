@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Set up your event</title>
+  {% load static %}
+  <link rel="stylesheet" href="{% static 'photos/site.css' %}">
+</head>
+<body>
+  <main class="card">
+    <p class="hint">Step 1 of 5</p>
+    <h1>Welcome 👋</h1>
+    <p class="hint">
+      Let's get this app ready — a short guided setup, all from your browser. No files to edit,
+      no commands to run after this.
+    </p>
+    <div class="form-actions">
+      <a class="btn primary" href="{% url 'setup-admin' %}">Get started</a>
+    </div>
+  </main>
+</body>
+</html>

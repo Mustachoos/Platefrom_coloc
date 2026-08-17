@@ -31,12 +31,14 @@ def whiteboard_board_path(instance, filename):
 
 
 class Event(models.Model):
-    """One 'soirée': its own guests, photos, and Drive folder.
+    """One 'soirée': its own guests, photos, and (optionally) Drive folder.
 
     Exactly one Event has is_active=True at a time — that's the one the
-    public pages (upload, tv, gallery) read and write. A Drive folder is
-    mandatory: switching the active event always backs up/restores through
-    it, so local photos are never at risk of being silently lost.
+    public pages (upload, tv, gallery) read and write. A connected Drive
+    folder is optional but recommended: switching away from an event with
+    one backs up/restores its photos safely through it; an event with no
+    Drive folder just keeps its local photos in place (hidden, not deleted)
+    while it's inactive, with no off-machine backup.
     """
 
     name = models.CharField(max_length=200, unique=True, default=default_drive_folder_name)
@@ -164,6 +166,35 @@ class Like(models.Model):
 
     def __str__(self):
         return f"{self.user.pseudo} ♥ {self.photo.id}"
+
+
+class SiteSettings(models.Model):
+    server_host = models.CharField(
+        max_length=255,
+        blank=True,
+        help_text="Address guests' phones use to reach this server (e.g. 192.168.1.13:8000), "
+        "encoded in the upload QR code. Pre-filled from the address used to load the setup "
+        "wizard; change it here if it's wrong or your network changes, no restart needed.",
+    )
+    drive_root_folder_id = models.CharField(
+        max_length=200,
+        blank=True,
+        help_text="ID of the Drive folder under which each event creates its own subfolder. "
+        "Set from the setup wizard's Drive step (or the GOOGLE_DRIVE_ROOT_FOLDER_ID env var, "
+        "which takes priority if set).",
+    )
+
+    class Meta:
+        verbose_name = "Site settings"
+        verbose_name_plural = "Site settings"
+
+    def __str__(self):
+        return f"Site settings: {self.server_host or '(not set)'}"
+
+    @classmethod
+    def get_solo(cls):
+        obj, _ = cls.objects.get_or_create(pk=1)
+        return obj
 
 
 class SlideshowSettings(models.Model):

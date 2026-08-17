@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Confirm your network address</title>
+  {% load static %}
+  <link rel="stylesheet" href="{% static 'photos/site.css' %}">
+</head>
+<body>
+  <main class="card">
+    <p class="hint">Step 4 of 5</p>
+    <h1>Where can guests reach this app?</h1>
+    <p class="hint">
+      This gets encoded in the QR code guests scan on the TV screen. We pre-filled it with the
+      address you're using right now — it's usually correct, since you're on the same network
+      guests will be on.
+    </p>
+
+    <form method="post">
+      {% csrf_token %}
+      <div class="form-row">
+        <label for="{{ form.server_host.id_for_label }}">Server address</label>
+        {{ form.server_host }}
+        {% if form.server_host.errors %}<div class="message error">{{ form.server_host.errors }}</div>{% endif %}
+      </div>
+      <div class="form-actions">
+        <button type="submit" class="btn primary">Continue</button>
+      </div>
+    </form>
+  </main>
+</body>
+</html>

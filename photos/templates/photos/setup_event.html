@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Create your first event</title>
+  {% load static %}
+  <link rel="stylesheet" href="{% static 'photos/site.css' %}">
+</head>
+<body>
+  <main class="card">
+    <p class="hint">Step 5 of 5</p>
+    <h1>Name your first event</h1>
+    <p class="hint">This is the "soirée" guests will upload photos to — you can create more later.</p>
+
+    <form method="post">
+      {% csrf_token %}
+      <div class="form-row">
+        <label for="{{ form.name.id_for_label }}">Event name</label>
+        {{ form.name }}
+        {% if form.name.errors %}<div class="message error">{{ form.name.errors }}</div>{% endif %}
+      </div>
+      <div class="form-actions">
+        <button type="submit" class="btn primary">Finish setup</button>
+      </div>
+    </form>
+  </main>
+</body>
+</html>
