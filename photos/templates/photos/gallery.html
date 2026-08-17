@@ -7,8 +7,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Photo gallery</title>
   <link rel="stylesheet" href="{% static 'photos/site.css' %}">
+  <link rel="stylesheet" href="{% static 'photos/themes/sense-preview.css' %}">
 </head>
-<body class="has-footer-nav has-page-header">
+<body class="has-footer-nav has-page-header sense-preview">
   {% include "photos/_page_header.html" with page_icon="photo" page_title="All photos" %}
   <main class="card">
     {% include "photos/_photos_segmented.html" %}

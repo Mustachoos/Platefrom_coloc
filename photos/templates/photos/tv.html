@@ -6,6 +6,7 @@
   <title>Coloc TV</title>
   {% load static %}
   <link rel="stylesheet" href="{% static 'photos/site.css' %}">
+  <link rel="stylesheet" href="{% static 'photos/themes/sense-preview.css' %}">
   <style>
     /* Minimal layout tweaks kept here; visual tokens live in site.css */
     /* Sized for 10-foot viewing (a TV watched from across the room needs
@@ -27,7 +28,7 @@
     @media(max-width:760px){.frame{inset:10px;border-radius:16px}.top-bar{top:16px;left:16px;padding:8px 12px}.qr-row{top:auto;right:16px;bottom:16px;gap:8px}.qr-card{padding:10px}.qr-card img{width:88px;height:88px}#empty{width:min(88vw,460px)}}
   </style>
 </head>
-<body class="tv-page">
+<body class="tv-page sense-preview">
   <div class="top-bar" aria-hidden="true">
     <span class="dot"></span>
     <span class="title">Coloc TV</span>

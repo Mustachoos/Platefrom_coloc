@@ -6,11 +6,11 @@
   <title>My photos</title>
   {% load static %}
   <link rel="stylesheet" href="{% static 'photos/site.css' %}">
+  <link rel="stylesheet" href="{% static 'photos/themes/sense-preview.css' %}">
 </head>
-<body class="has-footer-nav has-page-header">
+<body class="has-footer-nav has-page-header sense-preview">
   {% include "photos/_page_header.html" with page_icon="photo" page_title="My photos" %}
   <main class="card">
-    <p class="as-user">Signed in as <strong>{{ pseudo }}</strong></p>
     {% include "photos/_photos_segmented.html" %}
 
     {% if messages %}

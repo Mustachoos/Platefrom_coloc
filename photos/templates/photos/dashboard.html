@@ -7,6 +7,7 @@
   {% load static %}
   {% load icons %}
   <link rel="stylesheet" href="{% static 'photos/site.css' %}">
+  <link rel="stylesheet" href="{% static 'photos/themes/sense-preview.css' %}">
   <style>
     body{margin:16px;max-width:1100px}
     .panel{background:#fff;border-radius:14px;border:1px solid #edf2f7;padding:18px 20px;margin-bottom:20px;box-shadow:0 8px 20px rgba(31,52,72,0.06)}
@@ -92,7 +93,7 @@
     }
   </style>
 </head>
-<body>
+<body class="sense-preview">
   <h1>Event dashboard{% if active_event %} — {{ active_event.name }}{% endif %}</h1>
   <p class="as-user">Signed in as staff.</p>
 
