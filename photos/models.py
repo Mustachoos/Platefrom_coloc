@@ -83,6 +83,15 @@ class Event(models.Model):
         (TV_LAYOUT_WHITEBOARD, "Collective whiteboard"),
     ]
     tv_layout = models.CharField(max_length=20, choices=TV_LAYOUT_CHOICES, default=TV_LAYOUT_SLIDESHOW)
+    TV_BOTTOM_RIGHT_LEADERBOARD = "leaderboard"
+    TV_BOTTOM_RIGHT_NONE = "none"
+    TV_BOTTOM_RIGHT_CHOICES = [
+        (TV_BOTTOM_RIGHT_LEADERBOARD, "Leaderboard"),
+        (TV_BOTTOM_RIGHT_NONE, "Nothing"),
+    ]
+    tv_bottom_right = models.CharField(
+        max_length=20, choices=TV_BOTTOM_RIGHT_CHOICES, default=TV_BOTTOM_RIGHT_LEADERBOARD
+    )
     whiteboard_image = models.ImageField(upload_to=whiteboard_board_path, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 

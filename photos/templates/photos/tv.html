@@ -56,12 +56,10 @@
     </div>
     <div class="tv-right">
       <div class="qr-row">
-        {% if wifi_qr_shown %}
-        <div class="qr-card">
-          <img src="{% url 'wifi-qr-code' %}" alt="QR code to join the Wi-Fi">
+        <div class="qr-card" id="wifi-qr-card" style="display:{% if not wifi_qr_shown %}none{% endif %}">
+          <img src="{% if wifi_qr_shown %}{% url 'wifi-qr-code' %}{% endif %}" data-src="{% url 'wifi-qr-code' %}" alt="QR code to join the Wi-Fi">
           <span>Scan to join Wi-Fi</span>
         </div>
-        {% endif %}
         <div class="qr-card">
           <img src="{% url 'upload-qr-code' %}" alt="QR code to upload photos">
           <span>Scan to upload</span>

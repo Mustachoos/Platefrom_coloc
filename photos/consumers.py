@@ -26,14 +26,11 @@ class PhotosConsumer(WebsocketConsumer):
     def photo_liked(self, event):
         self.send(text_data=json.dumps({"event": "liked", "photo_id": event["photo_id"], "likes_count": event["likes_count"]}))
 
-    def likes_setting(self, event):
-        self.send(text_data=json.dumps({"event": "likes_setting", "enabled": event["enabled"]}))
-
     def event_switched(self, event):
         self.send(text_data=json.dumps({"event": "event_switched"}))
 
     def whiteboard_updated(self, event):
         self.send(text_data=json.dumps({"event": "whiteboard_updated", "url": event["url"]}))
 
-    def tv_layout_changed(self, event):
-        self.send(text_data=json.dumps({"event": "tv_layout_changed"}))
+    def tv_settings_changed(self, event):
+        self.send(text_data=json.dumps({"event": "tv_settings_changed"}))

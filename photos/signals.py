@@ -52,11 +52,11 @@ def notify_tv_of_interval_change(sender, instance, **kwargs):
 
 
 @receiver(post_save, sender=Event)
-def notify_tv_of_likes_setting(sender, instance, **kwargs):
+def notify_tv_of_settings_change(sender, instance, **kwargs):
     if not instance.is_active:
         return
     channel_layer = get_channel_layer()
     async_to_sync(channel_layer.group_send)(
         "tv_updates",
-        {"type": "likes.setting", "enabled": instance.likes_enabled},
+        {"type": "tv_settings.changed"},
     )

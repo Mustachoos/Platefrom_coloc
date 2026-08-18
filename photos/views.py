@@ -330,13 +330,17 @@ def slideshow_settings_api(request):
     active_event = Event.get_active()
     likes_enabled = active_event.likes_enabled if active_event else True
     tv_layout = active_event.tv_layout if active_event else Event.TV_LAYOUT_SLIDESHOW
+    tv_bottom_right = active_event.tv_bottom_right if active_event else Event.TV_BOTTOM_RIGHT_NONE
     whiteboard_image_url = active_event.whiteboard_image.url if active_event and active_event.whiteboard_image else ""
+    wifi_qr_shown = bool(active_event and active_event.wifi_qr_enabled and active_event.wifi_ssid)
     return JsonResponse(
         {
             "interval_seconds": slideshow.interval_seconds,
             "likes_enabled": likes_enabled,
             "tv_layout": tv_layout,
+            "tv_bottom_right": tv_bottom_right,
             "whiteboard_image_url": whiteboard_image_url,
+            "wifi_qr_shown": wifi_qr_shown,
         }
     )
 
@@ -460,9 +464,14 @@ def dashboard_view(request):
             return _dashboard_redirect(tab="features")
         if "toggle_likes" in request.POST:
             active_event.likes_enabled = not active_event.likes_enabled
-            active_event.save(update_fields=["likes_enabled"])
+            update_fields = ["likes_enabled"]
+            if not active_event.likes_enabled and active_event.tv_bottom_right == Event.TV_BOTTOM_RIGHT_LEADERBOARD:
+                # The TV can't keep showing a leaderboard for likes that just got turned off.
+                active_event.tv_bottom_right = Event.TV_BOTTOM_RIGHT_NONE
+                update_fields.append("tv_bottom_right")
+            active_event.save(update_fields=update_fields)
             messages.success(request, "Likes " + ("enabled." if active_event.likes_enabled else "disabled."))
-            return _dashboard_redirect(tab="features")
+            return _dashboard_redirect(tab="tv-layout")
         if "toggle_whiteboard" in request.POST:
             active_event.whiteboard_enabled = not active_event.whiteboard_enabled
             update_fields = ["whiteboard_enabled"]
@@ -470,11 +479,9 @@ def dashboard_view(request):
                 # The TV can't keep showing a whiteboard that just got turned off.
                 active_event.tv_layout = Event.TV_LAYOUT_SLIDESHOW
                 update_fields.append("tv_layout")
-                channel_layer = get_channel_layer()
-                async_to_sync(channel_layer.group_send)("tv_updates", {"type": "tv_layout.changed"})
             active_event.save(update_fields=update_fields)
             messages.success(request, "Whiteboard " + ("enabled." if active_event.whiteboard_enabled else "disabled."))
-            return _dashboard_redirect(tab="features")
+            return _dashboard_redirect(tab="tv-layout")
         if "save_wifi_config" in request.POST:
             active_event.wifi_ssid = request.POST.get("wifi_ssid", "").strip()
             active_event.wifi_password = request.POST.get("wifi_password", "")
@@ -487,7 +494,7 @@ def dashboard_view(request):
                 active_event.wifi_qr_enabled = False
             active_event.save(update_fields=["wifi_ssid", "wifi_password", "wifi_security", "wifi_qr_enabled"])
             messages.success(request, "Wi-Fi details saved.")
-            return _dashboard_redirect(tab="features")
+            return _dashboard_redirect(tab="tv-layout")
         if "toggle_wifi_qr" in request.POST:
             if not active_event.wifi_qr_enabled and not active_event.wifi_ssid:
                 messages.error(request, "Enter a Wi-Fi network name first.")
@@ -495,7 +502,7 @@ def dashboard_view(request):
                 active_event.wifi_qr_enabled = not active_event.wifi_qr_enabled
                 active_event.save(update_fields=["wifi_qr_enabled"])
                 messages.success(request, "Wi-Fi QR code " + ("enabled." if active_event.wifi_qr_enabled else "disabled."))
-            return _dashboard_redirect(tab="features")
+            return _dashboard_redirect(tab="tv-layout")
         if "set_tv_layout" in request.POST:
             layout = request.POST.get("set_tv_layout")
             valid_layouts = dict(Event.TV_LAYOUT_CHOICES)
@@ -506,9 +513,19 @@ def dashboard_view(request):
             else:
                 active_event.tv_layout = layout
                 active_event.save(update_fields=["tv_layout"])
-                channel_layer = get_channel_layer()
-                async_to_sync(channel_layer.group_send)("tv_updates", {"type": "tv_layout.changed"})
                 messages.success(request, f"TV now shows the {valid_layouts[layout].lower()}.")
+            return _dashboard_redirect(tab="tv-layout")
+        if "set_tv_bottom_right" in request.POST:
+            widget = request.POST.get("set_tv_bottom_right")
+            valid_widgets = dict(Event.TV_BOTTOM_RIGHT_CHOICES)
+            if widget not in valid_widgets:
+                messages.error(request, "Unknown TV widget.")
+            elif widget == Event.TV_BOTTOM_RIGHT_LEADERBOARD and not active_event.likes_enabled:
+                messages.error(request, "Enable Photo likes first.")
+            else:
+                active_event.tv_bottom_right = widget
+                active_event.save(update_fields=["tv_bottom_right"])
+                messages.success(request, f"TV now shows {valid_widgets[widget].lower()} in the bottom-right frame.")
             return _dashboard_redirect(tab="tv-layout")
         return _dashboard_redirect(tab="features")
 

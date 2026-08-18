@@ -38,6 +38,25 @@
     }
   }
 
+  const wifiQrCard = document.getElementById("wifi-qr-card");
+
+  function applyWifiQr(shown) {
+    if (!wifiQrCard) return;
+    if (shown) {
+      const img = wifiQrCard.querySelector("img");
+      if (img && !img.getAttribute("src")) img.src = img.dataset.src;
+      wifiQrCard.style.display = "";
+    } else {
+      wifiQrCard.style.display = "none";
+    }
+  }
+
+  function applyTvSettings(settings) {
+    applyTvLayout(settings.tv_layout, settings.whiteboard_image_url);
+    applyBottomRightWidget(settings.tv_bottom_right === "leaderboard");
+    applyWifiQr(settings.wifi_qr_shown);
+  }
+
   let photos = [];
   let index = 0;
   let timerId = null;
@@ -46,10 +65,10 @@
   let overlayAnimateTimeoutId = null;
   const leaderboardEl = document.getElementById("leaderboard");
 
-  function applyLikesEnabled(enabled) {
+  function applyBottomRightWidget(showLeaderboard) {
     if (!leaderboardEl) return;
-    leaderboardEl.style.display = enabled ? "" : "none";
-    if (enabled) renderLeaderboard();
+    leaderboardEl.style.display = showLeaderboard ? "" : "none";
+    if (showLeaderboard) renderLeaderboard();
   }
   // queue for sequential new-photo overlays
   const overlayQueue = [];
@@ -176,16 +195,14 @@
           photos[idx].likes_count = data.likes_count;
         }
         renderLeaderboard();
-      } else if (data.event === "likes_setting") {
-        applyLikesEnabled(data.enabled);
       } else if (data.event === "whiteboard_updated") {
         applyWhiteboardImage(data.url);
-      } else if (data.event === "tv_layout_changed") {
-        // Simplest correct thing: refetch settings and swap the visible
-        // panel, rather than trying to track layout state incrementally.
+      } else if (data.event === "tv_settings_changed") {
+        // Simplest correct thing: refetch settings and reapply every zone,
+        // rather than trying to track each field's state incrementally.
         fetch("/api/settings/")
           .then((response) => response.json())
-          .then((settingsData) => applyTvLayout(settingsData.tv_layout, settingsData.whiteboard_image_url));
+          .then((settingsData) => applyTvSettings(settingsData));
       } else if (data.event === "event_switched") {
         // The active event changed entirely (different photos, settings) —
         // simplest correct thing is a full reload rather than trying to
@@ -206,8 +223,7 @@
     intervalMs = settingsData.interval_seconds * 1000;
     showCurrent();
     restartTimer();
-    applyLikesEnabled(settingsData.likes_enabled);
-    applyTvLayout(settingsData.tv_layout, settingsData.whiteboard_image_url);
+    applyTvSettings(settingsData);
   });
 
   function renderLeaderboard() {

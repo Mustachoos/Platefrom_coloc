@@ -64,12 +64,29 @@
     #tab-whiteboard:checked ~ #panel-whiteboard,
     #tab-guests:checked ~ #panel-guests,
     #tab-photos:checked ~ #panel-photos{display:block}
-    .layout-options{display:flex;gap:12px;flex-wrap:wrap}
-    .layout-option{flex:1;min-width:180px;border:2px solid #edf2f7;border-radius:12px;padding:16px;text-align:center;cursor:pointer;background:#fff;color:var(--ink);font-weight:400;flex-direction:column;align-items:stretch}
-    .layout-option.selected{border-color:var(--btn-1);background:#f0fdf4}
-    .layout-option.disabled{opacity:0.5;cursor:not-allowed}
-    .layout-option strong{display:block;margin-bottom:4px}
-    .layout-option span{font-size:0.82rem;color:var(--soft)}
+    /* TV layout tab: a small mock of the real tv.html screen (main frame +
+       a stacked top/bottom side column), sized/shaped to echo tv.html's own
+       .tv-content ratio so the admin can see roughly where each zone lands.
+       aspect-ratio is a soft suggestion, not a hard clip — a zone that needs
+       more room (e.g. the Wi-Fi form expanding) is allowed to grow past it,
+       since this has to stay a working control panel, not just a snapshot. */
+    .tv-preview{display:flex;gap:14px;padding:18px;border-radius:20px;aspect-ratio:16/9;min-height:280px;background:radial-gradient(circle at 15% 10%,rgba(34,197,94,0.16),transparent 38%),radial-gradient(circle at 84% 18%,rgba(251,146,60,0.14),transparent 34%),linear-gradient(145deg,var(--sky-1),var(--sky-2))}
+    .tv-preview-side{flex:0 0 30%;display:flex;flex-direction:column;gap:14px;min-width:220px}
+    .tv-frame{background:var(--card);border:1px solid var(--card-border);border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:10px;box-shadow:0 8px 20px rgba(28,43,57,0.1)}
+    .tv-frame-main{flex:1}
+    .tv-preview-side .tv-frame{flex:1}
+    .tv-frame-label{font-size:0.78rem;font-weight:700;letter-spacing:0.03em;text-transform:uppercase;color:var(--soft)}
+    .zone-options{display:flex;gap:8px;flex-wrap:wrap}
+    .zone-option{border:2px solid #edf2f7;border-radius:10px;padding:8px 12px;font-size:0.85rem;font-weight:700;background:#fff;color:var(--ink)}
+    .zone-option.selected{border-color:var(--btn-1);background:#f0fdf4}
+    .zone-option:disabled{opacity:0.5;cursor:not-allowed}
+    .zone-option.locked{display:inline-flex;align-items:center;border-style:dashed;color:var(--soft);cursor:default}
+    .tv-frame-toggle{display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:0.85rem;font-weight:700;margin-top:auto}
+    .tv-frame-hint{font-size:0.8rem;color:var(--soft);margin:0}
+    .tv-frame-subform{display:flex;flex-wrap:wrap;gap:8px;align-items:flex-end;padding-top:8px;border-top:1px dashed #edf2f7}
+    .tv-frame-subform .field{display:flex;flex-direction:column;gap:4px;flex:1;min-width:100px}
+    .tv-frame-subform label{font-size:0.72rem;font-weight:700;color:var(--soft)}
+    .tv-frame-subform input,.tv-frame-subform select{padding:7px 8px;font-size:0.85rem}
     .board-preview{max-width:100%;border-radius:12px;border:1px solid #edf2f7;margin-bottom:14px;display:block}
     .drawings-list{display:grid;gap:8px}
     .drawing-row{display:flex;align-items:center;gap:12px;padding:8px 10px;border:1px solid #edf2f7;border-radius:10px}
@@ -88,8 +105,9 @@
       .tab-select{display:block;width:100%;margin-bottom:18px;padding:12px 14px;border-radius:12px;border:2px solid #d4e4ee;background:#fff;font-size:1rem;font-weight:700;color:var(--ink)}
       .event-row{flex-direction:column;align-items:stretch;gap:10px}
       .event-row .btn{text-align:center}
-      .layout-option{min-width:140px}
       .feature-row{flex-wrap:wrap}
+      .tv-preview{flex-direction:column;aspect-ratio:auto}
+      .tv-preview-side{flex:none;min-width:0}
     }
   </style>
 </head>
@@ -212,90 +230,93 @@
         <button type="submit" name="toggle_drive_sharing" class="switch {% if active_event.drive_sharing_enabled %}on{% endif %}" aria-pressed="{{ active_event.drive_sharing_enabled|yesno:'true,false' }}" aria-label="Toggle Drive sharing with participants"><span class="knob"></span></button>
       </form>
     </div>
-
-    <div class="feature-row">
-      <div>
-        <div class="feature-name">Photo likes <span class="status-badge {% if active_event.likes_enabled %}status-on{% else %}status-off{% endif %}">{% if active_event.likes_enabled %}ON{% else %}OFF{% endif %}</span></div>
-        <div class="feature-status">Controls the heart button on the gallery and the top-liked leaderboard on the TV screen.</div>
-      </div>
-      <form method="post">
-        {% csrf_token %}
-        <button type="submit" name="toggle_likes" class="switch {% if active_event.likes_enabled %}on{% endif %}" aria-pressed="{{ active_event.likes_enabled|yesno:'true,false' }}" aria-label="Toggle photo likes"><span class="knob"></span></button>
-      </form>
-    </div>
-
-    <div class="feature-row">
-      <div>
-        <div class="feature-name">Whiteboard <span class="status-badge {% if active_event.whiteboard_enabled %}status-on{% else %}status-off{% endif %}">{% if active_event.whiteboard_enabled %}ON{% else %}OFF{% endif %}</span></div>
-        <div class="feature-status">When on, guests get a button on the home page to draw on the collective whiteboard.</div>
-      </div>
-      <form method="post">
-        {% csrf_token %}
-        <button type="submit" name="toggle_whiteboard" class="switch {% if active_event.whiteboard_enabled %}on{% endif %}" aria-pressed="{{ active_event.whiteboard_enabled|yesno:'true,false' }}" aria-label="Toggle whiteboard"><span class="knob"></span></button>
-      </form>
-    </div>
-
-    <div class="feature-row stacked">
-      <div class="feature-row-top">
-        <div>
-          <div class="feature-name">Wi-Fi QR code <span class="status-badge {% if active_event.wifi_qr_enabled %}status-on{% else %}status-off{% endif %}">{% if active_event.wifi_qr_enabled %}ON{% else %}OFF{% endif %}</span></div>
-          <div class="feature-status">When on, a second QR code to join the Wi-Fi is shown next to the upload QR code on the TV screen — guests need to be on the network before they can reach the app anyway.</div>
-        </div>
-        <form method="post">
-          {% csrf_token %}
-          <button type="submit" name="toggle_wifi_qr" class="switch {% if active_event.wifi_qr_enabled %}on{% endif %}" aria-pressed="{{ active_event.wifi_qr_enabled|yesno:'true,false' }}" aria-label="Toggle Wi-Fi QR code"><span class="knob"></span></button>
-        </form>
-      </div>
-      <form method="post" class="create-event-form">
-        {% csrf_token %}
-        <div class="field">
-          <label for="wifi_ssid">Network name (SSID)</label>
-          <input type="text" id="wifi_ssid" name="wifi_ssid" value="{{ active_event.wifi_ssid }}" placeholder="e.g. Chez Axel">
-        </div>
-        <div class="field">
-          <label for="wifi_password">Password</label>
-          <input type="text" id="wifi_password" name="wifi_password" value="{{ active_event.wifi_password }}" placeholder="Leave blank if open">
-        </div>
-        <div class="field">
-          <label for="wifi_security">Security</label>
-          <select id="wifi_security" name="wifi_security">
-            {% for value, label in wifi_security_choices %}
-            <option value="{{ value }}" {% if active_event.wifi_security == value %}selected{% endif %}>{{ label }}</option>
-            {% endfor %}
-          </select>
-        </div>
-        <button type="submit" name="save_wifi_config" class="btn secondary small">Save</button>
-      </form>
-      {% if active_event.wifi_qr_enabled and active_event.wifi_ssid %}
-      <div class="wifi-qr-preview">
-        <img src="{% url 'wifi-qr-code' %}" alt="Wi-Fi QR code preview">
-        <span>Preview — this is exactly what guests will scan on the TV screen.</span>
-      </div>
-      {% endif %}
-    </div>
   </div>
 
   <div class="panel tab-panel" id="panel-tv-layout">
     <h2>TV layout</h2>
-    <p class="feature-status">Choose what's shown in the main rectangle on the TV screen.</p>
-    <form method="post" class="layout-options">
-      {% csrf_token %}
-      <button
-        type="submit" name="set_tv_layout" value="slideshow"
-        class="layout-option {% if active_event.tv_layout == 'slideshow' %}selected{% endif %}"
-      >
-        <strong>Photo slideshow</strong>
-        <span>Cycles through uploaded photos</span>
-      </button>
-      <button
-        type="submit" name="set_tv_layout" value="whiteboard"
-        class="layout-option {% if active_event.tv_layout == 'whiteboard' %}selected{% endif %} {% if not active_event.whiteboard_enabled %}disabled{% endif %}"
-        {% if not active_event.whiteboard_enabled %}disabled{% endif %}
-      >
-        <strong>Collective whiteboard</strong>
-        <span>{% if active_event.whiteboard_enabled %}Shows the drawn-on board{% else %}Enable the whiteboard feature first{% endif %}</span>
-      </button>
-    </form>
+    <p class="feature-status">A preview of what's on the TV screen — pick what goes in each frame.</p>
+    <div class="tv-preview">
+      <div class="tv-frame tv-frame-main">
+        <span class="tv-frame-label">Main</span>
+        <form method="post" class="zone-options">
+          {% csrf_token %}
+          <button type="submit" name="set_tv_layout" value="slideshow" class="zone-option {% if active_event.tv_layout == 'slideshow' %}selected{% endif %}">Photo slideshow</button>
+          <button
+            type="submit" name="set_tv_layout" value="whiteboard"
+            class="zone-option {% if active_event.tv_layout == 'whiteboard' %}selected{% endif %}"
+            {% if not active_event.whiteboard_enabled %}disabled{% endif %}
+          >Collective whiteboard</button>
+        </form>
+        {% if not active_event.whiteboard_enabled %}<p class="tv-frame-hint">Turn on the whiteboard below to enable that option.</p>{% endif %}
+        <div class="tv-frame-toggle">
+          <span>Whiteboard feature</span>
+          <form method="post">
+            {% csrf_token %}
+            <button type="submit" name="toggle_whiteboard" class="switch {% if active_event.whiteboard_enabled %}on{% endif %}" aria-pressed="{{ active_event.whiteboard_enabled|yesno:'true,false' }}" aria-label="Toggle whiteboard"><span class="knob"></span></button>
+          </form>
+        </div>
+      </div>
+
+      <div class="tv-preview-side">
+        <div class="tv-frame tv-frame-qr">
+          <span class="tv-frame-label">Top right — QR codes</span>
+          <div class="zone-options">
+            <span class="zone-option locked">Upload QR</span>
+            <form method="post">
+              {% csrf_token %}
+              <button type="submit" name="toggle_wifi_qr" class="zone-option {% if active_event.wifi_qr_enabled %}selected{% endif %}">Wi-Fi QR</button>
+            </form>
+          </div>
+          <form method="post" class="tv-frame-subform">
+            {% csrf_token %}
+            <div class="field">
+              <label for="wifi_ssid">Network name (SSID)</label>
+              <input type="text" id="wifi_ssid" name="wifi_ssid" value="{{ active_event.wifi_ssid }}" placeholder="e.g. Chez Axel">
+            </div>
+            <div class="field">
+              <label for="wifi_password">Password</label>
+              <input type="text" id="wifi_password" name="wifi_password" value="{{ active_event.wifi_password }}" placeholder="Leave blank if open">
+            </div>
+            <div class="field">
+              <label for="wifi_security">Security</label>
+              <select id="wifi_security" name="wifi_security">
+                {% for value, label in wifi_security_choices %}
+                <option value="{{ value }}" {% if active_event.wifi_security == value %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <button type="submit" name="save_wifi_config" class="btn secondary small">Save</button>
+          </form>
+          {% if active_event.wifi_qr_enabled and active_event.wifi_ssid %}
+          <div class="wifi-qr-preview">
+            <img src="{% url 'wifi-qr-code' %}" alt="Wi-Fi QR code preview">
+            <span>Preview — this is exactly what guests will scan on the TV screen.</span>
+          </div>
+          {% endif %}
+        </div>
+
+        <div class="tv-frame tv-frame-widget">
+          <span class="tv-frame-label">Bottom right</span>
+          <form method="post" class="zone-options">
+            {% csrf_token %}
+            <button
+              type="submit" name="set_tv_bottom_right" value="leaderboard"
+              class="zone-option {% if active_event.tv_bottom_right == 'leaderboard' %}selected{% endif %}"
+              {% if not active_event.likes_enabled %}disabled{% endif %}
+            >Leaderboard</button>
+            <button type="submit" name="set_tv_bottom_right" value="none" class="zone-option {% if active_event.tv_bottom_right == 'none' %}selected{% endif %}">Nothing</button>
+          </form>
+          {% if not active_event.likes_enabled %}<p class="tv-frame-hint">Turn on photo likes below to enable the leaderboard.</p>{% endif %}
+          <div class="tv-frame-toggle">
+            <span>Photo likes feature</span>
+            <form method="post">
+              {% csrf_token %}
+              <button type="submit" name="toggle_likes" class="switch {% if active_event.likes_enabled %}on{% endif %}" aria-pressed="{{ active_event.likes_enabled|yesno:'true,false' }}" aria-label="Toggle photo likes"><span class="knob"></span></button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 
   <div class="panel tab-panel" id="panel-whiteboard">
