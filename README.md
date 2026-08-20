@@ -72,14 +72,25 @@ dehors d'un Drive Partagé, une fonctionnalité réservée aux comptes Google Wo
 inutilisable avec un Gmail personnel gratuit.
 
 **Depuis l'assistant `/setup/`** (recommandé) — l'étape "Google Drive" guide dans l'ordre :
+
+> ⚠️ Google refuse toute adresse de redirection OAuth en `http://` non-HTTPS, sauf si l'hôte est
+> exactement `localhost`/`127.0.0.1` (une IP locale comme `192.168.1.13` est rejetée même
+> enregistrée à l'identique — erreur `redirect_uri_mismatch`). L'étape "Connecter mon compte
+> Google" doit donc se faire depuis un navigateur **sur la machine qui héberge le serveur**
+> (`http://localhost:8000/setup/drive/`), pas depuis votre téléphone — l'assistant l'indique
+> automatiquement si ce n'est pas déjà le cas. Toutes les autres étapes du wizard restent
+> utilisables depuis n'importe quel appareil du réseau.
+
 1. Créer un projet sur [console.cloud.google.com](https://console.cloud.google.com) et activer
    l'**API Google Drive**.
 2. Configurer l'écran de consentement OAuth (type "External", vous ajouter comme "Test user").
 3. Créer des identifiants OAuth de type **Web application** (pas "Desktop app" — l'assistant utilise
    une vraie redirection web, pas un flux local) et coller l'adresse de redirection affichée par
-   l'assistant dans "Authorized redirect URIs".
+   l'assistant (toujours basée sur `localhost`, voir avertissement ci-dessus) dans "Authorized
+   redirect URIs".
 4. Télécharger le fichier JSON généré et l'envoyer directement dans le formulaire de l'assistant.
-5. Cliquer "Connecter mon compte Google", puis choisir ou créer le dossier Drive racine — tout
+5. Depuis `http://localhost:8000/setup/drive/`, cliquer "Connecter mon compte Google", puis
+   choisir ou créer le dossier Drive racine — tout
    depuis le navigateur, aucun fichier à placer ni ID à copier-coller à la main.
 
 <details>

@@ -9,9 +9,15 @@
 </head>
 <body>
   <main class="card">
-    <p class="hint">Step 5 of 5</p>
+    {% include "photos/_setup_steps.html" %}
     <h1>Name your first event</h1>
-    <p class="hint">This is the "soirée" guests will upload photos to — you can create more later.</p>
+    <p class="hint">
+      This is the "soirée" guests will upload photos to — it becomes the active event, with its
+      own guests, photos, and (if you connected it) Drive folder. Only one event is active at a
+      time, but you can create more later and switch between them from the dashboard. Coming back
+      to this step just renames this same event rather than creating a new one, so feel free to
+      fix a typo here without worrying about ending up with duplicates.
+    </p>
 
     <form method="post">
       {% csrf_token %}

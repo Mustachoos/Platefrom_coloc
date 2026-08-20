@@ -39,10 +39,26 @@ def _token_path():
     return os.environ.get("GOOGLE_OAUTH_TOKEN_FILE", "").strip()
 
 
+def _is_localhost(request):
+    return request.get_host().split(":", 1)[0] in ("localhost", "127.0.0.1")
+
+
+def _localhost_redirect_uri(request):
+    """Google's OAuth policy requires HTTPS for any redirect URI host except
+    localhost/127.0.0.1 (a LAN IP like 192.168.1.13 over plain http is
+    rejected outright, even if registered) — so this step always targets
+    localhost specifically, regardless of what host the current request
+    actually came in on. That only resolves correctly if the browser
+    completing this step is on the server machine itself; see _is_localhost."""
+    host = request.get_host()
+    port = host.split(":", 1)[1] if ":" in host else "8000"
+    return f"http://localhost:{port}{reverse('setup-google-callback')}"
+
+
 def _google_flow(request):
-    redirect_uri = request.build_absolute_uri(reverse("setup-google-callback"))
     return Flow.from_client_secrets_file(
-        _client_secret_path(), scopes=drive_service.SCOPES, redirect_uri=redirect_uri
+        _client_secret_path(), scopes=drive_service.SCOPES,
+        redirect_uri=_localhost_redirect_uri(request),
     )
 
 
@@ -53,21 +69,28 @@ def _safe_list_folders():
         return []
 
 
+def _render_step(request, step, template, context=None):
+    context = dict(context or {})
+    context["current_step"] = step
+    return render(request, template, context)
+
+
 def welcome_view(request):
     if not _setup_accessible(request):
         return _denied()
-    if User.objects.filter(is_superuser=True).exists():
-        # Wizard already has an admin account — jump straight back into
-        # wherever they left off instead of re-showing "let's get started".
-        return redirect("setup-drive")
-    return render(request, "photos/setup_welcome.html")
+    return _render_step(request, 1, "photos/setup_welcome.html")
 
 
 def admin_account_view(request):
     if not _setup_accessible(request):
         return _denied()
-    if User.objects.filter(is_superuser=True).exists():
-        return redirect("setup-drive")
+
+    existing_admin = User.objects.filter(is_superuser=True).first()
+    if existing_admin:
+        # Already done — a fresh admin account can't be created twice, but
+        # revisiting this step (via the step nav) shouldn't dead-end, so show
+        # what's there and point at where to actually change it.
+        return _render_step(request, 2, "photos/setup_admin.html", {"existing_admin": existing_admin})
 
     if request.method == "POST":
         form = AdminAccountForm(request.POST)
@@ -81,7 +104,7 @@ def admin_account_view(request):
                 return redirect("setup-drive")
     else:
         form = AdminAccountForm()
-    return render(request, "photos/setup_admin.html", {"form": form})
+    return _render_step(request, 2, "photos/setup_admin.html", {"form": form})
 
 
 def drive_view(request):
@@ -126,12 +149,17 @@ def drive_view(request):
                 site_settings.save(update_fields=["drive_root_folder_id"])
                 return redirect("setup-network")
 
-    return render(request, "photos/setup_drive.html", {
+    host = request.get_host()
+    port = host.split(":", 1)[1] if ":" in host else "8000"
+    return _render_step(request, 3, "photos/setup_drive.html", {
         "client_secret_form": DriveClientSecretForm(),
         "has_client_secret": has_client_secret,
         "has_token": has_token,
         "folders": _safe_list_folders() if has_token else None,
-        "redirect_uri": request.build_absolute_uri(reverse("setup-google-callback")),
+        "current_folder_id": SiteSettings.get_solo().drive_root_folder_id,
+        "redirect_uri": _localhost_redirect_uri(request),
+        "is_localhost": _is_localhost(request),
+        "localhost_drive_url": f"http://localhost:{port}{reverse('setup-drive')}",
         "error": error,
     })
 
@@ -139,6 +167,11 @@ def drive_view(request):
 def google_connect_view(request):
     if not _setup_accessible(request):
         return _denied()
+    if not _is_localhost(request):
+        # Google would reject this redirect_uri outright (see
+        # _localhost_redirect_uri) — fail here with a clear message instead
+        # of sending the user into a doomed consent flow.
+        return redirect("setup-drive")
     flow = _google_flow(request)
     auth_url, state = flow.authorization_url(
         access_type="offline", include_granted_scopes="true", prompt="consent"
@@ -174,23 +207,37 @@ def network_view(request):
     else:
         initial_host = site_settings.server_host or request.get_host()
         form = NetworkForm(initial={"server_host": initial_host})
-    return render(request, "photos/setup_network.html", {"form": form})
+    return _render_step(request, 4, "photos/setup_network.html", {"form": form})
 
 
 def first_event_view(request):
     if not _setup_accessible(request):
         return _denied()
+    active_event = Event.get_active()
+
     if request.method == "POST":
         form = FirstEventForm(request.POST)
         if form.is_valid():
             name = form.cleaned_data["name"].strip()
-            event = Event.objects.filter(name=name).first()
-            if event is None:
-                event = Event.objects.create(name=name)
-            if not event.drive_folder_id and drive_service.is_configured():
-                event_service.ensure_drive_folder(event)
-            event_service.switch_active_event(event)
+            if active_event:
+                # Revisiting this step (via the step nav) after already
+                # creating/activating an event: treat resubmission as
+                # renaming that same event, not creating a second one.
+                if Event.objects.filter(name=name).exclude(pk=active_event.pk).exists():
+                    form.add_error("name", "That name is already used by another event.")
+                    return _render_step(request, 5, "photos/setup_event.html", {"form": form})
+                active_event.name = name
+                active_event.save(update_fields=["name"])
+                if not active_event.drive_folder_id and drive_service.is_configured():
+                    event_service.ensure_drive_folder(active_event)
+            else:
+                event = Event.objects.filter(name=name).first()
+                if event is None:
+                    event = Event.objects.create(name=name)
+                if not event.drive_folder_id and drive_service.is_configured():
+                    event_service.ensure_drive_folder(event)
+                event_service.switch_active_event(event)
             return redirect("dashboard")
     else:
-        form = FirstEventForm()
-    return render(request, "photos/setup_event.html", {"form": form})
+        form = FirstEventForm(initial={"name": active_event.name if active_event else ""})
+    return _render_step(request, 5, "photos/setup_event.html", {"form": form})
