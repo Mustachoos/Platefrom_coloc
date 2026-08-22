@@ -9,12 +9,6 @@ DEBUG = True
 
 ALLOWED_HOSTS = ["*"]
 
-DUCKDNS_DOMAIN = os.environ.get("DUCKDNS_DOMAIN", "").strip()
-CSRF_TRUSTED_ORIGINS = [f"https://{DUCKDNS_DOMAIN}"] if DUCKDNS_DOMAIN else []
-# Caddy terminates TLS and proxies plain HTTP internally; this tells Django
-# to trust that header so request.is_secure() reports True when it should.
-SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
-
 INSTALLED_APPS = [
     "daphne",
     "django.contrib.admin",
@@ -35,6 +29,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "photos.middleware.FirstRunRedirectMiddleware",
 ]
 
 ROOT_URLCONF = "config.urls"

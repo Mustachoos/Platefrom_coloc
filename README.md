@@ -22,8 +22,7 @@ Application web permettant aux invités d'un événement (soirée, anniversaire,
 - **Backend** : Django 5 + Django Channels (WebSocket temps réel), servi en ASGI par Daphne
 - **Base de données** : PostgreSQL 16
 - **Frontend** : templates Django + JavaScript vanilla (pas de framework front)
-- **Conteneurisation** : Docker / docker-compose (services `db` + `web` + `caddy`)
-- **HTTPS** : Caddy en reverse proxy, certificat Let's Encrypt via défi DNS DuckDNS (optionnel, voir plus bas)
+- **Conteneurisation** : Docker / docker-compose (services `db` + `web`)
 - **QR code** : génération à la volée avec la librairie `qrcode`
 
 ### Lancer le projet
@@ -114,36 +113,6 @@ Cette méthode reste disponible et fait exactement la même chose, fichiers en p
 4. Depuis le dashboard staff (`/dashboard/`), créer un évènement : son dossier Drive est
    automatiquement créé (ou retrouvé) sous le dossier racine.
 </details>
-
-### Activer HTTPS (optionnel)
-
-L'app tourne en HTTP simple par défaut (`http://<IP-locale>:8000`). Pour avoir un vrai certificat
-HTTPS reconnu par les navigateurs (cadenas vert, aucun avertissement) sans acheter de nom de
-domaine ni exposer le serveur sur internet, le projet utilise un sous-domaine gratuit
-[DuckDNS](https://www.duckdns.org) + [Caddy](https://caddyserver.com) comme reverse proxy, qui
-obtient le certificat Let's Encrypt via un défi DNS (aucun port à ouvrir sur la box). L'accès HTTP
-direct par IP locale reste disponible en parallèle, rien n'est cassé si cette étape n'est pas faite.
-
-Mise en place, à faire une seule fois :
-
-1. Créer un compte gratuit sur [duckdns.org](https://www.duckdns.org) (connexion via Google,
-   GitHub, etc. — pas de mot de passe séparé).
-2. Choisir un sous-domaine (ex. `macoloc` → `macoloc.duckdns.org`) et lui associer l'IP locale du
-   serveur (la même que celle déjà utilisée pour `QR_HOST_IP`, voir plus haut).
-3. Copier le token affiché en haut de la page DuckDNS une fois connecté.
-4. Renseigner ces deux valeurs dans `.env` à la racine du projet (fichier non versionné) :
-   ```
-   DUCKDNS_DOMAIN=macoloc.duckdns.org
-   DUCKDNS_TOKEN=<votre token DuckDNS>
-   ```
-5. `docker compose up --build` — un troisième service `caddy` se construit (plugin DuckDNS via
-   `xcaddy`, prend une à deux minutes la première fois) et obtient automatiquement le certificat.
-   Le QR code affiché sur `/tv/` pointe alors vers `https://<sous-domaine>.duckdns.org` en
-   priorité.
-
-Le certificat se renouvelle automatiquement (tous les ~60 jours) tant que le conteneur `caddy`
-tourne — rien à refaire manuellement. Si l'IP locale du serveur change, mettre à jour l'IP associée
-au sous-domaine sur DuckDNS (ou automatiser avec le même type de script que `update-lan-ip.sh`).
 
 ## Spécification fonctionnelle
 
@@ -318,8 +287,6 @@ Un unique canal WebSocket diffuse à tous les écrans TV connectés :
 | `DJANGO_DB_HOST` | Hôte PostgreSQL | `db` |
 | `DJANGO_DB_PORT` | Port PostgreSQL | `5432` |
 | `QR_HOST_IP` | IP forcée dans l'URL encodée par le QR code d'upload — prioritaire sur la valeur "Site settings" réglée par l'assistant `/setup/` ou `/admin/` | aucune (utilise "Site settings", sinon l'hôte de la requête) |
-| `DUCKDNS_DOMAIN` | Sous-domaine DuckDNS (ex. `macoloc.duckdns.org`) utilisé par Caddy pour le certificat HTTPS et par le QR code d'upload en priorité | aucune (HTTPS désactivé, QR code retombe sur `QR_HOST_IP`) |
-| `DUCKDNS_TOKEN` | Token de compte DuckDNS, utilisé par Caddy pour le défi DNS Let's Encrypt | aucune |
 | `GOOGLE_OAUTH_CLIENT_SECRET_FILE` | Chemin vers le fichier de credentials OAuth téléchargé depuis Google Cloud Console (écrit automatiquement par l'assistant `/setup/`, ou placé à la main) | aucune |
 | `GOOGLE_OAUTH_TOKEN_FILE` | Chemin vers le token OAuth (contient le refresh token), écrit par l'assistant `/setup/` ou par `manage.py google_drive_auth` | aucune |
 | `GOOGLE_DRIVE_ROOT_FOLDER_ID` | ID du dossier Drive racine sous lequel chaque soirée crée son sous-dossier — prioritaire sur la valeur "Site settings" choisie via l'assistant `/setup/` | aucune (Drive désactivé si ni l'un ni l'autre n'est défini) |

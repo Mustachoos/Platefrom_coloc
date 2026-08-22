@@ -346,14 +346,11 @@ def slideshow_settings_api(request):
 
 
 def upload_qr_code(request):
-    duckdns_domain = os.environ.get("DUCKDNS_DOMAIN", "").strip()
     # QR_HOST_IP stays as a manual override for anyone who set it; otherwise
     # fall back to the auto-detected, wizard-editable SiteSettings value —
     # so a fresh install needs zero configuration for this to work.
     forced_ip = os.environ.get("QR_HOST_IP", "").strip() or SiteSettings.get_solo().server_host
-    if duckdns_domain:
-        upload_url = f"https://{duckdns_domain}{reverse('upload')}"
-    elif forced_ip:
+    if forced_ip:
         scheme = "https" if request.is_secure() else "http"
         raw_host = request.get_host()
         if raw_host.count(":") == 1 and not raw_host.startswith("["):

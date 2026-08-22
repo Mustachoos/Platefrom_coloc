@@ -1,6 +1,0 @@
-{$DUCKDNS_DOMAIN} {
-	tls {
-		dns duckdns {env.DUCKDNS_TOKEN}
-	}
-	reverse_proxy web:8000
-}
