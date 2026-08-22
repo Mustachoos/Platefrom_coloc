@@ -1,0 +1,11 @@
+{
+  "total_input_tokens": 0,
+  "total_output_tokens": 496550,
+  "runs": [
+    {
+      "timestamp": "2026-08-22T17:10:08.607127+00:00",
+      "input_tokens": 0,
+      "output_tokens": 496550
+    }
+  ]
+}
