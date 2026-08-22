@@ -1,23 +1,226 @@
-"""Admin account management: the post-setup hub, and subadmin invites.
+"""Admin account management: first-run admin creation, the post-setup hub,
+subadmin invites, Google Drive connection, and network address verification.
 
-Access rule: the hub and invite generation/revocation require an
-authenticated superuser — stricter than @staff_member_required (used by the
-dashboard), since inviting/managing subadmins is the superuser's privilege
-alone. Accepting an invite is the one open view here, since whoever holds
-the one-time link doesn't have an account yet.
+Access rule: creating the admin account is open to anyone while no
+superuser exists yet (that's the "fresh install" state); once one exists,
+only that authenticated superuser can reach it again (e.g. to check the
+username). Everything else here — the hub, Drive connection, invite
+generation/revocation — requires an authenticated superuser outright, since
+by the time any of it is reachable an admin account already exists and the
+person who created it is logged in. Accepting a subadmin invite and loading
+the verify-IP page are the two exceptions, both reached by someone who
+isn't logged in as anyone (a new subadmin, or a phone scanning a QR code).
+
+Verify-IP flow: the admin types an address; the server itself (not the
+admin's browser) fires a background request at that address to prove it's
+actually reachable — a real round trip out onto the LAN and back in,
+because request.get_host() on the receiving end is the only honest proof,
+not whatever the admin typed. Pending/result/failure state lives in the
+cache (short-lived, no need to persist it).
 """
+
+import os
+import threading
+import urllib.error
+import urllib.request
+import uuid
 
 from django.contrib import messages
 from django.contrib.auth import login
 from django.contrib.auth.decorators import user_passes_test
 from django.contrib.auth.models import User
+from django.core.cache import cache
 from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
 from django.utils import timezone
+from django.http import JsonResponse
+from google_auth_oauthlib.flow import Flow
 
-from .forms import AdminAccountForm
-from .models import AdminInvite
+from . import drive_service
+from .forms import AdminAccountForm, DriveClientSecretForm
+from .models import AdminInvite, SiteSettings
 
 superuser_required = user_passes_test(lambda u: u.is_authenticated and u.is_superuser, login_url="dashboard")
+
+_VERIFY_TTL_SECONDS = 600
+_VERIFY_CHECK_TIMEOUT_SECONDS = 5
+
+
+def _verify_pending_key(token):
+    return f"verify-ip-pending:{token}"
+
+
+def _verify_result_key(token):
+    return f"verify-ip-result:{token}"
+
+
+def _verify_failed_key(token):
+    return f"verify-ip-failed:{token}"
+
+
+def _run_ip_check(token, ip_address, port):
+    """Runs in a background thread. Success is recorded by verify_ip_page_view
+    itself, as the target of this very request — this function only ever
+    needs to record failure, when the address couldn't be reached at all."""
+    url = f"http://{ip_address}:{port}{reverse('verify-ip-page', args=[token])}"
+    try:
+        with urllib.request.urlopen(url, timeout=_VERIFY_CHECK_TIMEOUT_SECONDS) as response:
+            if response.status != 200:
+                cache.set(_verify_failed_key(token), True, timeout=_VERIFY_TTL_SECONDS)
+    except (urllib.error.URLError, TimeoutError, OSError):
+        cache.set(_verify_failed_key(token), True, timeout=_VERIFY_TTL_SECONDS)
+
+
+def _admin_creation_open(request):
+    if not User.objects.filter(is_superuser=True).exists():
+        return True
+    return request.user.is_authenticated and request.user.is_superuser
+
+
+def create_admin_view(request):
+    if not _admin_creation_open(request):
+        return redirect("dashboard")
+
+    existing_admin = User.objects.filter(is_superuser=True).first()
+    if existing_admin:
+        # Already done — a fresh admin account can't be created twice, but
+        # revisiting this page (e.g. a stale bookmark) shouldn't dead-end.
+        return render(request, "photos/create_admin.html", {"existing_admin": existing_admin})
+
+    if request.method == "POST":
+        form = AdminAccountForm(request.POST)
+        if form.is_valid():
+            username = form.cleaned_data["username"].strip()
+            if User.objects.filter(username=username).exists():
+                form.add_error("username", "That username is already taken.")
+            else:
+                user = User.objects.create_superuser(username, "", form.cleaned_data["password"])
+                login(request, user)
+                return redirect("admin-management")
+    else:
+        form = AdminAccountForm()
+    return render(request, "photos/create_admin.html", {"form": form})
+
+
+def _client_secret_path():
+    return os.environ.get("GOOGLE_OAUTH_CLIENT_SECRET_FILE", "").strip()
+
+
+def _token_path():
+    return os.environ.get("GOOGLE_OAUTH_TOKEN_FILE", "").strip()
+
+
+def _is_localhost(request):
+    return request.get_host().split(":", 1)[0] in ("localhost", "127.0.0.1")
+
+
+def _localhost_redirect_uri(request):
+    """Google's OAuth policy requires HTTPS for any redirect URI host except
+    localhost/127.0.0.1 (a LAN IP like 192.168.1.13 over plain http is
+    rejected outright, even if registered) — so this step always targets
+    localhost specifically, regardless of what host the current request
+    actually came in on. That only resolves correctly if the browser
+    completing this step is on the server machine itself; see _is_localhost."""
+    host = request.get_host()
+    port = host.split(":", 1)[1] if ":" in host else "8000"
+    return f"http://localhost:{port}{reverse('drive-google-callback')}"
+
+
+def _google_flow(request):
+    return Flow.from_client_secrets_file(
+        _client_secret_path(), scopes=drive_service.SCOPES,
+        redirect_uri=_localhost_redirect_uri(request),
+    )
+
+
+def _safe_list_folders():
+    try:
+        return drive_service.list_root_folders()
+    except drive_service.DriveError:
+        return []
+
+
+@superuser_required
+def drive_connect_view(request):
+    client_secret_path = _client_secret_path()
+    token_path = _token_path()
+    has_client_secret = bool(client_secret_path and os.path.exists(client_secret_path))
+    has_token = bool(token_path and os.path.exists(token_path))
+    error = None
+
+    if request.method == "POST":
+        if "skip" in request.POST:
+            return redirect("admin-management")
+
+        if "upload_client_secret" in request.POST:
+            client_secret_form = DriveClientSecretForm(request.POST, request.FILES)
+            if client_secret_form.is_valid():
+                os.makedirs(os.path.dirname(client_secret_path) or ".", exist_ok=True)
+                with open(client_secret_path, "wb") as f:
+                    for chunk in client_secret_form.cleaned_data["client_secret_file"].chunks():
+                        f.write(chunk)
+                return redirect("drive-connect")
+        elif "choose_folder" in request.POST:
+            choice = request.POST.get("folder_choice", "").strip()
+            new_name = request.POST.get("new_folder_name", "").strip()
+            try:
+                if choice == "__new__":
+                    if not new_name:
+                        raise drive_service.DriveError("Give the new folder a name.")
+                    folder_id = drive_service.create_root_folder(new_name)
+                elif choice:
+                    folder_id = choice
+                else:
+                    raise drive_service.DriveError("Choose a folder.")
+            except drive_service.DriveError as exc:
+                error = str(exc)
+            else:
+                site_settings = SiteSettings.get_solo()
+                site_settings.drive_root_folder_id = folder_id
+                site_settings.save(update_fields=["drive_root_folder_id"])
+                return redirect("admin-management")
+
+    host = request.get_host()
+    port = host.split(":", 1)[1] if ":" in host else "8000"
+    return render(request, "photos/drive_connect.html", {
+        "client_secret_form": DriveClientSecretForm(),
+        "has_client_secret": has_client_secret,
+        "has_token": has_token,
+        "folders": _safe_list_folders() if has_token else None,
+        "current_folder_id": SiteSettings.get_solo().drive_root_folder_id,
+        "redirect_uri": _localhost_redirect_uri(request),
+        "is_localhost": _is_localhost(request),
+        "localhost_drive_url": f"http://localhost:{port}{reverse('drive-connect')}",
+        "error": error,
+    })
+
+
+@superuser_required
+def drive_google_connect_view(request):
+    if not _is_localhost(request):
+        # Google would reject this redirect_uri outright (see
+        # _localhost_redirect_uri) — fail here with a clear message instead
+        # of sending the user into a doomed consent flow.
+        return redirect("drive-connect")
+    flow = _google_flow(request)
+    auth_url, state = flow.authorization_url(
+        access_type="offline", include_granted_scopes="true", prompt="consent"
+    )
+    request.session["google_oauth_state"] = state
+    return redirect(auth_url)
+
+
+@superuser_required
+def drive_google_callback_view(request):
+    flow = _google_flow(request)
+    flow.state = request.session.get("google_oauth_state")
+    flow.fetch_token(authorization_response=request.build_absolute_uri())
+
+    token_path = _token_path()
+    os.makedirs(os.path.dirname(token_path) or ".", exist_ok=True)
+    with open(token_path, "w") as f:
+        f.write(flow.credentials.to_json())
+    return redirect("drive-connect")
 
 
 @superuser_required
@@ -30,9 +233,59 @@ def admin_management_view(request):
             AdminInvite.objects.create(created_by=request.user, invitee_name=invitee_name)
         return redirect("admin-management")
 
+    if request.method == "POST" and "start_verify_ip" in request.POST:
+        # Strip a trailing ":port" if present — Recheck resubmits the
+        # already-verified value, which is stored as host:port.
+        ip_address = request.POST.get("ip_address", "").strip().split(":", 1)[0]
+        if not ip_address:
+            messages.error(request, "Enter an IP address to verify.")
+            return redirect("admin-management")
+        token = uuid.uuid4()
+        cache.set(_verify_pending_key(token), ip_address, timeout=_VERIFY_TTL_SECONDS)
+        host = request.get_host()
+        port = host.split(":", 1)[1] if ":" in host else "8000"
+        threading.Thread(target=_run_ip_check, args=(token, ip_address, port), daemon=True).start()
+        return redirect(f"{reverse('admin-management')}?verify_token={token}&verify_ip={ip_address}")
+
+    verify_token = request.GET.get("verify_token", "")
+    verify_ip = request.GET.get("verify_ip", "")
+    # Dead/expired query params (bookmarked, or the 10-minute window passed)
+    # shouldn't render a QR code that can never succeed.
+    if verify_token and not cache.get(_verify_pending_key(verify_token)):
+        verify_token = ""
+
+    site_settings = SiteSettings.get_solo()
+    verified_ip = site_settings.server_host.split(":", 1)[0] if site_settings.server_host else ""
+
     return render(request, "photos/admin_management.html", {
         "invites": AdminInvite.objects.all(),
+        "site_settings": site_settings,
+        "verify_token": verify_token,
+        "verify_ip": verify_ip,
+        "verified_ip": verified_ip,
     })
+
+
+@superuser_required
+def verify_ip_status_view(request, token):
+    if cache.get(_verify_failed_key(token)):
+        return JsonResponse({"verified": False, "failed": True, "host": None})
+    confirmed_host = cache.get(_verify_result_key(token))
+    return JsonResponse({"verified": confirmed_host is not None, "failed": False, "host": confirmed_host})
+
+
+def verify_ip_page_view(request, token):
+    if cache.get(_verify_pending_key(token)) is None:
+        return render(request, "photos/verify_ip_page.html", {"expired": True})
+
+    # The fact that this request arrived here at all, over this exact
+    # host:port, is the proof — not whatever IP the admin originally typed.
+    confirmed_host = request.get_host()
+    cache.set(_verify_result_key(token), confirmed_host, timeout=_VERIFY_TTL_SECONDS)
+    site_settings = SiteSettings.get_solo()
+    site_settings.server_host = confirmed_host
+    site_settings.save(update_fields=["server_host"])
+    return render(request, "photos/verify_ip_page.html", {"expired": False, "host": confirmed_host})
 
 
 @superuser_required

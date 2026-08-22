@@ -16,15 +16,13 @@
 </head>
 <body>
   <main class="card">
-    {% include "photos/_setup_steps.html" %}
     <h1>Back up photos to Google Drive?</h1>
     <p class="hint">
       Optional. When connected, every uploaded photo is automatically copied to a Drive folder of
       your choice, guests can be offered read access to it, and — since photos there are safely
       backed up — you can switch between events later without any risk of losing photos still
       only stored locally. Skip this if you'd rather keep things simple: photos will stay only on
-      this server, and you can always connect Drive later from the dashboard or by coming back to
-      this step.
+      this server, and you can always connect Drive later from the admin account page.
     </p>
 
     {% if error %}<div class="message error">{{ error }}</div>{% endif %}
@@ -34,7 +32,7 @@
         Google requires this specific step to happen from a browser running on the server
         machine itself (Google rejects plain http:// addresses that aren't "localhost").
         Open <strong>{{ localhost_drive_url }}</strong> from that machine to connect Drive —
-        every other step of this wizard works fine from your phone as usual.
+        everything else on the admin account page works fine from your phone as usual.
       </div>
     {% endif %}
 
@@ -61,7 +59,7 @@
       <p>Credentials file received. Now connect your Google account:</p>
       {% if is_localhost %}
         <div class="form-actions">
-          <a class="btn primary" href="{% url 'setup-google-connect' %}">Connect my Google account</a>
+          <a class="btn primary" href="{% url 'drive-google-connect' %}">Connect my Google account</a>
         </div>
       {% else %}
         <p class="hint">Open {{ localhost_drive_url }} from the server machine to continue.</p>

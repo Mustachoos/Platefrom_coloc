@@ -7,7 +7,7 @@ class FirstRunRedirectMiddleware:
     creation instead of letting guests reach upload/gallery/etc. on a
     freshly cloned, unclaimed install."""
 
-    EXEMPT_PREFIXES = ("/setup/", "/static/", "/media/")
+    EXEMPT_PREFIXES = ("/create-admin/", "/static/", "/media/")
 
     def __init__(self, get_response):
         self.get_response = get_response
@@ -15,5 +15,5 @@ class FirstRunRedirectMiddleware:
     def __call__(self, request):
         if not request.path.startswith(self.EXEMPT_PREFIXES):
             if not User.objects.filter(is_superuser=True).exists():
-                return redirect("setup-admin")
+                return redirect("create-admin")
         return self.get_response(request)

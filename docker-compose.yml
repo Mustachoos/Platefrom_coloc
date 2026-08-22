@@ -28,7 +28,6 @@ services:
       DJANGO_DB_PASSWORD: coloc
       DJANGO_DB_HOST: db
       DJANGO_DB_PORT: "5432"
-      QR_HOST_IP: "${QR_HOST_IP:-}"
       GOOGLE_OAUTH_CLIENT_SECRET_FILE: "/app/credentials/client_secret.json"
       GOOGLE_OAUTH_TOKEN_FILE: "/app/credentials/token.json"
       GOOGLE_DRIVE_ROOT_FOLDER_ID: "1XJVdF79oe8rNhTrX2ZCPQo40JXslCxWV"

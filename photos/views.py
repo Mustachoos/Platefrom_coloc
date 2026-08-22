@@ -348,20 +348,14 @@ def slideshow_settings_api(request):
 
 
 def upload_qr_code(request):
-    # QR_HOST_IP stays as a manual override for anyone who set it; otherwise
-    # fall back to the auto-detected, wizard-editable SiteSettings value —
-    # so a fresh install needs zero configuration for this to work.
-    forced_ip = os.environ.get("QR_HOST_IP", "").strip() or SiteSettings.get_solo().server_host
-    if forced_ip:
+    # A verified address (see the admin account page) always wins — it's
+    # been proven reachable by an actual phone scan, and already carries its
+    # own port (captured straight from that verifying request's Host header).
+    # Otherwise, derive it live from whatever request loaded this page.
+    server_host = SiteSettings.get_solo().server_host
+    if server_host:
         scheme = "https" if request.is_secure() else "http"
-        raw_host = request.get_host()
-        if raw_host.count(":") == 1 and not raw_host.startswith("["):
-            _, port = raw_host.rsplit(":", 1)
-        else:
-            port = request.get_port()
-        default_port = "443" if scheme == "https" else "80"
-        host = forced_ip if str(port) == default_port else f"{forced_ip}:{port}"
-        upload_url = f"{scheme}://{host}{reverse('upload')}"
+        upload_url = f"{scheme}://{server_host}{reverse('upload')}"
     else:
         upload_url = request.build_absolute_uri(reverse("upload"))
     image = qrcode.make(upload_url)

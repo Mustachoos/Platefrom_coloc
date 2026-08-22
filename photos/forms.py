@@ -23,11 +23,3 @@ class AdminAccountForm(forms.Form):
 
 class DriveClientSecretForm(forms.Form):
     client_secret_file = forms.FileField(label="Google OAuth credentials (JSON)")
-
-
-class NetworkForm(forms.Form):
-    server_host = forms.CharField(max_length=255, label="Server address")
-
-
-class FirstEventForm(forms.Form):
-    name = forms.CharField(max_length=200, label="Event name")

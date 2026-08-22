@@ -183,8 +183,9 @@ class SiteSettings(models.Model):
         max_length=255,
         blank=True,
         help_text="Address guests' phones use to reach this server (e.g. 192.168.1.13:8000), "
-        "encoded in the upload QR code. Pre-filled from the address used to load the setup "
-        "wizard; change it here if it's wrong or your network changes, no restart needed.",
+        "encoded in the upload QR code. Only ever set by scanning the verification QR code on "
+        "the admin account page — that's what proves the address is actually reachable. Leave "
+        "blank to fall back to whatever address loaded the current page.",
     )
     drive_root_folder_id = models.CharField(
         max_length=200,

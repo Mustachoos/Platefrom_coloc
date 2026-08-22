@@ -29,34 +29,30 @@ Application web permettant aux invités d'un événement (soirée, anniversaire,
 ```
 docker compose up --build
 ```
-Puis ouvrir **http://localhost:8000/setup/** et suivre l'assistant de configuration : création du
-compte admin, connexion Google Drive (optionnelle, entièrement depuis le navigateur — plus besoin
-d'éditer de fichier ni de lancer de commande), confirmation de l'adresse réseau, création de la
-première soirée. Une fois terminé :
+Puis ouvrir **http://localhost:8000** : tant qu'aucun compte admin n'existe, toute page redirige
+automatiquement vers la création du compte admin (`/create-admin/`) — aucune commande à lancer, ni
+fichier à éditer. Une fois le compte créé, vous arrivez sur la **page compte admin**
+(`/admin-account/`), le point d'entrée pour tout configurer :
+- Adresse réseau du QR code (vérifiée par scan, voir plus bas)
+- Connexion Google Drive (optionnelle)
+- Invitation de sous-administrateurs
+- Liste des évènements
+
+Et ensuite :
 - Application : http://localhost:8000
 - Écran TV : http://localhost:8000/tv/
 - Admin Django : http://localhost:8000/admin/
 - Dashboard staff : http://localhost:8000/dashboard/
+- Compte admin : http://localhost:8000/admin-account/
 
-L'assistant n'est accessible que tant qu'aucun compte admin n'existe (ou en étant déjà connecté en
-tant qu'admin, pour reprendre une étape sautée) — personne d'autre sur le réseau ne peut le relancer
-une fois la configuration faite.
+La page `/create-admin/` n'est accessible que tant qu'aucun compte admin n'existe (ou en étant déjà
+connecté en tant qu'admin, pour vérifier le nom d'utilisateur) — personne d'autre sur le réseau ne
+peut recréer un compte admin une fois qu'un premier existe.
 
 <details>
-<summary>Configuration manuelle (optionnelle, pour les cas non couverts par l'assistant)</summary>
-
-Tout ce que fait l'assistant reste aussi réglable à la main si besoin :
+<summary>Configuration manuelle (optionnelle, pour les cas non couverts par la page compte admin)</summary>
 
 - **Compte admin** : `docker compose exec web python manage.py createsuperuser`
-- **Adresse réseau du QR code** : réglable depuis `/admin/` (modèle "Site settings"), ou en forçant
-  la variable d'environnement `QR_HOST_IP` (prioritaire sur la valeur en base) dans `.env`,
-  renseignée automatiquement par un script qui détecte l'IP LAN de la machine :
-  - **Windows (PowerShell)** : `.\scripts\update-lan-ip.ps1` puis `docker compose up -d`, ou en une
-    seule commande `.\scripts\start.ps1`
-  - **macOS / Linux (bash)** : `./scripts/update-lan-ip.sh` puis `docker compose up -d`, ou en une
-    seule commande `./scripts/start.sh`
-
-  À relancer après un changement de réseau (nouvelle box, nouveau Wi-Fi, renouvellement DHCP).
 - **Google Drive** : voir ci-dessous, section CLI.
 </details>
 
@@ -70,25 +66,25 @@ un compte de service) : un compte de service Google n'a aucun quota de stockage 
 dehors d'un Drive Partagé, une fonctionnalité réservée aux comptes Google Workspace payants —
 inutilisable avec un Gmail personnel gratuit.
 
-**Depuis l'assistant `/setup/`** (recommandé) — l'étape "Google Drive" guide dans l'ordre :
+**Depuis la page compte admin** (recommandé) — `/admin-account/drive/` guide dans l'ordre :
 
 > ⚠️ Google refuse toute adresse de redirection OAuth en `http://` non-HTTPS, sauf si l'hôte est
 > exactement `localhost`/`127.0.0.1` (une IP locale comme `192.168.1.13` est rejetée même
 > enregistrée à l'identique — erreur `redirect_uri_mismatch`). L'étape "Connecter mon compte
 > Google" doit donc se faire depuis un navigateur **sur la machine qui héberge le serveur**
-> (`http://localhost:8000/setup/drive/`), pas depuis votre téléphone — l'assistant l'indique
-> automatiquement si ce n'est pas déjà le cas. Toutes les autres étapes du wizard restent
-> utilisables depuis n'importe quel appareil du réseau.
+> (`http://localhost:8000/admin-account/drive/`), pas depuis votre téléphone — la page l'indique
+> automatiquement si ce n'est pas déjà le cas. Le reste de la page compte admin reste utilisable
+> depuis n'importe quel appareil du réseau.
 
 1. Créer un projet sur [console.cloud.google.com](https://console.cloud.google.com) et activer
    l'**API Google Drive**.
 2. Configurer l'écran de consentement OAuth (type "External", vous ajouter comme "Test user").
-3. Créer des identifiants OAuth de type **Web application** (pas "Desktop app" — l'assistant utilise
+3. Créer des identifiants OAuth de type **Web application** (pas "Desktop app" — cette page utilise
    une vraie redirection web, pas un flux local) et coller l'adresse de redirection affichée par
-   l'assistant (toujours basée sur `localhost`, voir avertissement ci-dessus) dans "Authorized
+   la page (toujours basée sur `localhost`, voir avertissement ci-dessus) dans "Authorized
    redirect URIs".
-4. Télécharger le fichier JSON généré et l'envoyer directement dans le formulaire de l'assistant.
-5. Depuis `http://localhost:8000/setup/drive/`, cliquer "Connecter mon compte Google", puis
+4. Télécharger le fichier JSON généré et l'envoyer directement dans le formulaire de la page.
+5. Depuis `http://localhost:8000/admin-account/drive/`, cliquer "Connecter mon compte Google", puis
    choisir ou créer le dossier Drive racine — tout
    depuis le navigateur, aucun fichier à placer ni ID à copier-coller à la main.
 
@@ -102,7 +98,7 @@ Cette méthode reste disponible et fait exactement la même chose, fichiers en p
 2. Créer un dossier racine dans votre Drive, récupérer son ID dans l'URL
    (`https://drive.google.com/drive/folders/<ID>`), et le renseigner dans
    `GOOGLE_DRIVE_ROOT_FOLDER_ID` (dans `.env` ou `docker-compose.yml` — prioritaire sur la valeur
-   choisie via l'assistant si les deux sont définis).
+   choisie depuis la page compte admin si les deux sont définis).
 3. Lancer l'autorisation, en local hors conteneur (un navigateur doit s'ouvrir) :
    ```
    pip install -r requirements.txt
@@ -195,7 +191,7 @@ Cette méthode reste disponible et fait exactement la même chose, fichiers en p
 
 #### 8. QR code d'upload — `/qr/upload.png`
 - Génère à la volée une image PNG encodant l'URL absolue de la page `/upload/`
-- Priorité de l'adresse encodée : la variable d'environnement `QR_HOST_IP` si définie, sinon `SiteSettings.server_host` (réglé par l'assistant `/setup/` ou `/admin/`), sinon le nom d'hôte de la requête. Ce mécanisme garantit que le QR code reste scannable sur le réseau local du logement même quand le serveur tourne dans un conteneur (typiquement l'écran TV charge `/tv/` via `localhost`, ce qui donnerait un QR code inutilisable pour un téléphone sans ça).
+- Adresse encodée : toujours dérivée de l'en-tête `Host` de la requête qui a chargé la page courante (`request.build_absolute_uri`) — rien à configurer ni détecter. Concrètement : si l'écran TV charge `/tv/` via l'IP locale de la machine (ex. `http://192.168.1.13:8000/tv/`) plutôt que via `localhost`, le QR code généré sur cette même page encode automatiquement cette même adresse, scannable par n'importe quel téléphone du réseau — et reste correct même si l'IP change (nouvelle box, DHCP), sans redémarrage ni réglage.
 
 #### 8bis. QR code Wi-Fi — `/qr/wifi.png`
 - Génère à la volée une image PNG au format standard `WIFI:T:<sécurité>;S:<SSID>;P:<mot de passe>;;`, reconnu nativement par l'appareil photo d'iOS et d'Android (propose directement "Rejoindre le réseau" au scan)
@@ -286,7 +282,6 @@ Un unique canal WebSocket diffuse à tous les écrans TV connectés :
 | `DJANGO_DB_PASSWORD` | Mot de passe PostgreSQL | `coloc` |
 | `DJANGO_DB_HOST` | Hôte PostgreSQL | `db` |
 | `DJANGO_DB_PORT` | Port PostgreSQL | `5432` |
-| `QR_HOST_IP` | IP forcée dans l'URL encodée par le QR code d'upload — prioritaire sur la valeur "Site settings" réglée par l'assistant `/setup/` ou `/admin/` | aucune (utilise "Site settings", sinon l'hôte de la requête) |
-| `GOOGLE_OAUTH_CLIENT_SECRET_FILE` | Chemin vers le fichier de credentials OAuth téléchargé depuis Google Cloud Console (écrit automatiquement par l'assistant `/setup/`, ou placé à la main) | aucune |
-| `GOOGLE_OAUTH_TOKEN_FILE` | Chemin vers le token OAuth (contient le refresh token), écrit par l'assistant `/setup/` ou par `manage.py google_drive_auth` | aucune |
-| `GOOGLE_DRIVE_ROOT_FOLDER_ID` | ID du dossier Drive racine sous lequel chaque soirée crée son sous-dossier — prioritaire sur la valeur "Site settings" choisie via l'assistant `/setup/` | aucune (Drive désactivé si ni l'un ni l'autre n'est défini) |
+| `GOOGLE_OAUTH_CLIENT_SECRET_FILE` | Chemin vers le fichier de credentials OAuth téléchargé depuis Google Cloud Console (écrit automatiquement depuis `/admin-account/drive/`, ou placé à la main) | aucune |
+| `GOOGLE_OAUTH_TOKEN_FILE` | Chemin vers le token OAuth (contient le refresh token), écrit depuis `/admin-account/drive/` ou par `manage.py google_drive_auth` | aucune |
+| `GOOGLE_DRIVE_ROOT_FOLDER_ID` | ID du dossier Drive racine sous lequel chaque soirée crée son sous-dossier — prioritaire sur la valeur "Site settings" choisie depuis `/admin-account/drive/` | aucune (Drive désactivé si ni l'un ni l'autre n'est défini) |

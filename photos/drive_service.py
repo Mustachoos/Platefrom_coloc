@@ -43,7 +43,7 @@ def _configured_root_folder_id():
     """The env var wins if set (back-compat with existing installs); otherwise
     the DB-backed value the setup wizard writes — that one has to live in the
     DB rather than a file/env var since it must take effect without a
-    container restart, the same reason SiteSettings.server_host does."""
+    container restart."""
     env_value = os.environ.get("GOOGLE_DRIVE_ROOT_FOLDER_ID", "").strip()
     if env_value:
         return env_value

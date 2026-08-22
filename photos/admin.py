@@ -32,7 +32,7 @@ class SlideshowSettingsAdmin(admin.ModelAdmin):
 
 @admin.register(SiteSettings)
 class SiteSettingsAdmin(admin.ModelAdmin):
-    list_display = ("server_host",)
+    list_display = ("server_host", "drive_root_folder_id")
 
     def has_add_permission(self, request):
         return not SiteSettings.objects.exists()
