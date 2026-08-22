@@ -29,6 +29,7 @@ services:
       DJANGO_DB_HOST: db
       DJANGO_DB_PORT: "5432"
       QR_HOST_IP: "${QR_HOST_IP:-}"
+      DUCKDNS_DOMAIN: "${DUCKDNS_DOMAIN:-}"
       GOOGLE_OAUTH_CLIENT_SECRET_FILE: "/app/credentials/client_secret.json"
       GOOGLE_OAUTH_TOKEN_FILE: "/app/credentials/token.json"
       GOOGLE_DRIVE_ROOT_FOLDER_ID: "1XJVdF79oe8rNhTrX2ZCPQo40JXslCxWV"
@@ -36,5 +37,22 @@ services:
       db:
         condition: service_healthy
 
+  caddy:
+    build: ./caddy
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - caddy_data:/data
+      - caddy_config:/config
+      - ./caddy/Caddyfile:/etc/caddy/Caddyfile
+    environment:
+      DUCKDNS_DOMAIN: "${DUCKDNS_DOMAIN:-}"
+      DUCKDNS_TOKEN: "${DUCKDNS_TOKEN:-}"
+    depends_on:
+      - web
+
 volumes:
   postgres_data:
+  caddy_data:
+  caddy_config:

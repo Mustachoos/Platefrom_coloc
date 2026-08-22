@@ -1,7 +1,7 @@
 from django.contrib import admin
 
 from . import drive_service, event_service
-from .models import Event, Photo, SlideshowSettings, UserIdentity
+from .models import Event, Photo, SiteSettings, SlideshowSettings, UserIdentity
 from .models import Like
 
 
@@ -25,6 +25,17 @@ class SlideshowSettingsAdmin(admin.ModelAdmin):
 
     def has_add_permission(self, request):
         return not SlideshowSettings.objects.exists()
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+
+@admin.register(SiteSettings)
+class SiteSettingsAdmin(admin.ModelAdmin):
+    list_display = ("server_host",)
+
+    def has_add_permission(self, request):
+        return not SiteSettings.objects.exists()
 
     def has_delete_permission(self, request, obj=None):
         return False

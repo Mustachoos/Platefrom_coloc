@@ -1,0 +1,7 @@
+<nav class="setup-steps">
+  <a href="{% url 'setup-welcome' %}" class="{% if current_step == 1 %}active{% endif %}">1. Welcome</a>
+  <a href="{% url 'setup-admin' %}" class="{% if current_step == 2 %}active{% endif %}">2. Admin</a>
+  <a href="{% url 'setup-drive' %}" class="{% if current_step == 3 %}active{% endif %}">3. Drive</a>
+  <a href="{% url 'setup-network' %}" class="{% if current_step == 4 %}active{% endif %}">4. Network</a>
+  <a href="{% url 'setup-event' %}" class="{% if current_step == 5 %}active{% endif %}">5. Event</a>
+</nav>

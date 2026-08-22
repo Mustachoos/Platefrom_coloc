@@ -1,10 +1,17 @@
 from django.urls import path
 from django.views.generic import RedirectView
 
-from . import views
+from . import setup_views, views
 
 urlpatterns = [
     path("", RedirectView.as_view(pattern_name="upload", permanent=False)),
+    path("setup/", setup_views.welcome_view, name="setup-welcome"),
+    path("setup/admin/", setup_views.admin_account_view, name="setup-admin"),
+    path("setup/drive/", setup_views.drive_view, name="setup-drive"),
+    path("setup/google/connect/", setup_views.google_connect_view, name="setup-google-connect"),
+    path("setup/google/callback/", setup_views.google_callback_view, name="setup-google-callback"),
+    path("setup/network/", setup_views.network_view, name="setup-network"),
+    path("setup/event/", setup_views.first_event_view, name="setup-event"),
     path("pseudo/", views.choose_pseudo, name="choose-pseudo"),
     path("pseudo/share-drive/", views.share_drive_view, name="share-drive"),
     path("upload/", views.upload_view, name="upload"),

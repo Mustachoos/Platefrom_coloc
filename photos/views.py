@@ -16,7 +16,7 @@ from django.utils import timezone
 
 from . import drive_service, event_service, whiteboard_service
 from .forms import PseudoForm, ShareDriveForm
-from .models import Event, Like, Photo, SlideshowSettings, UserIdentity, WhiteboardDrawing
+from .models import Event, Like, Photo, SiteSettings, SlideshowSettings, UserIdentity, WhiteboardDrawing
 
 logger = logging.getLogger(__name__)
 
@@ -346,8 +346,14 @@ def slideshow_settings_api(request):
 
 
 def upload_qr_code(request):
-    forced_ip = os.environ.get("QR_HOST_IP", "").strip()
-    if forced_ip:
+    duckdns_domain = os.environ.get("DUCKDNS_DOMAIN", "").strip()
+    # QR_HOST_IP stays as a manual override for anyone who set it; otherwise
+    # fall back to the auto-detected, wizard-editable SiteSettings value —
+    # so a fresh install needs zero configuration for this to work.
+    forced_ip = os.environ.get("QR_HOST_IP", "").strip() or SiteSettings.get_solo().server_host
+    if duckdns_domain:
+        upload_url = f"https://{duckdns_domain}{reverse('upload')}"
+    elif forced_ip:
         scheme = "https" if request.is_secure() else "http"
         raw_host = request.get_host()
         if raw_host.count(":") == 1 and not raw_host.startswith("["):
@@ -606,7 +612,7 @@ def create_event_view(request):
     event = Event.objects.filter(name=name).first()
     if event is None:
         event = Event.objects.create(name=name)
-    if not event.drive_folder_id:
+    if not event.drive_folder_id and drive_service.is_configured():
         ok, message = event_service.ensure_drive_folder(event)
         if not ok:
             messages.error(
@@ -629,10 +635,15 @@ def event_switch_view(request, event_id):
 
     # Live, uncached check every time this page is hit — a cached
     # drive_folder_id can't tell us the folder wasn't deleted/unshared since
-    # the last time we looked.
-    active_drive_ok = drive_service.folder_exists(active.drive_folder_id) if active else True
-    target_drive_ok = drive_service.folder_exists(target.drive_folder_id)
-    broken = active if (active and not active_drive_ok) else (target if not target_drive_ok else None)
+    # the last time we looked. An event with no Drive folder at all (Drive
+    # is optional) isn't "broken" — only a folder that existed and is now
+    # unreachable counts as broken.
+    active_drive_ok = drive_service.folder_exists(active.drive_folder_id) if (active and active.drive_folder_id) else True
+    target_drive_ok = drive_service.folder_exists(target.drive_folder_id) if target.drive_folder_id else True
+    broken = (
+        active if (active and active.drive_folder_id and not active_drive_ok)
+        else (target if (target.drive_folder_id and not target_drive_ok) else None)
+    )
 
     if request.method == "POST":
         if "recreate_folder" in request.POST:
@@ -689,7 +700,7 @@ def event_switch_view(request, event_id):
             if broken:
                 messages.error(request, f"Drive folder for '{broken.name}' is still unreachable.")
                 return redirect("event-switch", event_id=target.id)
-            if active:
+            if active and active.drive_folder_id:
                 pending = event_service.unbacked_up_photo_count(active)
                 if pending:
                     messages.error(
@@ -709,7 +720,7 @@ def event_switch_view(request, event_id):
 
         return redirect("event-switch", event_id=target.id)
 
-    pending = event_service.unbacked_up_photo_count(active) if (active and active_drive_ok) else 0
+    pending = event_service.unbacked_up_photo_count(active) if (active and active.drive_folder_id and active_drive_ok) else 0
     active_photo_count = active.photos.count() if active else 0
     return render(
         request,
