@@ -8,6 +8,8 @@ from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
 from django.contrib import messages
 from django.contrib.admin.views.decorators import staff_member_required
+from django.contrib.auth import login as auth_login
+from django.contrib.auth.forms import AuthenticationForm
 from django.db import IntegrityError
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
@@ -398,7 +400,29 @@ def wifi_qr_code(request):
     return HttpResponse(buffer.getvalue(), content_type="image/png")
 
 
-@staff_member_required
+def _post_login_redirect(user):
+    return redirect("admin-management" if user.is_superuser else "dashboard")
+
+
+def staff_login_view(request):
+    if request.user.is_authenticated and request.user.is_staff:
+        return _post_login_redirect(request.user)
+
+    if request.method == "POST":
+        form = AuthenticationForm(request, data=request.POST)
+        if form.is_valid():
+            user = form.get_user()
+            if not user.is_staff:
+                form.add_error(None, "This account doesn't have staff access.")
+            else:
+                auth_login(request, user)
+                return _post_login_redirect(user)
+    else:
+        form = AuthenticationForm(request)
+    return render(request, "photos/staff_login.html", {"form": form})
+
+
+@staff_member_required(login_url="staff-login")
 def dashboard_view(request):
     active_event = Event.get_active()
 
@@ -572,7 +596,7 @@ def dashboard_view(request):
     )
 
 
-@staff_member_required
+@staff_member_required(login_url="staff-login")
 def dashboard_delete_photo(request, photo_id):
     if request.method == "POST":
         photo = get_object_or_404(Photo, id=photo_id)
@@ -581,7 +605,7 @@ def dashboard_delete_photo(request, photo_id):
     return _dashboard_redirect(tab="photos")
 
 
-@staff_member_required
+@staff_member_required(login_url="staff-login")
 def dashboard_delete_whiteboard_drawing(request, drawing_id):
     if request.method == "POST":
         drawing = get_object_or_404(WhiteboardDrawing, id=drawing_id)
@@ -597,7 +621,7 @@ def dashboard_delete_whiteboard_drawing(request, drawing_id):
     return _dashboard_redirect(tab="whiteboard")
 
 
-@staff_member_required
+@staff_member_required(login_url="staff-login")
 def create_event_view(request):
     if request.method != "POST":
         return redirect("dashboard")
@@ -621,7 +645,7 @@ def create_event_view(request):
     return redirect("event-switch", event_id=event.id)
 
 
-@staff_member_required
+@staff_member_required(login_url="staff-login")
 def event_switch_view(request, event_id):
     target = get_object_or_404(Event, id=event_id)
     active = Event.get_active()

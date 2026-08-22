@@ -1,6 +1,7 @@
 import os
 import uuid
 
+from django.conf import settings
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.utils import timezone
@@ -204,6 +205,48 @@ class SiteSettings(models.Model):
     def get_solo(cls):
         obj, _ = cls.objects.get_or_create(pk=1)
         return obj
+
+
+class AdminInvite(models.Model):
+    """A single-use link the admin can hand out so someone else can create
+    their own subadmin account (is_staff, not is_superuser) without needing
+    the admin's own credentials."""
+
+    STATUS_PENDING = "pending"
+    STATUS_ACTIVE = "active"
+    STATUS_REVOKED = "revoked"
+
+    invitee_name = models.CharField(
+        max_length=150, help_text="Who this invite link was generated for."
+    )
+    token = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, related_name="invites_created", on_delete=models.CASCADE
+    )
+    used_at = models.DateTimeField(null=True, blank=True)
+    used_by = models.OneToOneField(
+        settings.AUTH_USER_MODEL, related_name="used_invite", null=True, blank=True, on_delete=models.SET_NULL
+    )
+    revoked_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"Invite for {self.invitee_name} ({self.status})"
+
+    @property
+    def is_used(self):
+        return self.used_at is not None
+
+    @property
+    def status(self):
+        if self.revoked_at:
+            return self.STATUS_REVOKED
+        if self.used_at:
+            return self.STATUS_ACTIVE
+        return self.STATUS_PENDING
 
 
 class SlideshowSettings(models.Model):

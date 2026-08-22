@@ -101,7 +101,7 @@ def admin_account_view(request):
             else:
                 user = User.objects.create_superuser(username, "", form.cleaned_data["password"])
                 login(request, user)
-                return redirect("setup-drive")
+                return redirect("admin-management")
     else:
         form = AdminAccountForm()
     return _render_step(request, 2, "photos/setup_admin.html", {"form": form})
@@ -119,7 +119,7 @@ def drive_view(request):
 
     if request.method == "POST":
         if "skip" in request.POST:
-            return redirect("setup-network")
+            return redirect("admin-management")
 
         if "upload_client_secret" in request.POST:
             client_secret_form = DriveClientSecretForm(request.POST, request.FILES)
@@ -147,7 +147,7 @@ def drive_view(request):
                 site_settings = SiteSettings.get_solo()
                 site_settings.drive_root_folder_id = folder_id
                 site_settings.save(update_fields=["drive_root_folder_id"])
-                return redirect("setup-network")
+                return redirect("admin-management")
 
     host = request.get_host()
     port = host.split(":", 1)[1] if ":" in host else "8000"
@@ -203,7 +203,7 @@ def network_view(request):
         if form.is_valid():
             site_settings.server_host = form.cleaned_data["server_host"].strip()
             site_settings.save(update_fields=["server_host"])
-            return redirect("setup-event")
+            return redirect("admin-management")
     else:
         initial_host = site_settings.server_host or request.get_host()
         form = NetworkForm(initial={"server_host": initial_host})

@@ -9,30 +9,28 @@
 </head>
 <body>
   <main class="card">
-    {% include "photos/_setup_steps.html" %}
-
     {% if existing_admin %}
       <h1>Admin account already created</h1>
       <p class="hint">
         You're set up as <strong>{{ existing_admin.username }}</strong>. This is what you use to
-        log into <code>/admin/</code> and the staff dashboard at <code>/dashboard/</code>, where
-        you'll manage events, guests, and settings after this wizard.
+        log into <code>/admin/</code>, the staff dashboard at <code>/dashboard/</code>, and the
+        admin account page where you manage events and subadmins.
       </p>
       <p class="hint">
         Want to change the password? Do that from
-        <a href="{% url 'admin:password_change' %}">the admin password change page</a> — the
-        wizard only creates this account once, it doesn't edit it.
+        <a href="{% url 'admin:password_change' %}">the admin password change page</a> — this
+        page only creates the account once, it doesn't edit it.
       </p>
       <div class="form-actions">
-        <a class="btn primary" href="{% url 'setup-drive' %}">Continue</a>
+        <a class="btn primary" href="{% url 'admin-management' %}">Continue</a>
       </div>
     {% else %}
       <h1>Create your admin account</h1>
       <p class="hint">
-        This becomes a full Django admin account — it's how you'll log into <code>/admin/</code>
-        and the staff dashboard (<code>/dashboard/</code>) afterward, to manage events, moderate
-        photos, and change settings like the slideshow speed. Only one gets created here; you can
-        add more staff accounts later from <code>/admin/</code> if needed.
+        This becomes a full Django admin account — it's how you'll log into <code>/admin/</code>,
+        the staff dashboard (<code>/dashboard/</code>), and the admin account page afterward, to
+        manage events, invite subadmins, moderate photos, and change settings. Only one gets
+        created here; invite subadmins afterward if you need more staff accounts.
       </p>
 
       <form method="post">

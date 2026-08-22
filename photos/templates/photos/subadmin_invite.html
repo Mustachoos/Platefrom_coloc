@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Create your subadmin account</title>
+  {% load static %}
+  <link rel="stylesheet" href="{% static 'photos/site.css' %}">
+</head>
+<body class="centered-page">
+  <main class="card">
+    <h1>Create your subadmin account</h1>
+    <p class="hint">
+      Hi {{ invite.invitee_name }} — you've been invited to help manage this app. This account can
+      use the staff dashboard to manage events, moderate photos, and change settings — but it
+      can't invite other subadmins or manage the admin account.
+    </p>
+
+    <form method="post">
+      {% csrf_token %}
+      <div class="form-row">
+        <label for="{{ form.username.id_for_label }}">Username</label>
+        {{ form.username }}
+        {% if form.username.errors %}<div class="message error">{{ form.username.errors }}</div>{% endif %}
+      </div>
+      <div class="form-row">
+        <label for="{{ form.password.id_for_label }}">Password</label>
+        {{ form.password }}
+      </div>
+      <div class="form-row">
+        <label for="{{ form.password_confirm.id_for_label }}">Confirm password</label>
+        {{ form.password_confirm }}
+        {% if form.password_confirm.errors %}<div class="message error">{{ form.password_confirm.errors }}</div>{% endif %}
+      </div>
+      <div class="form-actions">
+        <button type="submit" class="btn primary">Create account</button>
+      </div>
+    </form>
+  </main>
+</body>
+</html>

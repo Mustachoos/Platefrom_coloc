@@ -93,6 +93,8 @@
     .drawing-thumb{width:56px;height:56px;flex:none;object-fit:contain;border-radius:8px;border:1px solid #e2e8f0;background:repeating-conic-gradient(#eef2f6 0% 25%,#ffffff 0% 50%) 0 0/12px 12px}
     .drawing-row .meta{flex:1;font-size:0.88rem}
     .table-scroll{overflow-x:auto}
+    .dashboard-header{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap}
+    .header-actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
 
     /* Mobile: a wrapping row of 6 tabs is cramped and hard to scan, so swap
        it for a native select — a more familiar "pick a section" control on
@@ -112,8 +114,21 @@
   </style>
 </head>
 <body class="sense-preview">
-  <h1>Event dashboard{% if active_event %} — {{ active_event.name }}{% endif %}</h1>
-  <p class="as-user">Signed in as staff.</p>
+  <div class="dashboard-header">
+    <div>
+      <h1>Event dashboard{% if active_event %} — {{ active_event.name }}{% endif %}</h1>
+      <p class="as-user">Signed in as staff.</p>
+    </div>
+    <div class="header-actions">
+      {% if user.is_superuser %}
+      <a href="{% url 'admin-management' %}" class="btn secondary small">Admin account</a>
+      {% endif %}
+      <form method="post" action="{% url 'staff-logout' %}">
+        {% csrf_token %}
+        <button type="submit" class="btn neutral small">Log out</button>
+      </form>
+    </div>
+  </div>
 
   {% if messages %}
   <div class="messages">

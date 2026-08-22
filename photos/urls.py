@@ -1,10 +1,13 @@
-from django.urls import path
+from django.contrib.auth.views import LogoutView
+from django.urls import path, reverse_lazy
 from django.views.generic import RedirectView
 
-from . import setup_views, views
+from . import admin_views, setup_views, views
 
 urlpatterns = [
     path("", RedirectView.as_view(pattern_name="upload", permanent=False)),
+    path("staff-login/", views.staff_login_view, name="staff-login"),
+    path("logout/", LogoutView.as_view(next_page=reverse_lazy("staff-login")), name="staff-logout"),
     path("setup/", setup_views.welcome_view, name="setup-welcome"),
     path("setup/admin/", setup_views.admin_account_view, name="setup-admin"),
     path("setup/drive/", setup_views.drive_view, name="setup-drive"),
@@ -12,6 +15,13 @@ urlpatterns = [
     path("setup/google/callback/", setup_views.google_callback_view, name="setup-google-callback"),
     path("setup/network/", setup_views.network_view, name="setup-network"),
     path("setup/event/", setup_views.first_event_view, name="setup-event"),
+    path("admin-account/", admin_views.admin_management_view, name="admin-management"),
+    path(
+        "admin-account/invites/<uuid:token>/revoke/",
+        admin_views.revoke_invite_view,
+        name="admin-invite-revoke",
+    ),
+    path("admin-account/invite/<uuid:token>/", admin_views.subadmin_invite_view, name="subadmin-invite"),
     path("pseudo/", views.choose_pseudo, name="choose-pseudo"),
     path("pseudo/share-drive/", views.share_drive_view, name="share-drive"),
     path("upload/", views.upload_view, name="upload"),

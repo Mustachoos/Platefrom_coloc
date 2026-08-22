@@ -43,6 +43,7 @@ h1{margin:0;font-size:clamp(1.3rem,3.5vw,2.3rem);line-height:1.1}
 button, .btn{border:0;border-radius:13px;padding:12px 20px;font-size:1rem;font-weight:700;color:#fff;cursor:pointer;transition:transform .15s ease,box-shadow .2s ease;display:inline-flex;align-items:center;justify-content:center;gap:8px}
 button svg, .btn svg{flex:none}
 button:hover,.btn:hover{transform:translateY(-1px)}
+button:disabled,.btn:disabled{opacity:0.45;cursor:not-allowed;pointer-events:none}
 button.primary{background:linear-gradient(90deg,var(--btn-1),var(--btn-2));box-shadow:0 8px 18px rgba(22,163,74,0.3)}
 .btn.back{background:linear-gradient(90deg,var(--btn-1),var(--btn-2));box-shadow:0 8px 18px rgba(22,163,74,0.3)}
 .btn.delete{background:linear-gradient(90deg,var(--danger-1),var(--danger-2));box-shadow:0 8px 18px rgba(220,38,38,0.3)}
@@ -58,7 +59,7 @@ button.primary{background:linear-gradient(90deg,var(--btn-1),var(--btn-2));box-s
 .tv-link:hover,.gallery-link:hover{border-color:rgba(15,118,110,0.55)}
 
 /* Forms */
-input[type=file],input[type=text],input[type=email],textarea,select{width:100%;padding:12px;border-radius:12px;border:2px solid #d4e4ee;background:#fff}
+input[type=file],input[type=text],input[type=email],input[type=password],textarea,select{width:100%;padding:12px;border-radius:12px;border:2px solid #d4e4ee;background:#fff}
 
 /* Form layout and controls */
 .form-row{margin-top:14px;display:flex;flex-direction:column;gap:8px}
