@@ -212,6 +212,15 @@ def admin_management_view(request):
                     f.write(chunk)
         return redirect("admin-management")
 
+    if request.method == "POST" and "disconnect_drive" in request.POST:
+        for path in (client_secret_path, token_path):
+            if path and os.path.exists(path):
+                os.remove(path)
+        site_settings.drive_root_folder_id = ""
+        site_settings.save(update_fields=["drive_root_folder_id"])
+        messages.success(request, "Drive connection removed — start again from step 1.", extra_tags="drive")
+        return redirect("admin-management")
+
     if request.method == "POST" and "choose_folder" in request.POST:
         choice = request.POST.get("folder_choice", "").strip()
         new_name = request.POST.get("new_folder_name", "").strip()
@@ -267,12 +276,13 @@ def admin_management_view(request):
 
     current_folder_id = site_settings.drive_root_folder_id
     folder_valid = bool(token_valid and current_folder_id and drive_service.folder_exists(current_folder_id))
-    drive_ready = folder_valid
+    drive_ready = bool(client_secret_valid and token_valid and folder_valid)
     drive_attention = bool(
         (has_client_secret and not client_secret_valid)
         or (has_token and not token_valid)
         or (current_folder_id and not folder_valid)
     )
+    drive_progress = sum([client_secret_valid, token_valid, folder_valid])
 
     host = request.get_host()
     port = host.split(":", 1)[1] if ":" in host else "8000"
@@ -293,6 +303,7 @@ def admin_management_view(request):
         "folder_valid": folder_valid,
         "drive_ready": drive_ready,
         "drive_attention": drive_attention,
+        "drive_progress": drive_progress,
         "drive_error": drive_error,
         "drive_redirect_uri": _localhost_redirect_uri(request),
         "drive_is_localhost": _is_localhost(request),

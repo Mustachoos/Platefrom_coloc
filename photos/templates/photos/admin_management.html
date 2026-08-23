@@ -35,7 +35,6 @@
     .checklist{text-align:left;padding-left:20px}
     .checklist li{margin-bottom:8px}
     .redirect-uri{background:#f1f5f9;border-radius:8px;padding:8px 12px;font-family:monospace;word-break:break-all;user-select:all}
-    .folder-option{display:block;text-align:left;margin-bottom:8px}
     dialog.wide{width:min(90vw,560px)}
     table{width:100%;border-collapse:collapse}
     th,td{text-align:left;padding:8px 10px;border-bottom:1px solid #edf2f7;font-size:0.92rem}
@@ -69,6 +68,7 @@
     .textbox-btn:hover:disabled{background:#f1f5f9}
     .status-circle{box-sizing:border-box;display:inline-block;width:20px;height:20px;border-radius:50%;background:#cbd5e1;border:2px solid transparent;vertical-align:middle;margin-right:10px;transition:background .3s ease}
     .status-circle.verified{background:var(--btn-1)}
+    .status-circle.partial{background:#f59e0b}
     .status-circle.failed{background:#dc2626}
     .status-circle.checking{background:transparent;border-color:#d4e4ee;border-top-color:var(--btn-1);animation:spin .8s linear infinite}
     @keyframes spin{to{transform:rotate(360deg)}}
@@ -177,7 +177,7 @@
     {% for message in messages %}{% if "network" in message.tags %}
     <div class="box-message {{ message.tags }}">{{ message }}</div>
     {% endif %}{% endfor %}
-  <details id="network-details" class="hub-details" {% if verify_token or messages %}open{% endif %}>
+  <details id="network-details" class="hub-details" {% if verify_token %}open{% endif %}>
     <summary>
       <h2><span
         class="status-circle{% if verify_token %} checking{% elif verified_ip %} verified{% endif %}"
@@ -272,9 +272,12 @@
   </div>
 
   <div class="panel">
+    {% for message in messages %}{% if "drive" in message.tags %}
+    <div class="box-message {{ message.tags }}">{{ message }}</div>
+    {% endif %}{% endfor %}
   <details id="drive-details" class="hub-details" {% if drive_error or drive_attention %}open{% endif %}>
     <summary>
-      <h2><span class="status-circle{% if drive_ready %} verified{% elif drive_attention %} failed{% endif %}"></span>Google Drive</h2>
+      <h2><span class="status-circle{% if drive_ready %} verified{% elif drive_attention %} failed{% elif drive_progress > 0 %} partial{% endif %}"></span>Google Drive</h2>
     </summary>
     <div class="details-body">
       <button type="button" class="drive-step-row" onclick="document.getElementById('drive-step1-modal').showModal()">
@@ -289,6 +292,12 @@
         <span class="status-circle{% if current_folder_id and not folder_valid %} failed{% elif folder_valid %} verified{% endif %}"></span>
         3. Choose Drive folder
       </button>
+      {% if has_client_secret or has_token or current_folder_id %}
+      <form method="post" style="margin-top:10px">
+        {% csrf_token %}
+        <button type="submit" name="disconnect_drive" class="btn delete small">Remove Drive connection</button>
+      </form>
+      {% endif %}
     </div>
   </details>
   </div>
@@ -308,15 +317,7 @@
         <li><a href="https://console.cloud.google.com/projectcreate" target="_blank" rel="noopener">Create a project</a> on Google Cloud Console.</li>
         <li><a href="https://console.cloud.google.com/apis/library/drive.googleapis.com" target="_blank" rel="noopener">Enable the Google Drive API</a> for that project.</li>
         <li><a href="https://console.cloud.google.com/apis/credentials/consent" target="_blank" rel="noopener">Configure the OAuth consent screen</a> — type "External".</li>
-        <li>
-          <div class="message error" style="margin:6px 0">
-            <strong>Add yourself as a test user</strong> — on that same consent screen page, open the
-            <strong>Audience</strong> tab → <strong>Test users</strong> → <strong>+ ADD USERS</strong>,
-            and add the exact Google account you'll use in step 2. This is a separate save from
-            the consent screen itself — <strong>easy to miss</strong>, and skipping it is the #1 cause
-            of the "Error 403: access_denied" screen when connecting.
-          </div>
-        </li>
+        <li><a href="https://console.cloud.google.com/auth/audience" target="_blank" rel="noopener">Add yourself as a test user</a> — add your address, it's the same one used in step 2.</li>
         <li><a href="https://console.cloud.google.com/apis/credentials" target="_blank" rel="noopener">Create OAuth credentials</a> → type <strong>Web application</strong> (not Desktop app) → add this exact address as an authorized redirect URI:
           <div class="redirect-uri">{{ drive_redirect_uri }}</div>
         </li>
@@ -338,28 +339,24 @@
       <h2>2. Connect your Google account</h2>
       {% if not client_secret_valid %}
       <p class="step-locked">Complete step 1 first.</p>
-      {% elif token_valid %}
-      <p class="step-ok">✓ Connected — Google Drive is reachable with this account.</p>
-      {% if drive_is_localhost %}
+      {% elif not drive_is_localhost %}
+      <p class="hint">
+        This step requires a browser running on the server machine itself (Google rejects
+        plain http:// addresses that aren't "localhost"). Open this button from a browser
+        <strong>on that machine</strong> to connect:
+      </p>
       <div class="form-actions">
-        <a class="btn secondary small" href="{% url 'drive-google-connect' %}">Reconnect</a>
+        <a class="btn primary small" href="{{ drive_localhost_url }}">Open on localhost</a>
       </div>
-      {% endif %}
       {% else %}
-        {% if has_token %}
+        {% if token_valid %}
+        <p class="step-ok">✓ Connected — Google Drive is reachable with this account.</p>
+        {% elif has_token %}
         <p class="step-warn">⚠ The stored connection no longer works — reconnect below.</p>
         {% endif %}
-        {% if drive_is_localhost %}
         <div class="form-actions">
-          <a class="btn primary small" href="{% url 'drive-google-connect' %}">Connect my Google account</a>
+          <a class="btn primary small" href="{% url 'drive-google-connect' %}">{% if token_valid %}Reconnect{% else %}Connect my Google account{% endif %}</a>
         </div>
-        {% else %}
-        <p class="hint">
-          This step requires a browser running on the server machine itself (Google rejects
-          plain http:// addresses that aren't "localhost"). Open
-          <strong>{{ drive_localhost_url }}</strong> from that machine to connect.
-        </p>
-        {% endif %}
       {% endif %}
       <div class="form-actions">
         <button type="submit" class="btn neutral small">Close</button>
@@ -381,15 +378,22 @@
         {% elif current_folder_id %}
         <p class="step-warn">⚠ The previously chosen folder is no longer reachable — pick another one.</p>
         {% endif %}
-        {% for folder in drive_folders %}
-          <label class="folder-option">
-            <input type="radio" name="folder_choice" value="{{ folder.id }}" {% if folder.id == current_folder_id %}checked{% endif %}> {{ folder.name }}
-          </label>
-        {% endfor %}
-        <label class="folder-option">
-          <input type="radio" name="folder_choice" value="__new__"> Create a new folder:
-          <input type="text" name="new_folder_name" placeholder="e.g. Coloc Photos">
-        </label>
+        <div class="form-row">
+          <label for="folder_choice">Folder</label>
+          <select
+            name="folder_choice" id="folder_choice"
+            onchange="document.getElementById('new-folder-name-row').style.display = (this.value === '__new__') ? '' : 'none'"
+          >
+            {% for folder in drive_folders %}
+            <option value="{{ folder.id }}" {% if folder.id == current_folder_id %}selected{% endif %}>{{ folder.name }}</option>
+            {% endfor %}
+            <option value="__new__">+ Create a new folder</option>
+          </select>
+        </div>
+        <div class="form-row" id="new-folder-name-row" style="display:none">
+          <label for="new_folder_name">New folder name</label>
+          <input type="text" id="new_folder_name" name="new_folder_name" placeholder="e.g. Coloc Photos">
+        </div>
       {% endif %}
       <div class="form-actions">
         <button type="button" class="btn neutral small" onclick="document.getElementById('drive-step3-modal').close()">Close</button>

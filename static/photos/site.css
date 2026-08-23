@@ -44,7 +44,7 @@ button, .btn{border:0;border-radius:13px;padding:12px 20px;font-size:1rem;font-w
 button svg, .btn svg{flex:none}
 button:hover,.btn:hover{transform:translateY(-1px)}
 button:disabled,.btn:disabled{opacity:0.45;cursor:not-allowed;pointer-events:none}
-button.primary{background:linear-gradient(90deg,var(--btn-1),var(--btn-2));box-shadow:0 8px 18px rgba(22,163,74,0.3)}
+button.primary,.btn.primary{background:linear-gradient(90deg,var(--btn-1),var(--btn-2));box-shadow:0 8px 18px rgba(22,163,74,0.3)}
 .btn.back{background:linear-gradient(90deg,var(--btn-1),var(--btn-2));box-shadow:0 8px 18px rgba(22,163,74,0.3)}
 .btn.delete{background:linear-gradient(90deg,var(--danger-1),var(--danger-2));box-shadow:0 8px 18px rgba(220,38,38,0.3)}
 
