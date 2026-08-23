@@ -40,6 +40,12 @@ from . import drive_service
 from .forms import AdminAccountForm, DriveClientSecretForm
 from .models import AdminInvite, SiteSettings
 
+# oauthlib refuses any OAuth exchange over plain http by default. Google
+# itself allows http://localhost specifically (see _localhost_redirect_uri
+# below) — this only lifts oauthlib's own client-side check to match, and
+# only ever applies to the localhost-only redirect this flow is locked to.
+os.environ.setdefault("OAUTHLIB_INSECURE_TRANSPORT", "1")
+
 superuser_required = user_passes_test(lambda u: u.is_authenticated and u.is_superuser, login_url="dashboard")
 
 _VERIFY_TTL_SECONDS = 600
@@ -133,80 +139,24 @@ def _google_flow(request):
     )
 
 
-def _safe_list_folders():
-    try:
-        return drive_service.list_root_folders()
-    except drive_service.DriveError:
-        return []
-
-
-@superuser_required
-def drive_connect_view(request):
-    client_secret_path = _client_secret_path()
-    token_path = _token_path()
-    has_client_secret = bool(client_secret_path and os.path.exists(client_secret_path))
-    has_token = bool(token_path and os.path.exists(token_path))
-    error = None
-
-    if request.method == "POST":
-        if "skip" in request.POST:
-            return redirect("admin-management")
-
-        if "upload_client_secret" in request.POST:
-            client_secret_form = DriveClientSecretForm(request.POST, request.FILES)
-            if client_secret_form.is_valid():
-                os.makedirs(os.path.dirname(client_secret_path) or ".", exist_ok=True)
-                with open(client_secret_path, "wb") as f:
-                    for chunk in client_secret_form.cleaned_data["client_secret_file"].chunks():
-                        f.write(chunk)
-                return redirect("drive-connect")
-        elif "choose_folder" in request.POST:
-            choice = request.POST.get("folder_choice", "").strip()
-            new_name = request.POST.get("new_folder_name", "").strip()
-            try:
-                if choice == "__new__":
-                    if not new_name:
-                        raise drive_service.DriveError("Give the new folder a name.")
-                    folder_id = drive_service.create_root_folder(new_name)
-                elif choice:
-                    folder_id = choice
-                else:
-                    raise drive_service.DriveError("Choose a folder.")
-            except drive_service.DriveError as exc:
-                error = str(exc)
-            else:
-                site_settings = SiteSettings.get_solo()
-                site_settings.drive_root_folder_id = folder_id
-                site_settings.save(update_fields=["drive_root_folder_id"])
-                return redirect("admin-management")
-
-    host = request.get_host()
-    port = host.split(":", 1)[1] if ":" in host else "8000"
-    return render(request, "photos/drive_connect.html", {
-        "client_secret_form": DriveClientSecretForm(),
-        "has_client_secret": has_client_secret,
-        "has_token": has_token,
-        "folders": _safe_list_folders() if has_token else None,
-        "current_folder_id": SiteSettings.get_solo().drive_root_folder_id,
-        "redirect_uri": _localhost_redirect_uri(request),
-        "is_localhost": _is_localhost(request),
-        "localhost_drive_url": f"http://localhost:{port}{reverse('drive-connect')}",
-        "error": error,
-    })
-
-
 @superuser_required
 def drive_google_connect_view(request):
     if not _is_localhost(request):
         # Google would reject this redirect_uri outright (see
         # _localhost_redirect_uri) — fail here with a clear message instead
         # of sending the user into a doomed consent flow.
-        return redirect("drive-connect")
+        return redirect("admin-management")
     flow = _google_flow(request)
     auth_url, state = flow.authorization_url(
         access_type="offline", include_granted_scopes="true", prompt="consent"
     )
     request.session["google_oauth_state"] = state
+    # google-auth-oauthlib auto-generates a PKCE code_verifier per Flow
+    # instance (authorization_url() creates it, sends its hash to Google as
+    # code_challenge). The callback below builds a brand new Flow object, so
+    # without carrying this over the exchange fails with "Missing code
+    # verifier" — same reason state has to round-trip through the session.
+    request.session["google_oauth_code_verifier"] = flow.code_verifier
     return redirect(auth_url)
 
 
@@ -214,13 +164,14 @@ def drive_google_connect_view(request):
 def drive_google_callback_view(request):
     flow = _google_flow(request)
     flow.state = request.session.get("google_oauth_state")
+    flow.code_verifier = request.session.get("google_oauth_code_verifier")
     flow.fetch_token(authorization_response=request.build_absolute_uri())
 
     token_path = _token_path()
     os.makedirs(os.path.dirname(token_path) or ".", exist_ok=True)
     with open(token_path, "w") as f:
         f.write(flow.credentials.to_json())
-    return redirect("drive-connect")
+    return redirect("admin-management")
 
 
 @superuser_required
@@ -247,6 +198,41 @@ def admin_management_view(request):
         threading.Thread(target=_run_ip_check, args=(token, ip_address, port), daemon=True).start()
         return redirect(f"{reverse('admin-management')}?verify_token={token}&verify_ip={ip_address}")
 
+    client_secret_path = _client_secret_path()
+    token_path = _token_path()
+    site_settings = SiteSettings.get_solo()
+    drive_error = None
+
+    if request.method == "POST" and "upload_client_secret" in request.POST:
+        client_secret_form = DriveClientSecretForm(request.POST, request.FILES)
+        if client_secret_form.is_valid():
+            os.makedirs(os.path.dirname(client_secret_path) or ".", exist_ok=True)
+            with open(client_secret_path, "wb") as f:
+                for chunk in client_secret_form.cleaned_data["client_secret_file"].chunks():
+                    f.write(chunk)
+        return redirect("admin-management")
+
+    if request.method == "POST" and "choose_folder" in request.POST:
+        choice = request.POST.get("folder_choice", "").strip()
+        new_name = request.POST.get("new_folder_name", "").strip()
+        try:
+            if choice == "__new__":
+                if not new_name:
+                    raise drive_service.DriveError("Give the new folder a name.")
+                folder_id = drive_service.create_root_folder(new_name)
+            elif choice:
+                folder_id = choice
+            else:
+                raise drive_service.DriveError("Choose a folder.")
+        except drive_service.DriveError as exc:
+            drive_error = str(exc)
+        else:
+            site_settings.drive_root_folder_id = folder_id
+            site_settings.save(update_fields=["drive_root_folder_id"])
+            return redirect("admin-management")
+        # Falls through to the render below with drive_error set, so
+        # step 3's dialog can reopen showing what went wrong.
+
     verify_token = request.GET.get("verify_token", "")
     verify_ip = request.GET.get("verify_ip", "")
     # Dead/expired query params (bookmarked, or the 10-minute window passed)
@@ -254,8 +240,42 @@ def admin_management_view(request):
     if verify_token and not cache.get(_verify_pending_key(verify_token)):
         verify_token = ""
 
-    site_settings = SiteSettings.get_solo()
     verified_ip = site_settings.server_host.split(":", 1)[0] if site_settings.server_host else ""
+
+    # Drive step status — live checks, same honesty principle as verify-ip:
+    # a step is only "verified" once it's proven to actually work, not just
+    # "a file is present".
+    has_client_secret = bool(client_secret_path and os.path.exists(client_secret_path))
+    has_token = bool(token_path and os.path.exists(token_path))
+
+    client_secret_valid = False
+    if has_client_secret:
+        try:
+            Flow.from_client_secrets_file(client_secret_path, scopes=drive_service.SCOPES)
+            client_secret_valid = True
+        except Exception:
+            client_secret_valid = False
+
+    drive_folders = None
+    token_valid = False
+    if has_token:
+        try:
+            drive_folders = drive_service.list_root_folders()
+            token_valid = True
+        except drive_service.DriveError:
+            token_valid = False
+
+    current_folder_id = site_settings.drive_root_folder_id
+    folder_valid = bool(token_valid and current_folder_id and drive_service.folder_exists(current_folder_id))
+    drive_ready = folder_valid
+    drive_attention = bool(
+        (has_client_secret and not client_secret_valid)
+        or (has_token and not token_valid)
+        or (current_folder_id and not folder_valid)
+    )
+
+    host = request.get_host()
+    port = host.split(":", 1)[1] if ":" in host else "8000"
 
     return render(request, "photos/admin_management.html", {
         "invites": AdminInvite.objects.all(),
@@ -263,7 +283,20 @@ def admin_management_view(request):
         "verify_token": verify_token,
         "verify_ip": verify_ip,
         "verified_ip": verified_ip,
-        "drive_configured": drive_service.is_configured(),
+        "client_secret_form": DriveClientSecretForm(),
+        "has_client_secret": has_client_secret,
+        "client_secret_valid": client_secret_valid,
+        "has_token": has_token,
+        "token_valid": token_valid,
+        "drive_folders": drive_folders,
+        "current_folder_id": current_folder_id,
+        "folder_valid": folder_valid,
+        "drive_ready": drive_ready,
+        "drive_attention": drive_attention,
+        "drive_error": drive_error,
+        "drive_redirect_uri": _localhost_redirect_uri(request),
+        "drive_is_localhost": _is_localhost(request),
+        "drive_localhost_url": f"http://localhost:{port}{reverse('admin-management')}",
     })
 
 
@@ -303,11 +336,20 @@ def revoke_invite_view(request, token):
     return redirect("admin-management")
 
 
+@superuser_required
+def delete_invite_view(request, token):
+    if request.method == "POST":
+        invite = get_object_or_404(AdminInvite, token=token, revoked_at__isnull=False)
+        invitee_name = invite.invitee_name
+        invite.delete()
+        messages.success(request, f"Removed {invitee_name} from the list.", extra_tags="staff")
+    return redirect("admin-management")
+
+
 def subadmin_invite_view(request, token):
     invite = get_object_or_404(AdminInvite, token=token)
     if invite.status != AdminInvite.STATUS_PENDING:
-        messages.error(request, "This invite link is no longer valid.")
-        return redirect("staff-login")
+        return render(request, "photos/invite_invalid.html", {"invite": invite})
 
     if request.method == "POST":
         form = AdminAccountForm(request.POST)

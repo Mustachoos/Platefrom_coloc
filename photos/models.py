@@ -1,5 +1,6 @@
 import os
 import uuid
+from datetime import timedelta
 
 from django.conf import settings
 from django.core.validators import MaxValueValidator, MinValueValidator
@@ -216,6 +217,9 @@ class AdminInvite(models.Model):
     STATUS_PENDING = "pending"
     STATUS_ACTIVE = "active"
     STATUS_REVOKED = "revoked"
+    STATUS_EXPIRED = "expired"
+
+    EXPIRY = timedelta(hours=1)
 
     invitee_name = models.CharField(
         max_length=150, help_text="Who this invite link was generated for."
@@ -242,11 +246,17 @@ class AdminInvite(models.Model):
         return self.used_at is not None
 
     @property
+    def is_expired(self):
+        return timezone.now() > self.created_at + self.EXPIRY
+
+    @property
     def status(self):
         if self.revoked_at:
             return self.STATUS_REVOKED
         if self.used_at:
             return self.STATUS_ACTIVE
+        if self.is_expired:
+            return self.STATUS_EXPIRED
         return self.STATUS_PENDING
 
 

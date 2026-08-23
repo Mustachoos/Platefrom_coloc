@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Admin account</title>
   {% load static %}
+  {% load icons %}
   <link rel="stylesheet" href="{% static 'photos/site.css' %}">
   <style>
     body{margin:16px}
@@ -19,17 +20,30 @@
       75%{opacity:1;transform:translateY(0)}
       100%{opacity:0;transform:translateY(-8px);visibility:hidden}
     }
-    #network-details summary{list-style:none;cursor:pointer;display:flex;align-items:center;justify-content:space-between}
-    #network-details summary::-webkit-details-marker{display:none}
-    #network-details summary h2{margin:0;display:flex;align-items:center}
-    #network-details summary::after{content:'▸';color:var(--soft);font-size:0.9rem;margin-left:12px;transition:transform .2s ease}
-    #network-details[open] summary::after{transform:rotate(90deg)}
-    #network-details .details-body{margin-top:14px}
+    .hub-details summary{list-style:none;cursor:pointer;display:flex;align-items:center;justify-content:space-between}
+    .hub-details summary::-webkit-details-marker{display:none}
+    .hub-details summary h2{margin:0;display:flex;align-items:center}
+    .hub-details summary::after{content:'▸';color:var(--soft);font-size:0.9rem;margin-left:12px;transition:transform .2s ease}
+    .hub-details[open] summary::after{transform:rotate(90deg)}
+    .hub-details .details-body{margin-top:14px}
+    .drive-step-row{display:flex;justify-content:flex-start;align-items:center;padding:10px 4px 10px 18px;border-bottom:1px solid #edf2f7;cursor:pointer;font-weight:700;background:none;border-left:none;border-right:none;border-top:none;width:100%;text-align:left;font-size:0.95rem;color:var(--ink);font-family:inherit}
+    .drive-step-row:last-child{border-bottom:none}
+    .drive-step-row:hover{color:var(--btn-1)}
+    .step-locked{color:var(--soft);font-style:italic;margin:0}
+    .step-ok{color:#166534;font-weight:700;margin:0 0 10px}
+    .step-warn{color:#9f1239;font-weight:700;margin:0 0 10px}
+    .checklist{text-align:left;padding-left:20px}
+    .checklist li{margin-bottom:8px}
+    .redirect-uri{background:#f1f5f9;border-radius:8px;padding:8px 12px;font-family:monospace;word-break:break-all;user-select:all}
+    .folder-option{display:block;text-align:left;margin-bottom:8px}
+    dialog.wide{width:min(90vw,560px)}
     table{width:100%;border-collapse:collapse}
     th,td{text-align:left;padding:8px 10px;border-bottom:1px solid #edf2f7;font-size:0.92rem}
+    th:last-child,td:last-child{width:1%;white-space:nowrap;text-align:right}
     th{color:var(--soft);font-weight:700}
     .empty{color:var(--soft);font-style:italic}
-    .row-actions{display:flex;gap:8px;align-items:center}
+    .row-actions{display:flex;gap:8px;align-items:center;justify-content:flex-end}
+    .icon-btn{padding:8px}
     .links-list{display:grid;gap:10px}
     .links-list a{font-weight:700;color:var(--btn-1);text-decoration:none}
     .links-list a:hover{text-decoration:underline}
@@ -39,6 +53,7 @@
     .status-pending{background:#fef3c7;color:#92400e}
     .status-active{background:#dff7e8;color:#166534}
     .status-revoked{background:#f1f5f9;color:#556575}
+    .status-expired{background:#fee2e2;color:#991b1b}
     dialog{border:none;border-radius:16px;padding:0;width:min(90vw,420px);box-shadow:0 20px 40px rgba(31,52,72,0.25)}
     dialog::backdrop{background:rgba(15,23,42,0.45)}
     dialog form{padding:22px 24px}
@@ -126,6 +141,11 @@
                   {% csrf_token %}
                   <button type="submit" class="btn delete small">Revoke</button>
                 </form>
+                {% else %}
+                <form method="post" action="{% url 'admin-invite-delete' invite.token %}">
+                  {% csrf_token %}
+                  <button type="submit" class="btn delete small icon-btn" aria-label="Delete">{% icon 'trash' size=16 %}</button>
+                </form>
                 {% endif %}
               </div>
             </td>
@@ -157,7 +177,7 @@
     {% for message in messages %}{% if "network" in message.tags %}
     <div class="box-message {{ message.tags }}">{{ message }}</div>
     {% endif %}{% endfor %}
-  <details id="network-details" {% if verify_token or messages %}open{% endif %}>
+  <details id="network-details" class="hub-details" {% if verify_token or messages %}open{% endif %}>
     <summary>
       <h2><span
         class="status-circle{% if verify_token %} checking{% elif verified_ip %} verified{% endif %}"
@@ -252,18 +272,137 @@
   </div>
 
   <div class="panel">
-    <h2>Google Drive</h2>
-    <p class="hint">
-      {% if drive_configured %}
-      Connected — new photos are backed up automatically.
-      {% else %}
-      Not connected — photos stay only on this server.
+  <details id="drive-details" class="hub-details" {% if drive_error or drive_attention %}open{% endif %}>
+    <summary>
+      <h2><span class="status-circle{% if drive_ready %} verified{% elif drive_attention %} failed{% endif %}"></span>Google Drive</h2>
+    </summary>
+    <div class="details-body">
+      <button type="button" class="drive-step-row" onclick="document.getElementById('drive-step1-modal').showModal()">
+        <span class="status-circle{% if has_client_secret and not client_secret_valid %} failed{% elif client_secret_valid %} verified{% endif %}"></span>
+        1. Upload Google credentials
+      </button>
+      <button type="button" class="drive-step-row" onclick="document.getElementById('drive-step2-modal').showModal()">
+        <span class="status-circle{% if has_token and not token_valid %} failed{% elif token_valid %} verified{% endif %}"></span>
+        2. Connect your Google account
+      </button>
+      <button type="button" class="drive-step-row" onclick="document.getElementById('drive-step3-modal').showModal()">
+        <span class="status-circle{% if current_folder_id and not folder_valid %} failed{% elif folder_valid %} verified{% endif %}"></span>
+        3. Choose Drive folder
+      </button>
+    </div>
+  </details>
+  </div>
+  </div>
+  </div>
+
+  <dialog id="drive-step1-modal" class="wide">
+    <form method="post" enctype="multipart/form-data">
+      {% csrf_token %}
+      <h2>1. Upload Google credentials</h2>
+      {% if client_secret_valid %}
+      <p class="step-ok">✓ Credentials file looks good.</p>
+      {% elif has_client_secret %}
+      <p class="step-warn">⚠ This file isn't a valid Google OAuth credentials file — upload the right one.</p>
       {% endif %}
-    </p>
-    <a href="{% url 'drive-connect' %}" class="btn secondary small">{% if drive_configured %}Manage{% else %}Connect{% endif %}</a>
-  </div>
-  </div>
-  </div>
+      <ol class="checklist">
+        <li><a href="https://console.cloud.google.com/projectcreate" target="_blank" rel="noopener">Create a project</a> on Google Cloud Console.</li>
+        <li><a href="https://console.cloud.google.com/apis/library/drive.googleapis.com" target="_blank" rel="noopener">Enable the Google Drive API</a> for that project.</li>
+        <li><a href="https://console.cloud.google.com/apis/credentials/consent" target="_blank" rel="noopener">Configure the OAuth consent screen</a> — type "External".</li>
+        <li>
+          <div class="message error" style="margin:6px 0">
+            <strong>Add yourself as a test user</strong> — on that same consent screen page, open the
+            <strong>Audience</strong> tab → <strong>Test users</strong> → <strong>+ ADD USERS</strong>,
+            and add the exact Google account you'll use in step 2. This is a separate save from
+            the consent screen itself — <strong>easy to miss</strong>, and skipping it is the #1 cause
+            of the "Error 403: access_denied" screen when connecting.
+          </div>
+        </li>
+        <li><a href="https://console.cloud.google.com/apis/credentials" target="_blank" rel="noopener">Create OAuth credentials</a> → type <strong>Web application</strong> (not Desktop app) → add this exact address as an authorized redirect URI:
+          <div class="redirect-uri">{{ drive_redirect_uri }}</div>
+        </li>
+        <li>Download the generated JSON file and upload it below.</li>
+      </ol>
+      <div class="form-row">
+        <label for="{{ client_secret_form.client_secret_file.id_for_label }}">Credentials file (JSON)</label>
+        {{ client_secret_form.client_secret_file }}
+      </div>
+      <div class="form-actions">
+        <button type="button" class="btn neutral small" onclick="document.getElementById('drive-step1-modal').close()">Close</button>
+        <button type="submit" name="upload_client_secret" class="btn primary small">{% if client_secret_valid %}Replace file{% else %}Upload{% endif %}</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="drive-step2-modal">
+    <form method="dialog">
+      <h2>2. Connect your Google account</h2>
+      {% if not client_secret_valid %}
+      <p class="step-locked">Complete step 1 first.</p>
+      {% elif token_valid %}
+      <p class="step-ok">✓ Connected — Google Drive is reachable with this account.</p>
+      {% if drive_is_localhost %}
+      <div class="form-actions">
+        <a class="btn secondary small" href="{% url 'drive-google-connect' %}">Reconnect</a>
+      </div>
+      {% endif %}
+      {% else %}
+        {% if has_token %}
+        <p class="step-warn">⚠ The stored connection no longer works — reconnect below.</p>
+        {% endif %}
+        {% if drive_is_localhost %}
+        <div class="form-actions">
+          <a class="btn primary small" href="{% url 'drive-google-connect' %}">Connect my Google account</a>
+        </div>
+        {% else %}
+        <p class="hint">
+          This step requires a browser running on the server machine itself (Google rejects
+          plain http:// addresses that aren't "localhost"). Open
+          <strong>{{ drive_localhost_url }}</strong> from that machine to connect.
+        </p>
+        {% endif %}
+      {% endif %}
+      <div class="form-actions">
+        <button type="submit" class="btn neutral small">Close</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="drive-step3-modal" class="wide">
+    <form method="post">
+      {% csrf_token %}
+      <h2>3. Choose Drive folder</h2>
+      {% if not token_valid %}
+      <p class="step-locked">Complete step 2 first.</p>
+      {% else %}
+        {% if drive_error %}
+        <div class="message error">{{ drive_error }}</div>
+        {% elif folder_valid %}
+        <p class="step-ok">✓ Connected — each event creates its own subfolder inside this one.</p>
+        {% elif current_folder_id %}
+        <p class="step-warn">⚠ The previously chosen folder is no longer reachable — pick another one.</p>
+        {% endif %}
+        {% for folder in drive_folders %}
+          <label class="folder-option">
+            <input type="radio" name="folder_choice" value="{{ folder.id }}" {% if folder.id == current_folder_id %}checked{% endif %}> {{ folder.name }}
+          </label>
+        {% endfor %}
+        <label class="folder-option">
+          <input type="radio" name="folder_choice" value="__new__"> Create a new folder:
+          <input type="text" name="new_folder_name" placeholder="e.g. Coloc Photos">
+        </label>
+      {% endif %}
+      <div class="form-actions">
+        <button type="button" class="btn neutral small" onclick="document.getElementById('drive-step3-modal').close()">Close</button>
+        {% if token_valid %}
+        <button type="submit" name="choose_folder" class="btn primary small">{% if folder_valid %}Change folder{% else %}Connect folder{% endif %}</button>
+        {% endif %}
+      </div>
+    </form>
+  </dialog>
+
+  {% if drive_error %}
+  <script>document.getElementById('drive-step3-modal').showModal();</script>
+  {% endif %}
 
   <div class="panel">
     <h2>More</h2>

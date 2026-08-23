@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Invite link no longer valid</title>
+  {% load static %}
+  <link rel="stylesheet" href="{% static 'photos/site.css' %}">
+</head>
+<body class="centered-page">
+  <main class="card">
+    <h1>This invite link is no longer valid</h1>
+    <p class="hint">
+      {% if invite.status == "expired" %}
+      Invite links expire one hour after they're generated. Ask the admin for a new one.
+      {% elif invite.status == "revoked" %}
+      This invite has been revoked by the admin.
+      {% elif invite.status == "active" %}
+      This invite has already been used to create an account.
+      {% else %}
+      This invite can no longer be used.
+      {% endif %}
+    </p>
+  </main>
+</body>
+</html>

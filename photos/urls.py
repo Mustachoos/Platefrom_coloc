@@ -10,13 +10,17 @@ urlpatterns = [
     path("logout/", LogoutView.as_view(next_page=reverse_lazy("staff-login")), name="staff-logout"),
     path("create-admin/", admin_views.create_admin_view, name="create-admin"),
     path("admin-account/", admin_views.admin_management_view, name="admin-management"),
-    path("admin-account/drive/", admin_views.drive_connect_view, name="drive-connect"),
     path("admin-account/drive/google/connect/", admin_views.drive_google_connect_view, name="drive-google-connect"),
     path("admin-account/drive/google/callback/", admin_views.drive_google_callback_view, name="drive-google-callback"),
     path(
         "admin-account/invites/<uuid:token>/revoke/",
         admin_views.revoke_invite_view,
         name="admin-invite-revoke",
+    ),
+    path(
+        "admin-account/invites/<uuid:token>/delete/",
+        admin_views.delete_invite_view,
+        name="admin-invite-delete",
     ),
     path("admin-account/invite/<uuid:token>/", admin_views.subadmin_invite_view, name="subadmin-invite"),
     path(
