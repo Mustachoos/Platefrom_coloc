@@ -3,135 +3,106 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-  <!-- Without this, the browser infers the system nav/status bar color from
-       html,body's own background:#0b0d10 (set below for the canvas
-       letterboxing) and tints the OS bar black. The other pages only set a
-       gradient (background-image, no plain background-color), so browsers
-       fall back to their own default there — explicitly matching that
-       default here keeps every page's system bar consistent. -->
   <meta name="theme-color" content="#ffffff">
   <title>Whiteboard</title>
   {% load static %}
   {% load icons %}
-  <link rel="stylesheet" href="{% static 'photos/site.css' %}">
-  <link rel="stylesheet" href="{% static 'photos/themes/sense-preview.css' %}">
+  <link rel="stylesheet" href="{% static 'photos/tokens.css' %}">
+  <link rel="stylesheet" href="{% static 'photos/base.css' %}">
+  <link rel="stylesheet" href="{% static 'photos/components.css' %}">
   <style>
-    /* Every piece of chrome here is position:fixed, anchored with explicit
-       top/bottom offsets — deliberately NOT html,body{height:100%} plus
-       flex-flow. Mobile browsers (notably Android Chrome) can compute
-       height:100%/100vh taller than what's actually visible once the
-       on-screen nav bar is factored in, which pushes flow-positioned
-       content (like a bottom bar) out past the real bottom edge, under the
-       system UI. position:fixed elements are anchored to the true visible
-       viewport instead, so they don't have that problem. */
-    html,body{margin:0;padding:0;overflow:hidden;background:linear-gradient(140deg,var(--bg-1),var(--bg-2))}
-    body{
-      /* Matches .page-header's real height (site.css) — that partial is
-         shared across every guest page, so this stays in sync with it the
-         same way --wb-footer-nav-h stays in sync with .footer-nav. */
-      --wb-header-h: 56px;
-      --wb-footer-nav-h: 56px;
-      --wb-fab-gap: 16px;
-      --wb-fab-tools-size: 48px;
-      --wb-fab-save-size: 56px;
-      --wb-fab-stack-gap: 12px;
-      --wb-frame-inset: 10px;
+    /* Everything below is page-specific positioning math that has no
+       equivalent in the shared component files (a full-screen canvas
+       inset between a header and a floating nav pill isn't a reusable
+       "component" — see the plan notes). Visual chrome (colors, radii,
+       shadows) still comes entirely from tokens.css/components.css via
+       .fab/.tool-panel/.tool-row below; only position/transform/size is
+       set here. --wb-stage-top/--wb-stage-bottom are computed at runtime
+       from the header's and bottom-nav's real rendered geometry (neither
+       is a fixed-height fixture in the new shell, unlike the old one). */
+    html, body { margin: 0; padding: 0; overflow: hidden; }
+    .wb-stage {
+      position: fixed;
+      top: var(--wb-stage-top, 66px);
+      left: 10px;
+      right: 10px;
+      bottom: var(--wb-stage-bottom, 86px);
+      display: flex;
     }
+    .canvas-viewport { position: relative; overflow: hidden; width: 100%; height: 100%; background: #000; touch-action: none; border-radius: var(--radius-lg); box-shadow: 0 8px 24px rgba(0,0,0,0.25); }
+    .canvas-transform { position: absolute; top: 0; left: 0; transform-origin: 0 0; }
+    .canvas-frame { position: relative; }
+    .canvas-frame canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: block; }
+    #board-canvas { z-index: 1; }
+    #draw-canvas { z-index: 2; cursor: crosshair; }
+    #draw-canvas.pan-mode { cursor: grab; }
+    #draw-canvas.pan-mode.panning { cursor: grabbing; }
 
-    /* No bottom action bar anymore — the upload/tools controls are floating
-       buttons over the canvas (see .fab-cluster below), so the canvas only
-       needs to leave room for the footer-nav, not a second reserved bar.
+    .zoom-controls { position: absolute; top: 10px; right: 10px; display: flex; flex-direction: column; gap: var(--space-2xs); z-index: 5; }
 
-       Framed, not edge-to-edge: a small inset on every side keeps the
-       black canvas from ever touching the actual screen edge. The app's
-       normal light page background (set above, same as every other page)
-       shows in that margin — the same reason the browser was tinting the
-       OS nav bar black is gone, since nothing black reaches the edge
-       anymore. --wb-frame-inset is deliberately small (10px) to keep the
-       drawing area close to full-size. */
-    .wb-stage{position:fixed;top:calc(var(--wb-header-h) + env(safe-area-inset-top) + var(--wb-frame-inset));left:var(--wb-frame-inset);right:var(--wb-frame-inset);bottom:calc(var(--wb-footer-nav-h) + env(safe-area-inset-bottom) + var(--wb-frame-inset));display:flex}
-    .canvas-viewport{position:relative;overflow:hidden;width:100%;height:100%;background:#000;touch-action:none;border-radius:14px;box-shadow:0 8px 24px rgba(0,0,0,0.25)}
-    .canvas-transform{position:absolute;top:0;left:0;transform-origin:0 0}
-    .canvas-frame{position:relative}
-    .canvas-frame canvas{position:absolute;top:0;left:0;width:100%;height:100%;display:block}
-    #board-canvas{z-index:1}
-    #draw-canvas{z-index:2;cursor:crosshair}
-    #draw-canvas.pan-mode{cursor:grab}
-    #draw-canvas.pan-mode.panning{cursor:grabbing}
+    .fab-cluster { position: fixed; right: 16px; bottom: var(--wb-stage-bottom, 86px); z-index: 9; }
+    #upload-btn { width: 56px; height: 56px; flex-direction: column; gap: 0; }
+    #upload-btn:disabled { opacity: 0.55; cursor: not-allowed; }
+    #save-timer { font-size: var(--text-xs); font-weight: 700; line-height: 1; }
 
-    .zoom-controls{position:absolute;top:10px;right:10px;display:flex;flex-direction:column;gap:6px;z-index:5}
-    .zoom-controls button{width:38px;height:38px;padding:0;border-radius:10px;background:var(--card);color:var(--ink);border:1px solid var(--card-border);display:flex;align-items:center;justify-content:center;box-shadow:0 6px 16px rgba(0,0,0,0.35)}
-    .zoom-controls button:hover{transform:none}
-
-    /* Floating button pair, bottom-right, above the footer-nav: the primary
-       "save" action (thumb-reachable, always visible) and the trigger for
-       the tools sheet below. Colors reuse the same tokens as every other
-       primary/neutral button in the app (--btn-1/--btn-2 gradient, --card
-       surface) instead of the app-specific dark FAB styling this used to
-       have, so it reads as the same app as Upload/Gallery, not a separate
-       tool bolted on. */
-    .fab-cluster{position:fixed;right:16px;bottom:calc(var(--wb-footer-nav-h) + var(--wb-fab-gap) + env(safe-area-inset-bottom));z-index:9;display:flex;flex-direction:column;align-items:center;gap:var(--wb-fab-stack-gap)}
-    .fab{border-radius:50%;background:var(--card);color:var(--ink);border:1px solid var(--card-border);box-shadow:0 10px 24px rgba(31,52,72,0.22);display:flex;align-items:center;justify-content:center;padding:0}
-    .fab:hover{transform:none}
-    #options-toggle{width:var(--wb-fab-tools-size);height:var(--wb-fab-tools-size)}
-    #options-toggle.active{background:linear-gradient(90deg,var(--btn-1),var(--btn-2));color:#fff;border-color:transparent}
-    #upload-btn{width:var(--wb-fab-save-size);height:var(--wb-fab-save-size);background:linear-gradient(90deg,var(--btn-1),var(--btn-2));color:#fff;border-color:transparent;box-shadow:0 10px 24px rgba(22,163,74,0.4);flex-direction:column;gap:0}
-    #upload-btn:disabled{opacity:0.55;cursor:not-allowed}
-    #upload-btn:disabled:hover{transform:none}
-    #save-icon{display:inline-flex}
-    #save-timer{font-size:0.68rem;font-weight:700;line-height:1}
-
-    #upload-status{position:fixed;right:16px;bottom:calc(var(--wb-footer-nav-h) + var(--wb-fab-gap) + var(--wb-fab-save-size) + var(--wb-fab-stack-gap) + env(safe-area-inset-bottom));background:var(--card);padding:8px 14px;border-radius:999px;font-size:0.82rem;font-weight:700;color:var(--soft);box-shadow:0 6px 16px rgba(31,52,72,0.2);opacity:0;pointer-events:none;transition:opacity .2s ease,transform .2s ease;transform:translateY(4px);white-space:nowrap;z-index:9;max-width:min(70vw,320px);text-align:right}
-    #upload-status.visible{opacity:1;transform:translateY(0)}
-
-    /* Tools bottom sheet — replaces the old corner-anchored popover.
-       Full-width, slides up from above the footer-nav: bigger touch
-       targets for swatches/sliders and a more standard mobile "tool
-       drawer" pattern than a small floating card pinned to one corner.
-       Still fully collapsible: translateY(100%) + pointer-events:none
-       pushes it entirely off-screen (behind the opaque, higher z-index
-       footer-nav) when closed, same "must disappear completely" guarantee
-       as before, just via a different transform. */
-    .options-panel{position:fixed;left:0;right:0;bottom:calc(var(--wb-footer-nav-h) + env(safe-area-inset-bottom));background:var(--card);border-radius:20px 20px 0 0;box-shadow:0 -12px 32px rgba(31,52,72,0.22);padding:14px 18px calc(14px + env(safe-area-inset-bottom));transform:translateY(100%);pointer-events:none;transition:transform .22s ease;z-index:8;max-height:min(65vh,520px);overflow-y:auto;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
-    .options-panel.open{transform:translateY(0);pointer-events:auto}
-    .options-panel .as-user{margin:0 0 10px;font-size:0.85rem}
-    .tool-group{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:10px 0;border-bottom:1px solid rgba(0,0,0,0.06)}
-    .tool-group:last-child{border-bottom:none}
-    .tool-group-label{font-size:0.78rem;font-weight:700;color:var(--soft);min-width:70px}
-
-    .mode-switch{display:flex;gap:4px;background:#f1f5f9;border-radius:10px;padding:4px}
-    .mode-switch button{padding:8px 14px;border-radius:8px;background:transparent;color:var(--ink);box-shadow:none;font-size:0.9rem}
-    .mode-switch button.active{background:linear-gradient(90deg,var(--btn-1),var(--btn-2));color:#fff}
-
-    .swatches{display:flex;gap:6px}
-    .swatch{width:34px;height:34px;border-radius:50%;border:2px solid #fff;box-shadow:0 0 0 1px #d4e4ee;cursor:pointer;padding:0}
-    .swatch.selected{box-shadow:0 0 0 3px var(--btn-1)}
-
-    .hue-slider-wrap{display:flex;align-items:center;gap:10px;flex:1;min-width:180px}
-    #hue-slider{flex:1;height:14px;border-radius:999px;-webkit-appearance:none;appearance:none;background:linear-gradient(to right,#ff0000,#ffff00,#00ff00,#00ffff,#0000ff,#ff00ff,#ff0000);cursor:pointer}
-    #hue-slider::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:22px;height:22px;border-radius:50%;background:#fff;border:2px solid #333;box-shadow:0 1px 4px rgba(0,0,0,0.35)}
-    #hue-slider::-moz-range-thumb{width:22px;height:22px;border-radius:50%;background:#fff;border:2px solid #333;box-shadow:0 1px 4px rgba(0,0,0,0.35)}
-    .hue-preview{width:32px;height:32px;border-radius:50%;border:2px solid #fff;box-shadow:0 0 0 1px #d4e4ee;flex:0 0 auto}
-
-    #eyedropper-btn.active,#pan-btn.active{background:linear-gradient(90deg,var(--btn-1),var(--btn-2));color:#fff;border-color:transparent}
-
-    #pen-size{width:140px}
-    #pen-size-label{font-size:0.85rem;color:var(--soft);min-width:44px}
-
-    /* Landscape phones: vertical space is scarce, trim the chrome further.
-       --wb-footer-nav-h and --wb-header-h are NOT touched here — both the
-       shared .footer-nav and .page-header (site.css) are a fixed 56px on
-       every page, always; changing either only here would silently drift
-       back out of sync with what's actually rendered, which is exactly the
-       bug this fixes. Only the whiteboard-local FAB sizes shrink. */
-    @media(max-height:480px) and (orientation:landscape){
-      body{--wb-fab-tools-size:40px;--wb-fab-save-size:48px}
-      .options-panel{max-height:70vh}
+    #upload-status {
+      position: fixed;
+      right: 16px;
+      bottom: calc(var(--wb-stage-bottom, 86px) + 68px);
+      background: var(--surface-solid);
+      padding: var(--space-2xs) var(--space-sm);
+      border-radius: var(--radius-pill);
+      font-size: var(--text-sm);
+      font-weight: 700;
+      color: var(--ink-600);
+      box-shadow: var(--shadow-md);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity var(--base) var(--ease), transform var(--base) var(--ease);
+      transform: translateY(4px);
+      white-space: nowrap;
+      z-index: 9;
+      max-width: min(70vw, 320px);
+      text-align: right;
     }
+    #upload-status.visible { opacity: 1; transform: translateY(0); }
+
+    /* Tools sheet: the visual chrome is .tool-panel as given; only the
+       fixed positioning + slide transform is added here, since the new
+       component set doesn't ship an open/closed state for it.
+       Anchored flush to the true viewport bottom (not to
+       --wb-stage-bottom) with the nav clearance folded into padding
+       instead — translateY(100%) only clears an element's OWN height, so
+       anchoring it `bottom: <clearance>` and translating by 100% leaves
+       exactly `<clearance>` still on-screen when closed. The old fixed
+       full-width footer bar hid that leftover sliver (same height,
+       opaque, higher z-index); the new floating nav pill doesn't cover
+       that region, so the sliver would actually show without this. */
+    #options-panel {
+      position: fixed;
+      left: 10px;
+      right: 10px;
+      bottom: 0;
+      padding-bottom: calc(var(--space-md) + var(--wb-stage-bottom, 86px));
+      transform: translateY(100%);
+      pointer-events: none;
+      transition: transform 220ms var(--ease);
+      z-index: 8;
+      max-height: min(65vh, 520px);
+      overflow-y: auto;
+    }
+    #options-panel.open { transform: translateY(0); pointer-events: auto; }
+
+    .hue-preview-dot { width: 32px; height: 32px; border-radius: 50%; border: 2px solid var(--surface-solid); box-shadow: 0 0 0 1px var(--line-strong); flex: 0 0 auto; }
   </style>
 </head>
-<body class="sense-preview">
-  {% include "photos/_page_header.html" with page_icon="palette" page_title="Whiteboard" %}
+<body>
+  <!-- No .page/.shell wrapper on this page (the canvas below needs
+       position:fixed independent of normal page flow/padding), so the
+       header needs its own copy of .page's inset instead of inheriting it. -->
+  <div style="padding:var(--space-md) var(--space-md) 0;">
+    {% include "photos/_page_header.html" with page_icon="palette" page_title="Whiteboard" %}
+  </div>
 
   <div class="wb-stage" id="wb-stage">
     <div class="canvas-viewport" id="canvas-viewport">
@@ -142,36 +113,36 @@
         </div>
       </div>
       <div class="zoom-controls">
-        <button type="button" id="zoom-in-btn" aria-label="Zoom in">{% icon 'zoom-in' size=18 %}</button>
-        <button type="button" id="zoom-out-btn" aria-label="Zoom out">{% icon 'zoom-out' size=18 %}</button>
-        <button type="button" id="zoom-reset-btn" aria-label="Fit to screen">{% icon 'maximize' size=18 %}</button>
+        <button type="button" id="zoom-in-btn" class="fab fab--light" aria-label="Zoom in">{% icon 'zoom-in' size=18 %}</button>
+        <button type="button" id="zoom-out-btn" class="fab fab--light" aria-label="Zoom out">{% icon 'zoom-out' size=18 %}</button>
+        <button type="button" id="zoom-reset-btn" class="fab fab--light" aria-label="Fit to screen">{% icon 'maximize' size=18 %}</button>
       </div>
     </div>
   </div>
 
-  <div class="fab-cluster">
-    <button type="button" id="upload-btn" class="fab" aria-label="Add to the whiteboard">
+  <div class="fab-stack fab-cluster">
+    <button type="button" id="upload-btn" class="fab fab--dark" aria-label="Add to the whiteboard">
       <span id="save-icon">{% icon 'check' size=20 %}</span>
       <span id="save-timer" style="display:none"></span>
     </button>
-    <button type="button" id="options-toggle" class="fab" aria-label="Pen options">{% icon 'adjustments-horizontal' size=20 %}</button>
+    <button type="button" id="options-toggle" class="fab fab--light" aria-label="Pen options">{% icon 'adjustments-horizontal' size=20 %}</button>
   </div>
   <div id="upload-status"></div>
 
-  <div class="options-panel" id="options-panel">
-    <p class="as-user">Drawing as <strong>{{ pseudo }}</strong></p>
-    <div class="tool-group">
-      <span class="tool-group-label">Mode</span>
-      <div class="mode-switch">
-        <button type="button" id="mode-simple" class="active">Simple</button>
-        <button type="button" id="mode-artist">Artiste</button>
+  <div class="tool-panel" id="options-panel">
+    <p class="text-sm text-muted" style="margin-bottom:var(--space-sm);">Drawing as <strong style="color:var(--ink-900);">{{ pseudo }}</strong></p>
+    <div class="tool-row">
+      <span class="tool-row__label">Mode</span>
+      <div class="segmented">
+        <button type="button" id="mode-simple" class="segmented__option is-active">Simple</button>
+        <button type="button" id="mode-artist" class="segmented__option">Artiste</button>
       </div>
     </div>
 
-    <div class="tool-group" id="simple-colors">
-      <span class="tool-group-label">Color</span>
-      <div class="swatches">
-        <button type="button" class="swatch selected" data-color="#000000" style="background:#000000" aria-label="Black"></button>
+    <div class="tool-row" id="simple-colors">
+      <span class="tool-row__label">Color</span>
+      <div class="swatch-row">
+        <button type="button" class="swatch is-selected" data-color="#000000" style="background:#000000" aria-label="Black"></button>
         <button type="button" class="swatch" data-color="#ffffff" style="background:#ffffff" aria-label="White"></button>
         <button type="button" class="swatch" data-color="#2563eb" style="background:#2563eb" aria-label="Blue"></button>
         <button type="button" class="swatch" data-color="#16a34a" style="background:#16a34a" aria-label="Green"></button>
@@ -179,25 +150,23 @@
       </div>
     </div>
 
-    <div class="tool-group" id="artist-colors" style="display:none">
-      <span class="tool-group-label">Color</span>
-      <div class="hue-slider-wrap">
-        <input type="range" id="hue-slider" min="0" max="359" value="0" aria-label="Hue">
-      </div>
-      <div class="hue-preview" id="hue-preview" style="background:#ff0000"></div>
-      <button type="button" id="eyedropper-btn" class="btn secondary small">{% icon 'color-picker' size=16 %} Pipette</button>
+    <div class="tool-row" id="artist-colors" style="display:none">
+      <span class="tool-row__label">Color</span>
+      <input type="range" id="hue-slider" class="slider slider--spectrum grow" min="0" max="359" value="0" aria-label="Hue">
+      <div class="hue-preview-dot" id="hue-preview" style="background:#ff0000"></div>
+      <button type="button" id="eyedropper-btn" class="btn btn--light btn--sm">{% icon 'color-picker' size=16 %} Pipette</button>
     </div>
 
-    <div class="tool-group">
-      <span class="tool-group-label">Pen size</span>
-      <input type="range" id="pen-size" min="1" max="{{ pen_max }}" value="8" aria-label="Pen size">
-      <span id="pen-size-label">8px</span>
+    <div class="tool-row">
+      <span class="tool-row__label">Pen size</span>
+      <input type="range" id="pen-size" class="slider grow" min="1" max="{{ pen_max }}" value="8" aria-label="Pen size">
+      <span id="pen-size-label" class="text-sm text-muted">8px</span>
     </div>
 
-    <div class="tool-group">
-      <span class="tool-group-label">Canvas</span>
-      <button type="button" id="pan-btn" class="btn secondary small">{% icon 'hand-move' size=16 %} Pan</button>
-      <button type="button" id="clear-btn" class="btn secondary small">{% icon 'eraser' size=16 %} Clear</button>
+    <div class="tool-row">
+      <span class="tool-row__label">Canvas</span>
+      <button type="button" id="pan-btn" class="btn btn--light btn--sm">{% icon 'hand-move' size=16 %} Pan</button>
+      <button type="button" id="clear-btn" class="btn btn--light btn--sm">{% icon 'eraser' size=16 %} Clear</button>
     </div>
   </div>
 
@@ -211,6 +180,26 @@
     const UPLOAD_URL = "{% url 'whiteboard-upload' %}";
     const COOLDOWN_SECONDS = {{ cooldown_seconds }};
     let cooldownRemaining = {{ cooldown_remaining }};
+
+    // ---- Fixed-chrome geometry: the header and bottom-nav are no longer
+    // constant-height fixtures (the new shell doesn't hardcode 56px like
+    // the old one did), so measure their real rendered position instead.
+    const header = document.querySelector('.view-header');
+    const bottomNav = document.querySelector('.bottom-nav');
+    function syncStageGeometry() {
+      const inset = 10;
+      const top = (header ? header.getBoundingClientRect().bottom : 0) + inset;
+      const bottom = (bottomNav ? (window.innerHeight - bottomNav.getBoundingClientRect().top) : 0) + inset;
+      document.documentElement.style.setProperty('--wb-stage-top', top + 'px');
+      document.documentElement.style.setProperty('--wb-stage-bottom', bottom + 'px');
+    }
+    syncStageGeometry();
+    // Re-measure once everything has actually finished loading, not just
+    // parsed — mobile browsers are known to report viewport/layout numbers
+    // early that shift slightly once fonts/images settle (the same class of
+    // "measured too soon" bug --wb-header-h used to guard against when it
+    // was a hardcoded constant instead of measured).
+    window.addEventListener('load', syncStageGeometry);
 
     const viewport = document.getElementById('canvas-viewport');
     const transformEl = document.getElementById('canvas-transform');
@@ -262,13 +251,6 @@
     const csrftoken = getCookie('csrftoken');
 
     // ---- Zoom / pan ----
-    // The viewport fills all available space (whatever the phone's
-    // orientation), not just a 4:3 box — so unless the viewport itself
-    // happens to be exactly 4:3, one axis of the board will be smaller than
-    // the viewport at "fit" zoom. That's on purpose: the leftover space
-    // shows through as the viewport's own black background (like video
-    // letterboxing), rather than shrinking the drawing area down to match
-    // the board's aspect ratio.
     const BOARD_W = {{ board_width }};
     const BOARD_H = {{ board_height }};
 
@@ -292,9 +274,6 @@
       const vh = viewport.clientHeight;
       const cw = BOARD_W * zoom;
       const ch = BOARD_H * zoom;
-      // Content smaller than the viewport on an axis: center it there and
-      // let the black background show through on both sides. Content larger
-      // (zoomed in): clamp panning to the normal "keep it covering" range.
       panX = cw <= vw ? (vw - cw) / 2 : Math.min(0, Math.max(vw - cw, panX));
       panY = ch <= vh ? (vh - ch) / 2 : Math.min(0, Math.max(vh - ch, panY));
     }
@@ -319,7 +298,8 @@
     resetView();
 
     function handleResize() {
-      const ratio = zoom / fitZoom; // how far the user had zoomed away from "fit"
+      syncStageGeometry();
+      const ratio = zoom / fitZoom;
       fitZoom = computeFitZoom();
       minZoom = fitZoom;
       maxZoom = fitZoom * 6;
@@ -351,7 +331,8 @@
     // ---- Options panel ----
     function setOptionsOpen(open) {
       optionsPanel.classList.toggle('open', open);
-      optionsToggle.classList.toggle('active', open);
+      optionsToggle.classList.toggle('fab--dark', open);
+      optionsToggle.classList.toggle('fab--light', !open);
     }
     optionsToggle.addEventListener('click', () => {
       setOptionsOpen(!optionsPanel.classList.contains('open'));
@@ -370,9 +351,6 @@
     }
     refreshBoardBackground(BOARD_IMAGE_URL);
 
-    // Keep the reference layer live, same as the TV screen: whenever anyone's
-    // drawing gets merged into the collective board, refresh what we show
-    // underneath our own (untouched) transparent drawing layer.
     function connectWebSocket() {
       const protocol = location.protocol === 'https:' ? 'wss' : 'ws';
       const ws = new WebSocket(protocol + '://' + location.host + '/ws/tv/');
@@ -398,23 +376,21 @@
       const toHex = (x) => Math.round(255 * x).toString(16).padStart(2, '0');
       return '#' + toHex(f(0)) + toHex(f(8)) + toHex(f(4));
     }
-    // Artist mode always picks fully saturated, full-brightness colors
-    // (HSV s=100 v=100, equivalent to HSL s=100 l=50): a single hue slider
-    // rather than a full picker, simpler for guests and matches the brief.
     function hueToHex(hue) {
       return hslToHex(hue, 100, 50);
     }
 
     function setMode(mode) {
       const simple = mode === 'simple';
-      modeSimpleBtn.classList.toggle('active', simple);
-      modeArtistBtn.classList.toggle('active', !simple);
+      modeSimpleBtn.classList.toggle('is-active', simple);
+      modeArtistBtn.classList.toggle('is-active', !simple);
       simpleColors.style.display = simple ? 'flex' : 'none';
       artistColors.style.display = simple ? 'none' : 'flex';
       eyedropperActive = false;
-      eyedropperBtn.classList.remove('active');
+      eyedropperBtn.classList.remove('btn--dark');
+      eyedropperBtn.classList.add('btn--light');
       currentColor = simple
-        ? simpleColors.querySelector('.swatch.selected').dataset.color
+        ? simpleColors.querySelector('.swatch.is-selected').dataset.color
         : hueToHex(Number(hueSlider.value));
     }
     modeSimpleBtn.addEventListener('click', () => setMode('simple'));
@@ -422,8 +398,8 @@
 
     simpleColors.querySelectorAll('.swatch').forEach((btn) => {
       btn.addEventListener('click', () => {
-        simpleColors.querySelectorAll('.swatch').forEach((b) => b.classList.remove('selected'));
-        btn.classList.add('selected');
+        simpleColors.querySelectorAll('.swatch').forEach((b) => b.classList.remove('is-selected'));
+        btn.classList.add('is-selected');
         currentColor = btn.dataset.color;
       });
     });
@@ -435,12 +411,14 @@
 
     eyedropperBtn.addEventListener('click', () => {
       eyedropperActive = !eyedropperActive;
-      eyedropperBtn.classList.toggle('active', eyedropperActive);
+      eyedropperBtn.classList.toggle('btn--dark', eyedropperActive);
+      eyedropperBtn.classList.toggle('btn--light', !eyedropperActive);
     });
 
     panBtn.addEventListener('click', () => {
       panModeActive = !panModeActive;
-      panBtn.classList.toggle('active', panModeActive);
+      panBtn.classList.toggle('btn--dark', panModeActive);
+      panBtn.classList.toggle('btn--light', !panModeActive);
       drawCanvas.classList.toggle('pan-mode', panModeActive);
     });
 
@@ -454,7 +432,7 @@
     const activePointers = new Map();
     let pinchStartDist = null;
     let pinchStartZoom = null;
-    let panDrag = null; // {startX, startY, startPanX, startPanY}
+    let panDrag = null;
 
     function viewportPoint(evt) {
       const rect = viewport.getBoundingClientRect();
@@ -479,8 +457,6 @@
     }
 
     function pickColorAt(x, y) {
-      // Sample the merged view (board + this guest's own strokes so far),
-      // since that's the full picture of "colors present on the board".
       const merged = document.createElement('canvas');
       merged.width = drawCanvas.width;
       merged.height = drawCanvas.height;
@@ -498,7 +474,8 @@
         hueSlider.value = 0;
         huePreview.style.background = currentColor;
         eyedropperActive = false;
-        eyedropperBtn.classList.remove('active');
+        eyedropperBtn.classList.remove('btn--dark');
+        eyedropperBtn.classList.add('btn--light');
         return;
       }
       drawingStroke = true;
@@ -530,10 +507,6 @@
     }
 
     drawCanvas.addEventListener('pointerdown', (evt) => {
-      // Tapping the canvas while the floating tools panel is open just
-      // dismisses it (a floating menu with no full-width backdrop needs an
-      // obvious way to close by tapping "outside" it) — that tap shouldn't
-      // also start a stroke.
       if (optionsPanel.classList.contains('open')) {
         setOptionsOpen(false);
         return;
@@ -543,8 +516,7 @@
         drawCanvas.setPointerCapture(evt.pointerId);
       } catch (e) {
         // Ignore: capture can fail if the pointer session ended before this
-        // ran. Drawing/panning still work without it (just less robust to
-        // the finger/cursor sliding off the canvas mid-stroke).
+        // ran. Drawing/panning still work without it.
       }
       activePointers.set(evt.pointerId, viewportPoint(evt));
 
@@ -617,10 +589,6 @@
     });
 
     // ---- Upload / cooldown ----
-    // The save button shows either its checkmark icon (ready) or a
-    // countdown number (cooling down) — no room for a text label on a
-    // 56px circle, so the number replaces the icon rather than sitting
-    // next to it.
     function setCooldownUi() {
       if (cooldownRemaining > 0) {
         uploadBtn.disabled = true;

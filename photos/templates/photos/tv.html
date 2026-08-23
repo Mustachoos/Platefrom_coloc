@@ -5,69 +5,180 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Coloc TV</title>
   {% load static %}
-  <link rel="stylesheet" href="{% static 'photos/site.css' %}">
-  <link rel="stylesheet" href="{% static 'photos/themes/sense-preview.css' %}">
+  <link rel="stylesheet" href="{% static 'photos/tokens.css' %}">
+  <link rel="stylesheet" href="{% static 'photos/base.css' %}">
+  <link rel="stylesheet" href="{% static 'photos/components.css' %}">
   <style>
-    /* Minimal layout tweaks kept here; visual tokens live in site.css */
-    /* Sized for 10-foot viewing (a TV watched from across the room needs
-       noticeably bigger text/targets than the same layout on a monitor);
-       clamp()+vw keeps proportions sane from a small 1080p set to a large 4K one. */
-    .frame { position: absolute; inset: 0; border-radius:24px; border:2px solid rgba(255,255,255,0.7); box-shadow:0 20px 45px rgba(26,42,57,0.18); pointer-events:none; z-index:1 }
-    .top-bar { position: fixed; z-index:3; top:clamp(20px,2.5vw,40px); left:clamp(20px,2.5vw,40px); display:flex; align-items:center; gap:14px; background:var(--card); border:1px solid var(--card-border); border-radius:999px; padding:clamp(10px,1vw,16px) clamp(16px,1.6vw,26px); -webkit-backdrop-filter:blur(6px); backdrop-filter:blur(6px); box-shadow:0 10px 30px rgba(27,43,56,0.12) }
-    .dot { width:clamp(11px,1vw,16px); height:clamp(11px,1vw,16px); border-radius:50%; background:var(--mint); box-shadow:0 0 0 7px rgba(34,197,94,0.2); animation:pulse 2s ease infinite }
-    @keyframes pulse { 0%{box-shadow:0 0 0 0 rgba(34,197,94,0.32)} 70%{box-shadow:0 0 0 11px rgba(34,197,94,0)} 100%{box-shadow:0 0 0 0 rgba(34,197,94,0)} }
-    .title{font-size:clamp(1.1rem,1.4vw,1.6rem);letter-spacing:0.02em;font-weight:700;color:var(--ink)}
-    #slide{position:relative;z-index:2;object-fit:contain;opacity:0;transition:opacity .8s ease;display:block;max-width:100%;max-height:84vh}
-    #empty{position:absolute;z-index:3;top:50%;left:50%;transform:translate(-50%,-50%);font-size:clamp(1.3rem,2.4vw,2.4rem);font-weight:700;color:var(--soft-ink);text-align:center;background:var(--card);border:1px solid var(--card-border);border-radius:18px;padding:18px 24px;box-shadow:0 12px 30px rgba(24,40,54,0.15);-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px)}
-    #board-slide{position:relative;z-index:2;object-fit:contain;border-radius:12px;display:block;max-width:100%;max-height:84vh;border:6px solid #fff;box-shadow:0 12px 30px rgba(20,30,48,0.12)}
-    #board-empty{position:absolute;z-index:3;top:50%;left:50%;transform:translate(-50%,-50%);font-size:clamp(1.3rem,2.4vw,2.4rem);font-weight:700;color:var(--soft-ink);text-align:center;background:var(--card);border:1px solid var(--card-border);border-radius:18px;padding:18px 24px;box-shadow:0 12px 30px rgba(24,40,54,0.15);-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px)}
-    .qr-row{position:static;z-index:3;display:flex;gap:clamp(10px,1vw,16px)}
-    .qr-card{background:var(--card);border:1px solid var(--card-border);padding:clamp(12px,1.2vw,20px);border-radius:16px;text-align:center;box-shadow:0 12px 30px rgba(28,43,57,0.14);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
-    .qr-card img{display:block;width:clamp(128px,10vw,190px);height:clamp(128px,10vw,190px);border-radius:8px;margin:0 auto}
-    .qr-card span{display:block;margin-top:10px;font-size:clamp(0.85rem,1vw,1.1rem);font-weight:600;letter-spacing:0.02em;color:var(--soft-ink)}
-    @media(max-width:760px){.frame{inset:10px;border-radius:16px}.top-bar{top:16px;left:16px;padding:8px 12px}.qr-row{top:auto;right:16px;bottom:16px;gap:8px}.qr-card{padding:10px}.qr-card img{width:88px;height:88px}#empty{width:min(88vw,460px)}}
+    /* Page-specific: a full-screen kiosk layout (two-column slideshow +
+       sidebar, 10-foot-viewing type scale, a floating announcement
+       overlay) that the shared component set doesn't cover — it's built
+       for phone/dashboard screens, not a TV watched from across a room.
+       Every color/radius/shadow value below still comes from tokens.css;
+       only sizing and positioning are new. */
+    html, body { height: 100%; overflow: hidden; }
+
+    .tv-top-bar {
+      position: fixed;
+      z-index: 3;
+      top: clamp(20px, 2.5vw, 40px);
+      left: clamp(20px, 2.5vw, 40px);
+      font-size: clamp(1rem, 1.4vw, 1.3rem);
+    }
+
+    .tv-layout {
+      display: flex;
+      gap: clamp(16px, 2vw, 36px);
+      height: 100vh;
+      padding: clamp(20px, 3vw, 56px);
+      align-items: center;
+    }
+    .tv-layout__main {
+      flex: 1;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 0;
+    }
+    .tv-layout__side {
+      width: clamp(300px, 22vw, 460px);
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-lg);
+      justify-content: center;
+      align-items: center;
+    }
+
+    .slide-wrap {
+      width: 100%;
+      max-width: calc(100vw - clamp(300px, 22vw, 460px) - 100px);
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .tv-frame-border {
+      position: absolute;
+      inset: 0;
+      border-radius: var(--radius-xl);
+      border: 2px solid rgba(255, 255, 255, 0.7);
+      box-shadow: var(--shadow-lg);
+      pointer-events: none;
+    }
+    #slide {
+      position: relative;
+      object-fit: contain;
+      opacity: 0;
+      transition: opacity 0.8s ease;
+      display: block;
+      max-width: 100%;
+      max-height: 84vh;
+      border-radius: var(--radius-lg);
+    }
+    #board-slide {
+      position: relative;
+      object-fit: contain;
+      border-radius: var(--radius-md);
+      display: block;
+      max-width: 100%;
+      max-height: 84vh;
+      border: 6px solid var(--surface-solid);
+      box-shadow: var(--shadow-lg);
+    }
+    .tv-empty {
+      position: absolute;
+      font-size: clamp(1.3rem, 2.4vw, 2.4rem);
+      font-weight: 700;
+      color: var(--ink-600);
+      text-align: center;
+    }
+
+    .new-photo-overlay {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%) scale(0.98);
+      display: flex;
+      gap: var(--space-md);
+      align-items: center;
+      max-width: 90vw;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s ease, transform 0.35s cubic-bezier(0.2, 0.9, 0.3, 1);
+      z-index: 6;
+    }
+    .new-photo-overlay.visible { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+    .new-photo-overlay.new-photo-animate { animation: tv-pop-float 1s ease both; }
+    @keyframes tv-pop-float {
+      0% { transform: translate(-50%, -50%) translateY(18px) scale(0.96); opacity: 0; }
+      60% { transform: translate(-50%, -50%) translateY(-6px) scale(1.02); opacity: 1; }
+      100% { transform: translate(-50%, -50%) translateY(0) scale(1); }
+    }
+    .new-photo-overlay img {
+      width: clamp(160px, 14vw, 260px);
+      height: auto;
+      border-radius: var(--radius-md);
+      object-fit: cover;
+      border: 6px solid var(--surface-solid);
+      box-shadow: var(--shadow-lg);
+    }
+    .new-photo-overlay__username { font-weight: 800; font-size: clamp(1.2rem, 1.8vw, 1.8rem); }
+    .new-photo-overlay__sub { font-size: clamp(1rem, 1.3vw, 1.3rem); color: var(--ink-600); margin-top: var(--space-3xs); }
+
+    .qr-row { display: flex; gap: clamp(10px, 1vw, 16px); }
+    .tv-qr-card img { width: clamp(128px, 10vw, 190px); height: clamp(128px, 10vw, 190px); }
+
+    #leaderboard { width: 100%; }
+    #leaderboard .card__title { font-size: clamp(1rem, 1.3vw, 1.3rem); }
+
+    @media (max-width: 760px) {
+      .tv-layout { flex-direction: column; }
+      .tv-layout__side { width: 100%; }
+      .slide-wrap { max-width: 100%; }
+      .tv-top-bar { top: 16px; left: 16px; }
+    }
   </style>
 </head>
-<body class="tv-page sense-preview">
-  <div class="top-bar" aria-hidden="true">
-    <span class="dot"></span>
-    <span class="title">Coloc TV</span>
+<body>
+  <div class="status-pill tv-top-bar" aria-hidden="true">
+    <span class="status-dot status-dot--live"></span>
+    <span>Coloc TV</span>
   </div>
-  <div class="tv-content">
-    <div class="tv-left">
+  <div class="tv-layout">
+    <div class="tv-layout__main">
       <div class="slide-wrap" id="slideshow-wrap">
-        <div class="frame" aria-hidden="true"></div>
+        <div class="tv-frame-border" aria-hidden="true"></div>
         <img id="slide" alt="">
-        <div id="empty">Waiting for photos&hellip;</div>
+        <div id="empty" class="tv-empty">Waiting for photos&hellip;</div>
 
-        <div id="new-photo-overlay" class="new-photo-overlay" aria-hidden="true">
-          <img id="new-photo-img" class="new-photo-big" src="" alt="new photo">
+        <div id="new-photo-overlay" class="card new-photo-overlay" aria-hidden="true">
+          <img id="new-photo-img" src="" alt="new photo">
           <div>
-            <div id="new-photo-username" class="new-photo-username"></div>
-            <div id="new-photo-sub" class="new-photo-sub">Just uploaded</div>
+            <div id="new-photo-username" class="new-photo-overlay__username"></div>
+            <div class="new-photo-overlay__sub">Just uploaded</div>
           </div>
         </div>
       </div>
       <div class="slide-wrap" id="whiteboard-wrap" style="display:none">
-        <div class="frame" aria-hidden="true"></div>
+        <div class="tv-frame-border" aria-hidden="true"></div>
         <img id="board-slide" alt="Collective whiteboard">
-        <div id="board-empty">Waiting for drawings&hellip;</div>
+        <div id="board-empty" class="tv-empty">Waiting for drawings&hellip;</div>
       </div>
     </div>
-    <div class="tv-right">
+    <div class="tv-layout__side">
       <div class="qr-row">
-        <div class="qr-card" id="wifi-qr-card" style="display:{% if not wifi_qr_shown %}none{% endif %}">
+        <div class="card card--solid card--tight qr-card tv-qr-card" id="wifi-qr-card" style="display:{% if not wifi_qr_shown %}none{% endif %}">
           <img src="{% if wifi_qr_shown %}{% url 'wifi-qr-code' %}{% endif %}" data-src="{% url 'wifi-qr-code' %}" alt="QR code to join the Wi-Fi">
-          <span>Scan to join Wi-Fi</span>
+          <p class="qr-card__caption">Scan to join Wi-Fi</p>
         </div>
-        <div class="qr-card">
+        <div class="card card--solid card--tight qr-card tv-qr-card">
           <img src="{% url 'upload-qr-code' %}" alt="QR code to upload photos">
-          <span>Scan to upload</span>
+          <p class="qr-card__caption">Scan to upload</p>
         </div>
       </div>
-      <aside class="tv-sidebar" id="leaderboard">
-        <strong>Top liked photos</strong>
-        <div id="top-list"></div>
+      <aside class="card card--solid" id="leaderboard">
+        <p class="card__title">Top liked photos</p>
+        <div id="top-list" class="media-list"></div>
       </aside>
     </div>
   </div>

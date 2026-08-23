@@ -5,36 +5,39 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Share the photo folder</title>
   {% load static %}
-  <link rel="stylesheet" href="{% static 'photos/site.css' %}">
-  <link rel="stylesheet" href="{% static 'photos/themes/sense-preview.css' %}">
+  <link rel="stylesheet" href="{% static 'photos/tokens.css' %}">
+  <link rel="stylesheet" href="{% static 'photos/base.css' %}">
+  <link rel="stylesheet" href="{% static 'photos/components.css' %}">
 </head>
-<body class="centered-page sense-preview">
-  <main class="card">
-    <h1>Want the full-res photos?</h1>
-    <p class="hint">Leave your email and we'll share the event's Google Drive folder with you (read-only). You can also skip this.</p>
+<body>
+  <div class="page shell" style="min-height:100vh;display:flex;align-items:center;justify-content:center;">
+    <main class="card" style="width:100%;max-width:420px;">
+      <h1>Want the full-res photos?</h1>
+      <p class="text-muted" style="margin-top:var(--space-2xs);margin-bottom:var(--space-md);">Leave your email and we'll share the event's Google Drive folder with you (read-only). You can also skip this.</p>
 
-    {% if messages %}
-    <div class="messages">
-      {% for message in messages %}
-      <div class="message {{ message.tags }}">{{ message }}</div>
-      {% endfor %}
-    </div>
-    {% endif %}
+      {% if messages %}
+      <div class="flex-col gap-2xs" style="display:flex;margin-bottom:var(--space-md);">
+        {% for message in messages %}
+        <div class="alert alert--boxed{% if message.tags == 'success' %} alert--success{% endif %}">{{ message }}</div>
+        {% endfor %}
+      </div>
+      {% endif %}
 
-    <form method="post">
-      {% csrf_token %}
-      <div class="form-row">
-        <label for="{{ form.email.id_for_label }}">Your email</label>
-        {{ form.email }}
-        {% if form.email.errors %}
-          <div class="message error">{{ form.email.errors }}</div>
-        {% endif %}
-      </div>
-      <div class="form-actions">
-        <button type="submit" class="btn primary">Share with me</button>
-        <button type="submit" name="skip" value="1" class="btn secondary">Skip</button>
-      </div>
-    </form>
-  </main>
+      <form method="post">
+        {% csrf_token %}
+        <div class="field">
+          <label for="{{ form.email.id_for_label }}">Your email</label>
+          {{ form.email }}
+          {% if form.email.errors %}
+            <p class="text-sm" style="color:var(--danger);">{{ form.email.errors }}</p>
+          {% endif %}
+        </div>
+        <div class="flex flex-wrap gap-sm items-center" style="margin-top:var(--space-md);">
+          <button type="submit" class="btn btn--dark">Share with me</button>
+          <button type="submit" name="skip" value="1" class="btn btn--outline">Skip</button>
+        </div>
+      </form>
+    </main>
+  </div>
 </body>
 </html>

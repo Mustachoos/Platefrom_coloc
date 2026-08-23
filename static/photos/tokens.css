@@ -1,0 +1,89 @@
+/* ============================================================
+   Coloc TV — Design Tokens
+   Single source of truth. Every component reads from these
+   variables — never hardcode a color, radius, or spacing value
+   outside this file.
+   ============================================================ */
+
+:root {
+  /* ---- Brand gradient (the fixed backdrop behind every screen) ---- */
+  --grad-peach: #ffdfbf;
+  --grad-pink: #ffd2e6;
+  --grad-lilac: #ddd4f8;
+  --grad-mint: #cdf3e1;
+  --app-bg: linear-gradient(
+    135deg,
+    var(--grad-peach) 0%,
+    var(--grad-pink) 38%,
+    var(--grad-lilac) 68%,
+    var(--grad-mint) 100%
+  );
+
+  /* ---- Ink (text) ---- */
+  --ink-900: #1b1a24; /* headings, primary text, solid button fill */
+  --ink-600: #6b6774; /* secondary text, meta, timestamps */
+  --ink-400: #a4a0ac; /* placeholder, disabled, faint labels */
+  --ink-on-dark: #fdfcff;
+
+  /* ---- Surfaces ---- */
+  --surface: rgba(255, 255, 255, 0.68); /* cards floating on the gradient */
+  --surface-solid: #ffffff; /* canvas, photo frame, QR card, bottom nav */
+  --surface-sunken: rgba(27, 26, 36, 0.05); /* inputs, table stripes, segmented track */
+  --surface-dark: var(--ink-900); /* solid pills / active states */
+
+  /* ---- Borders ---- */
+  --line: rgba(27, 26, 36, 0.09);
+  --line-strong: rgba(27, 26, 36, 0.18);
+
+  /* ---- Semantic status (kept separate from the accent) ---- */
+  --success-bg: #d9f5df;
+  --success-ink: #1c8a4c;
+  --warning-bg: #fdecc4;
+  --warning-ink: #9a6414;
+  --danger: #e34a53;
+  --danger-ink: #ffffff;
+
+  /* ---- Accent — the one deliberate color, used sparingly:
+     liked-heart state + focus ring. Everything else in the UI
+     stays neutral so the gradient backdrop and the photos carry
+     the color. ---- */
+  --accent: #ef476f;
+
+  /* ---- Type ---- */
+  --font-sans: "Manrope", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: ui-monospace, "SF Mono", "Cascadia Code", "Roboto Mono", monospace;
+
+  --text-xs: 0.75rem;
+  --text-sm: 0.8125rem;
+  --text-base: 0.9375rem;
+  --text-md: 1.0625rem;
+  --text-lg: 1.25rem;
+  --text-xl: 1.625rem;
+  --text-2xl: 2rem;
+
+  /* ---- Space ---- */
+  --space-3xs: 0.25rem;
+  --space-2xs: 0.5rem;
+  --space-xs: 0.75rem;
+  --space-sm: 1rem;
+  --space-md: 1.5rem;
+  --space-lg: 2rem;
+  --space-xl: 3rem;
+
+  /* ---- Radius ---- */
+  --radius-sm: 10px;
+  --radius-md: 16px;
+  --radius-lg: 22px;
+  --radius-xl: 28px;
+  --radius-pill: 999px;
+
+  /* ---- Shadow ---- */
+  --shadow-sm: 0 1px 3px rgba(27, 26, 36, 0.08);
+  --shadow-md: 0 8px 24px rgba(27, 26, 36, 0.1);
+  --shadow-lg: 0 20px 48px rgba(27, 26, 36, 0.16);
+
+  /* ---- Motion ---- */
+  --ease: cubic-bezier(0.4, 0, 0.2, 1);
+  --fast: 120ms;
+  --base: 200ms;
+}

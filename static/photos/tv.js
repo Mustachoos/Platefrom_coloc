@@ -235,7 +235,7 @@
     topList.innerHTML = top
       .map(
         (p) =>
-          `<div class="leaderboard-item"><img class="leaderboard-thumb" src="${p.url}" alt="thumb"><div class="leaderboard-meta"><div class="leaderboard-username">${p.username}</div><div class="leaderboard-count">${HEART_ICON} ${p.likes_count}</div></div></div>`
+          `<div class="media-item"><img class="thumb thumb--sm" src="${p.url}" alt="thumb"><div><div class="media-item__name">${p.username}</div><div class="like like--active">${HEART_ICON} ${p.likes_count}</div></div></div>`
       )
       .join("");
   }

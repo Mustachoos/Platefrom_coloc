@@ -6,151 +6,154 @@
   <title>Upload photos</title>
   {% load static %}
   {% load icons %}
-  <link rel="stylesheet" href="{% static 'photos/site.css' %}">
-  <link rel="stylesheet" href="{% static 'photos/themes/sense-preview.css' %}">
+  <link rel="stylesheet" href="{% static 'photos/tokens.css' %}">
+  <link rel="stylesheet" href="{% static 'photos/base.css' %}">
+  <link rel="stylesheet" href="{% static 'photos/components.css' %}">
 </head>
-<body class="centered-page has-footer-nav has-page-header sense-preview">
-  {% include "photos/_page_header.html" with page_icon="upload" page_title="Upload photos" %}
-  <main class="card">
-    <div class="upload-top">
-      <p class="as-user">Uploading as <strong>{{ pseudo }}</strong></p>
+<body>
+  <div class="page shell">
+    {% include "photos/_page_header.html" with page_icon="upload" page_title="Upload photos" %}
+    <main class="card">
+      <p class="text-muted text-sm">Uploading as <strong>{{ pseudo }}</strong></p>
 
       {% if messages %}
-      <div class="messages">
+      <div class="flex-col gap-2xs" style="display:flex;margin-top:var(--space-sm);">
         {% for message in messages %}
-        <div class="message {{ message.tags }}">{{ message }}</div>
+        <div class="alert alert--boxed{% if message.tags == 'success' %} alert--success{% endif %}">{{ message }}</div>
         {% endfor %}
       </div>
       {% endif %}
-    </div>
 
-    <div class="upload-center">
-      <div id="photo-status"
-           class="photo-status {% if just_uploaded %}state-success{% else %}state-empty{% endif %}"
-           data-just-uploaded="{{ just_uploaded|yesno:'1,0' }}"
-      >{% if just_uploaded %}Upload successful{% else %}No photo yet :({% endif %}</div>
-    </div>
+      <div style="margin:var(--space-lg) 0;">
+        <div id="photo-status"
+             class="alert alert--boxed{% if just_uploaded %} alert--success{% endif %}"
+             data-just-uploaded="{{ just_uploaded|yesno:'1,0' }}"
+        >{% if just_uploaded %}Upload successful{% else %}No photo yet :({% endif %}</div>
+      </div>
 
-    <form id="upload-form" method="post" enctype="multipart/form-data" class="upload-bottom">
-      {% csrf_token %}
-      <div class="form-row">
-        <label class="form-row-label-centered">Add a photo</label>
-        <input type="file" id="images" name="images" accept="image/*" style="display:none">
-        <input type="file" id="camera-input" accept="image/*" capture="environment" style="display:none">
-        <div class="form-actions">
-          <button type="button" id="choose-btn" class="btn secondary">{% icon 'photo' size=18 %} Choose a photo</button>
-          <button type="button" id="camera-btn" class="btn secondary">{% icon 'camera' size=18 %} Take a photo</button>
+      <form id="upload-form" method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="field">
+          <label class="text-center" style="width:100%;">Add a photo</label>
+          <input type="file" id="images" name="images" accept="image/*" style="display:none">
+          <input type="file" id="camera-input" accept="image/*" capture="environment" style="display:none">
+          <div class="flex flex-wrap gap-sm" style="margin-top:var(--space-2xs);justify-content:center;">
+            <button type="button" id="choose-btn" class="btn btn--light">{% icon 'photo' size=18 %} Choose a photo</button>
+            <button type="button" id="camera-btn" class="btn btn--light">{% icon 'camera' size=18 %} Take a photo</button>
+          </div>
         </div>
-      </div>
 
-      <div class="upload-actions">
-        <button id="upload-btn" type="submit" class="btn neutral large">Upload</button>
-      </div>
-    </form>
+        <div style="margin-top:var(--space-md);">
+          <button id="upload-btn" type="submit" class="btn btn--outline btn--block">Upload</button>
+        </div>
+      </form>
 
-    <script>
-      (function(){
-        const input = document.getElementById('images');
-        const btn = document.getElementById('upload-btn');
-        const form = document.getElementById('upload-form');
-        const chooseBtn = document.getElementById('choose-btn');
-        const cameraInput = document.getElementById('camera-input');
-        const cameraBtn = document.getElementById('camera-btn');
-        const status = document.getElementById('photo-status');
-        const cameraFiles = new Set();
-        const justUploaded = !!status && status.dataset.justUploaded === '1';
+      <script>
+        (function(){
+          const input = document.getElementById('images');
+          const btn = document.getElementById('upload-btn');
+          const form = document.getElementById('upload-form');
+          const chooseBtn = document.getElementById('choose-btn');
+          const cameraInput = document.getElementById('camera-input');
+          const cameraBtn = document.getElementById('camera-btn');
+          const status = document.getElementById('photo-status');
+          const cameraFiles = new Set();
+          const justUploaded = !!status && status.dataset.justUploaded === '1';
 
-        // Drop the one-time flag from the URL so a page refresh doesn't
-        // replay the "Upload successful" state.
-        if (justUploaded && window.history && window.history.replaceState) {
-          const url = new URL(window.location.href);
-          url.searchParams.delete('uploaded');
-          window.history.replaceState({}, '', url);
-        }
-
-        function setStatus(state, text) {
-          if (!status) return;
-          status.classList.remove('state-empty', 'state-selected', 'state-success');
-          status.classList.add('state-' + state);
-          status.textContent = text;
-        }
-
-        function updateSelectionStatus() {
-          if (input.files && input.files.length > 0) {
-            const file = input.files[0];
-            setStatus('selected', cameraFiles.has(file) ? 'I see you took a nice picture !' : file.name);
-          } else {
-            setStatus('empty', 'No photo yet :(');
+          // Drop the one-time flag from the URL so a page refresh doesn't
+          // replay the "Upload successful" state.
+          if (justUploaded && window.history && window.history.replaceState) {
+            const url = new URL(window.location.href);
+            url.searchParams.delete('uploaded');
+            window.history.replaceState({}, '', url);
           }
-        }
 
-        function update(){
-          if(!input) return;
-          if(input.files && input.files.length>0){
-            btn.classList.add('ready');
-          } else {
-            btn.classList.remove('ready');
+          function setStatus(state, text) {
+            if (!status) return;
+            status.classList.remove('alert--success');
+            if (state === 'success') status.classList.add('alert--success');
+            status.textContent = text;
           }
-          updateSelectionStatus();
-        }
 
-        if (chooseBtn && input) {
-          chooseBtn.addEventListener('click', function () {
-            input.click();
-          });
-        }
+          function updateSelectionStatus() {
+            if (input.files && input.files.length > 0) {
+              const file = input.files[0];
+              setStatus('selected', cameraFiles.has(file) ? 'I see you took a nice picture !' : file.name);
+            } else {
+              setStatus('empty', 'No photo yet :(');
+            }
+          }
 
-        if (cameraBtn && cameraInput) {
-          cameraBtn.addEventListener('click', function () {
-            cameraInput.click();
-          });
-          // Only one photo at a time: a freshly taken photo replaces
-          // whatever was previously selected, rather than adding to it.
-          cameraInput.addEventListener('change', function () {
-            if (!cameraInput.files || cameraInput.files.length === 0) return;
-            cameraFiles.clear();
-            const replaced = new DataTransfer();
-            const file = cameraInput.files[0];
-            replaced.items.add(file);
-            cameraFiles.add(file);
-            input.files = replaced.files;
-            cameraInput.value = '';
-            update();
-          });
-        }
+          function update(){
+            if(!input) return;
+            if(input.files && input.files.length>0){
+              btn.classList.remove('btn--outline');
+              btn.classList.add('btn--dark');
+            } else {
+              btn.classList.remove('btn--dark');
+              btn.classList.add('btn--outline');
+            }
+            updateSelectionStatus();
+          }
 
-        input.addEventListener('change', update);
+          if (chooseBtn && input) {
+            chooseBtn.addEventListener('click', function () {
+              input.click();
+            });
+          }
 
-        if (form && status) {
-          form.addEventListener('submit', function (e) {
-            if (!input.files || input.files.length === 0) {
-              e.preventDefault();
+          if (cameraBtn && cameraInput) {
+            cameraBtn.addEventListener('click', function () {
+              cameraInput.click();
+            });
+            // Only one photo at a time: a freshly taken photo replaces
+            // whatever was previously selected, rather than adding to it.
+            cameraInput.addEventListener('change', function () {
+              if (!cameraInput.files || cameraInput.files.length === 0) return;
+              cameraFiles.clear();
+              const replaced = new DataTransfer();
+              const file = cameraInput.files[0];
+              replaced.items.add(file);
+              cameraFiles.add(file);
+              input.files = replaced.files;
+              cameraInput.value = '';
+              update();
+            });
+          }
+
+          input.addEventListener('change', update);
+
+          if (form && status) {
+            form.addEventListener('submit', function (e) {
+              if (!input.files || input.files.length === 0) {
+                e.preventDefault();
+                status.classList.remove('shake');
+                // Force a reflow so the animation restarts if triggered again
+                // right away (e.g. clicking Upload twice with nothing chosen).
+                void status.offsetWidth;
+                status.classList.add('shake');
+              }
+            });
+            status.addEventListener('animationend', function () {
               status.classList.remove('shake');
-              // Force a reflow so the animation restarts if triggered again
-              // right away (e.g. clicking Upload twice with nothing chosen).
-              void status.offsetWidth;
-              status.classList.add('shake');
+            });
+          }
+
+          document.addEventListener('DOMContentLoaded', function () {
+            if (justUploaded) {
+              // Already server-rendered as "Upload successful"; just schedule
+              // the transition back to the empty state.
+              setTimeout(function () {
+                setStatus('empty', 'No photo yet :(');
+              }, 3000);
+            } else {
+              update();
             }
           });
-          status.addEventListener('animationend', function () {
-            status.classList.remove('shake');
-          });
-        }
-
-        document.addEventListener('DOMContentLoaded', function () {
-          if (justUploaded) {
-            // Already server-rendered as "Upload successful"; just schedule
-            // the transition back to the empty state.
-            setTimeout(function () {
-              setStatus('empty', 'No photo yet :(');
-            }, 3000);
-          } else {
-            update();
-          }
-        });
-      })();
-    </script>
-  </main>
+        })();
+      </script>
+    </main>
+  </div>
   {% include "photos/_footer_nav.html" %}
 </body>
 </html>

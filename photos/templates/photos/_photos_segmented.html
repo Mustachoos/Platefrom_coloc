@@ -1,4 +1,4 @@
-<div class="segmented">
-  <a href="{% url 'gallery' %}" class="segmented-item{% if request.resolver_match.url_name == 'gallery' %} active{% endif %}">All photos</a>
-  <a href="{% url 'my-photos' %}" class="segmented-item{% if request.resolver_match.url_name == 'my-photos' %} active{% endif %}">My photos</a>
+<div class="segmented" style="margin-bottom:var(--space-md);">
+  <a href="{% url 'gallery' %}" class="segmented__option{% if request.resolver_match.url_name == 'gallery' %} is-active{% endif %}">All photos</a>
+  <a href="{% url 'my-photos' %}" class="segmented__option{% if request.resolver_match.url_name == 'my-photos' %} is-active{% endif %}">My photos</a>
 </div>

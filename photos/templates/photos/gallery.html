@@ -6,39 +6,41 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Photo gallery</title>
-  <link rel="stylesheet" href="{% static 'photos/site.css' %}">
-  <link rel="stylesheet" href="{% static 'photos/themes/sense-preview.css' %}">
+  <link rel="stylesheet" href="{% static 'photos/tokens.css' %}">
+  <link rel="stylesheet" href="{% static 'photos/base.css' %}">
+  <link rel="stylesheet" href="{% static 'photos/components.css' %}">
 </head>
-<body class="has-footer-nav has-page-header sense-preview">
-  {% include "photos/_page_header.html" with page_icon="photo" page_title="All photos" %}
-  <main class="card">
-    {% include "photos/_photos_segmented.html" %}
-    {% if likes_enabled %}<p class="form-hint" style="text-align:center;margin-top:0">Tap the heart to like a photo.</p>{% endif %}
-    <div class="grid">
-      {% for p in photos %}
-      <div class="photo-card" data-id="{{ p.id }}">
-        <img class="thumb" src="{{ p.url }}" alt="{{ p.username }}">
-        <div class="meta">
-          <div>
-            <div class="username">{{ p.username }}</div>
-            <div class="timestamp">{{ p.uploaded_at }}</div>
-          </div>
-          <div>
-            {% if likes_enabled %}
-            <button type="button" class="like-btn{% if p.liked %} liked{% endif %}">
-              <span class="heart-outline">{% icon 'heart' size=16 %}</span>
-              <span class="heart-filled">{% icon 'heart-filled' size=16 %}</span>
-              <span class="count">{{ p.likes_count }}</span>
-            </button>
-            {% else %}
-            <span class="like-count-static">{% icon 'heart-filled' size=16 %} {{ p.likes_count }}</span>
-            {% endif %}
+<body>
+  <div class="page shell">
+    {% include "photos/_page_header.html" with page_icon="photo" page_title="All photos" %}
+    <main class="card">
+      {% include "photos/_photos_segmented.html" %}
+      {% if likes_enabled %}<p class="text-sm text-muted text-center" style="margin-bottom:var(--space-sm);">Tap the heart to like a photo.</p>{% endif %}
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:var(--space-sm);">
+        {% for p in photos %}
+        <div class="photo-card" data-id="{{ p.id }}">
+          <img class="thumb thumb--md" src="{{ p.url }}" alt="{{ p.username }}">
+          <div class="photo-card__meta">
+            <div>
+              <div class="media-item__name">{{ p.username }}</div>
+              <div class="text-xs text-muted">{{ p.uploaded_at }}</div>
+            </div>
+            <div>
+              {% if likes_enabled %}
+              <button type="button" class="like{% if p.liked %} like--active{% endif %}">
+                {% icon 'heart-filled' size=14 %}
+                <span class="count">{{ p.likes_count }}</span>
+              </button>
+              {% else %}
+              <span class="like">{% icon 'heart-filled' size=14 %} {{ p.likes_count }}</span>
+              {% endif %}
+            </div>
           </div>
         </div>
+        {% endfor %}
       </div>
-      {% endfor %}
-    </div>
-  </main>
+    </main>
+  </div>
   <form style="display:none">{% csrf_token %}</form>
 
 <script>
@@ -51,12 +53,12 @@ const csrftoken = getCookie('csrftoken');
 function updateCard(card, data){
   const count = card.querySelector('.count');
   if(count) count.textContent = data.likes_count;
-  const btn = card.querySelector('.like-btn');
-  if (btn) btn.classList.toggle('liked', !!data.liked);
+  const btn = card.querySelector('.like');
+  if (btn) btn.classList.toggle('like--active', !!data.liked);
 }
 
 document.querySelectorAll('.photo-card').forEach(card=>{
-  const btn = card.querySelector('.like-btn');
+  const btn = card.querySelector('button.like');
   if (!btn) return;
   btn.addEventListener('click', ()=>{
     const id = card.dataset.id;
@@ -72,6 +74,6 @@ document.querySelectorAll('.photo-card').forEach(card=>{
   });
 });
 </script>
-{% include "photos/_footer_nav.html" %}
+  {% include "photos/_footer_nav.html" %}
 </body>
 </html>
