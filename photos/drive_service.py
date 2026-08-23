@@ -41,9 +41,9 @@ def _client_secret_file():
 
 def _configured_root_folder_id():
     """The env var wins if set (back-compat with existing installs); otherwise
-    the DB-backed value the setup wizard writes — that one has to live in the
-    DB rather than a file/env var since it must take effect without a
-    container restart."""
+    the DB-backed value the admin account page's Drive step writes — that one
+    has to live in the DB rather than a file/env var since it must take
+    effect without a container restart."""
     env_value = os.environ.get("GOOGLE_DRIVE_ROOT_FOLDER_ID", "").strip()
     if env_value:
         return env_value
@@ -64,8 +64,8 @@ def _root_folder_id():
     root = _configured_root_folder_id()
     if not root:
         raise DriveError(
-            "No Drive root folder configured. Set it from the setup wizard's Drive step, "
-            "or set GOOGLE_DRIVE_ROOT_FOLDER_ID."
+            "No Drive root folder configured. Set it from the admin account page's Drive "
+            "step, or set GOOGLE_DRIVE_ROOT_FOLDER_ID."
         )
     return root
 

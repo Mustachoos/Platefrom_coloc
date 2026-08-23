@@ -228,7 +228,7 @@ def admin_management_view(request):
     if request.method == "POST" and "generate_invite" in request.POST:
         invitee_name = request.POST.get("invitee_name", "").strip()
         if not invitee_name:
-            messages.error(request, "Enter a name for the invite.")
+            messages.error(request, "Enter a name for the invite.", extra_tags="staff")
         else:
             AdminInvite.objects.create(created_by=request.user, invitee_name=invitee_name)
         return redirect("admin-management")
@@ -238,7 +238,7 @@ def admin_management_view(request):
         # already-verified value, which is stored as host:port.
         ip_address = request.POST.get("ip_address", "").strip().split(":", 1)[0]
         if not ip_address:
-            messages.error(request, "Enter an IP address to verify.")
+            messages.error(request, "Enter an IP address to verify.", extra_tags="network")
             return redirect("admin-management")
         token = uuid.uuid4()
         cache.set(_verify_pending_key(token), ip_address, timeout=_VERIFY_TTL_SECONDS)
@@ -263,6 +263,7 @@ def admin_management_view(request):
         "verify_token": verify_token,
         "verify_ip": verify_ip,
         "verified_ip": verified_ip,
+        "drive_configured": drive_service.is_configured(),
     })
 
 
@@ -298,7 +299,7 @@ def revoke_invite_view(request, token):
             if invite.used_by_id:
                 invite.used_by.is_active = False
                 invite.used_by.save(update_fields=["is_active"])
-            messages.success(request, f"Access revoked for {invite.invitee_name}.")
+            messages.success(request, f"Access revoked for {invite.invitee_name}.", extra_tags="staff")
     return redirect("admin-management")
 
 

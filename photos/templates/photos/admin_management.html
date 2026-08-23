@@ -7,10 +7,24 @@
   {% load static %}
   <link rel="stylesheet" href="{% static 'photos/site.css' %}">
   <style>
-    body{margin:16px;max-width:900px}
-    .panel{background:#fff;border-radius:14px;border:1px solid #edf2f7;padding:18px 20px;margin-bottom:20px;box-shadow:0 8px 20px rgba(31,52,72,0.06)}
+    body{margin:16px}
+    .panel{position:relative;background:#fff;border-radius:14px;border:1px solid #edf2f7;padding:18px 20px;margin-bottom:20px;box-shadow:0 8px 20px rgba(31,52,72,0.06);overflow:hidden}
     .panel h2{margin:0 0 6px;font-size:1.15rem}
     .panel p.hint{margin-top:0}
+    .box-message{position:absolute;top:0;left:0;right:0;padding:12px 20px;border-radius:14px 14px 0 0;font-weight:700;font-size:0.9rem;z-index:5;box-shadow:0 8px 20px rgba(31,52,72,0.15);pointer-events:none;animation:box-message-fade 4s ease forwards}
+    .box-message.success{background:#dff7e8;border:1px solid #86efac;color:#166534}
+    .box-message.error{background:#ffe8ee;border:1px solid #fda4af;color:#9f1239}
+    @keyframes box-message-fade{
+      0%{opacity:1;transform:translateY(0)}
+      75%{opacity:1;transform:translateY(0)}
+      100%{opacity:0;transform:translateY(-8px);visibility:hidden}
+    }
+    #network-details summary{list-style:none;cursor:pointer;display:flex;align-items:center;justify-content:space-between}
+    #network-details summary::-webkit-details-marker{display:none}
+    #network-details summary h2{margin:0;display:flex;align-items:center}
+    #network-details summary::after{content:'▸';color:var(--soft);font-size:0.9rem;margin-left:12px;transition:transform .2s ease}
+    #network-details[open] summary::after{transform:rotate(90deg)}
+    #network-details .details-body{margin-top:14px}
     table{width:100%;border-collapse:collapse}
     th,td{text-align:left;padding:8px 10px;border-bottom:1px solid #edf2f7;font-size:0.92rem}
     th{color:var(--soft);font-weight:700}
@@ -31,11 +45,25 @@
     dialog h2{margin:0 0 10px;font-size:1.1rem}
     .ip-verify-row{display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap}
     .ip-verify-row .form-row{flex:1;min-width:200px;margin-top:0}
+    #checking-action,#action-buttons{flex:1 1 100%;display:flex;flex-direction:row;gap:8px}
     .help-btn{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;background:#f1f5f9;color:#556575;font-size:0.75rem;font-weight:700;padding:0;margin-left:6px;vertical-align:middle}
-    .verify-box{margin-top:16px;padding:16px;border-radius:10px;border:1px dashed #cbd5e1;background:#f8fafc;display:flex;gap:12px;align-items:center;flex-wrap:wrap}
     #ip_address:read-only{background:#f1f5f9;color:#556575}
-    .spinner{width:20px;height:20px;border-radius:50%;border:3px solid #d4e4ee;border-top-color:var(--btn-1);animation:spin .7s linear infinite;flex:none}
+    .textbox-btn{display:block;flex:1;padding:12px;border-radius:12px;border:2px solid #d4e4ee;background:#fff;color:var(--ink);font-weight:700;font-size:1rem;text-align:center;cursor:pointer}
+    .textbox-btn:hover{background:#f8fafc}
+    .textbox-btn:disabled{background:#f1f5f9;color:#94a3b8;border-color:#e2e8f0;cursor:not-allowed}
+    .textbox-btn:hover:disabled{background:#f1f5f9}
+    .status-circle{box-sizing:border-box;display:inline-block;width:20px;height:20px;border-radius:50%;background:#cbd5e1;border:2px solid transparent;vertical-align:middle;margin-right:10px;transition:background .3s ease}
+    .status-circle.verified{background:var(--btn-1)}
+    .status-circle.failed{background:#dc2626}
+    .status-circle.checking{background:transparent;border-color:#d4e4ee;border-top-color:var(--btn-1);animation:spin .8s linear infinite}
     @keyframes spin{to{transform:rotate(360deg)}}
+    .hub-layout{display:flex;gap:20px;align-items:flex-start}
+    .col-left{flex:0 0 70%;min-width:0}
+    .col-right{flex:1;min-width:0;display:flex;flex-direction:column}
+    @media(max-width:720px){
+      .hub-layout{flex-direction:column}
+      .col-left,.col-right{width:100%;flex:0 0 auto}
+    }
   </style>
 </head>
 <body>
@@ -50,105 +78,13 @@
     </form>
   </div>
 
-  {% if messages %}
-  <div class="messages">
-    {% for message in messages %}
-    <div class="message {{ message.tags }}">{{ message }}</div>
-    {% endfor %}
-  </div>
-  {% endif %}
-
+  <div class="hub-layout">
+  <div class="col-left">
   <div class="panel">
-    <h2>Network address</h2>
-    <p class="hint">
-      {% if verified_ip %}
-      Guests currently scan <code>{{ site_settings.server_host }}</code> to reach the upload page — verified reachable.
-      {% else %}
-      Not verified yet — the upload QR code falls back to whatever address loads the TV screen.
-      {% endif %}
-    </p>
-
-    <form method="post" class="ip-verify-row" id="ip-form">
-      {% csrf_token %}
-      <div class="form-row">
-        <label for="ip_address">IP address <button type="button" class="help-btn" onclick="document.getElementById('ip-help-modal').showModal()">?</button></label>
-        <input
-          type="text" id="ip_address" name="ip_address" placeholder="e.g. 192.168.1.13"
-          value="{% if verify_token %}{{ verify_ip }}{% else %}{{ verified_ip }}{% endif %}"
-          {% if verify_token or verified_ip %}readonly{% endif %}
-          required
-        >
-      </div>
-      <div class="row-actions" id="unverified-actions" {% if verify_token or verified_ip %}style="display:none"{% endif %}>
-        <button type="submit" name="start_verify_ip" class="btn primary small">Verify</button>
-      </div>
-      <div class="row-actions" id="verified-actions" {% if verify_token or not verified_ip %}style="display:none"{% endif %}>
-        <button type="button" class="btn secondary small" id="modify-ip-btn">Modify</button>
-        <button type="submit" name="start_verify_ip" class="btn primary small">Recheck</button>
-      </div>
-    </form>
-
-    {% if verify_token %}
-    <div class="verify-box" id="verify-box">
-      <div class="spinner"></div>
-      <p class="hint" style="margin-top:0">Checking that <code>{{ verify_ip }}</code> is reachable…</p>
-    </div>
-    <script>
-      (function () {
-        var input = document.getElementById('ip_address');
-        var verifyBox = document.getElementById('verify-box');
-        var verifiedActions = document.getElementById('verified-actions');
-        var unverifiedActions = document.getElementById('unverified-actions');
-        var poll = setInterval(function () {
-          fetch("{% url 'verify-ip-status' verify_token %}")
-            .then(function (r) { return r.json(); })
-            .then(function (data) {
-              if (data.verified) {
-                clearInterval(poll);
-                input.value = data.host.split(':')[0];
-                input.readOnly = true;
-                verifyBox.style.display = 'none';
-                verifiedActions.style.display = '';
-              } else if (data.failed) {
-                clearInterval(poll);
-                verifyBox.innerHTML = '<p class="hint" style="margin:0;color:#9f1239;font-weight:700">Could not reach {{ verify_ip }} — check the address and try again.</p>';
-                input.readOnly = false;
-                unverifiedActions.style.display = '';
-              }
-            });
-        }, 1500);
-      })();
-    </script>
-    {% endif %}
-
-    <script>
-      document.getElementById('modify-ip-btn').addEventListener('click', function () {
-        var input = document.getElementById('ip_address');
-        input.readOnly = false;
-        input.focus();
-        input.select();
-        document.getElementById('verified-actions').style.display = 'none';
-        document.getElementById('unverified-actions').style.display = '';
-      });
-    </script>
-
-    <dialog id="ip-help-modal">
-      <form method="dialog">
-        <h2>Where do I find my IP address?</h2>
-        <p class="hint" style="margin-top:0">
-          <strong>Windows:</strong> Settings → Network &amp; Internet → Wi-Fi → click your network → look for "IPv4 address".<br><br>
-          <strong>macOS:</strong> System Settings → Wi-Fi → Details, next to your network → "IP Address".<br><br>
-          <strong>Linux:</strong> run <code>ip addr</code> in a terminal and look for the address under your active network interface.
-        </p>
-        <div class="form-actions">
-          <button type="button" class="btn primary small" onclick="document.getElementById('ip-help-modal').close()">Got it</button>
-        </div>
-      </form>
-    </dialog>
-  </div>
-
-  <div class="panel">
-    <h2>Subadmins ({{ invites|length }})</h2>
+    {% for message in messages %}{% if "staff" in message.tags %}
+    <div class="box-message {{ message.tags }}">{{ message }}</div>
+    {% endif %}{% endfor %}
+    <h2>Staff ({{ invites|length }})</h2>
     <p class="hint">Generate a one-time link and share it with someone to let them create their own staff
       account. They'll be able to use the dashboard, but not manage subadmins themselves.</p>
 
@@ -182,7 +118,7 @@
               <div class="row-actions">
                 <button
                   type="button" class="btn secondary small copy-link-btn"
-                  data-url="{{ request.scheme }}://{{ request.get_host }}{% url 'subadmin-invite' invite.token %}"
+                  data-url="{{ request.scheme }}://{% if site_settings.server_host %}{{ site_settings.server_host }}{% else %}{{ request.get_host }}{% endif %}{% url 'subadmin-invite' invite.token %}"
                   {% if invite.status != "pending" %}disabled{% endif %}
                 >Copy link</button>
                 {% if invite.status != "revoked" %}
@@ -214,11 +150,124 @@
       });
     });
   </script>
+  </div>
+
+  <div class="col-right">
+  <div class="panel">
+    {% for message in messages %}{% if "network" in message.tags %}
+    <div class="box-message {{ message.tags }}">{{ message }}</div>
+    {% endif %}{% endfor %}
+  <details id="network-details" {% if verify_token or messages %}open{% endif %}>
+    <summary>
+      <h2><span
+        class="status-circle{% if verify_token %} checking{% elif verified_ip %} verified{% endif %}"
+        id="ip-status-circle"
+      ></span>Network address</h2>
+    </summary>
+    <div class="details-body">
+
+    <form method="post" class="ip-verify-row" id="ip-form">
+      {% csrf_token %}
+      <div class="form-row">
+        <label for="ip_address">IP address <button type="button" class="help-btn" onclick="document.getElementById('ip-help-modal').showModal()">?</button></label>
+        <input
+          type="text" id="ip_address" name="ip_address" placeholder="e.g. 192.168.1.13"
+          value="{% if verify_token %}{{ verify_ip }}{% else %}{{ verified_ip }}{% endif %}"
+          {% if verify_token or verified_ip %}readonly{% endif %}
+          required
+        >
+      </div>
+      <div id="checking-action" {% if not verify_token %}style="display:none"{% endif %}>
+        <button type="button" class="textbox-btn" disabled>Checking IP</button>
+      </div>
+      <div id="action-buttons" {% if verify_token %}style="display:none"{% endif %}>
+        <button type="button" class="textbox-btn" id="modify-ip-btn" {% if not verified_ip %}disabled{% endif %}>Modify</button>
+        <button type="submit" name="start_verify_ip" class="textbox-btn">Check the IP</button>
+      </div>
+    </form>
+
+    {% if verify_token %}
+    <script>
+      (function () {
+        var input = document.getElementById('ip_address');
+        var modifyBtn = document.getElementById('modify-ip-btn');
+        var checkingAction = document.getElementById('checking-action');
+        var actionButtons = document.getElementById('action-buttons');
+        var statusCircle = document.getElementById('ip-status-circle');
+        var poll = setInterval(function () {
+          fetch("{% url 'verify-ip-status' verify_token %}")
+            .then(function (r) { return r.json(); })
+            .then(function (data) {
+              if (data.verified) {
+                clearInterval(poll);
+                input.value = data.host.split(':')[0];
+                input.readOnly = true;
+                modifyBtn.disabled = false;
+                checkingAction.style.display = 'none';
+                actionButtons.style.display = '';
+                statusCircle.classList.remove('checking');
+                statusCircle.classList.add('verified');
+              } else if (data.failed) {
+                clearInterval(poll);
+                input.readOnly = false;
+                modifyBtn.disabled = true;
+                checkingAction.style.display = 'none';
+                actionButtons.style.display = '';
+                statusCircle.classList.remove('checking');
+                statusCircle.classList.add('failed');
+              }
+            });
+        }, 1500);
+      })();
+    </script>
+    {% endif %}
+
+    <script>
+      document.getElementById('modify-ip-btn').addEventListener('click', function () {
+        var input = document.getElementById('ip_address');
+        input.readOnly = false;
+        input.focus();
+        input.select();
+        this.disabled = true;
+        document.getElementById('ip-status-circle').classList.remove('verified', 'failed');
+      });
+    </script>
+
+    <dialog id="ip-help-modal">
+      <form method="dialog">
+        <h2>Where do I find my IP address?</h2>
+        <p class="hint" style="margin-top:0">
+          <strong>Windows:</strong> Settings → Network &amp; Internet → Wi-Fi → click your network → look for "IPv4 address".<br><br>
+          <strong>macOS:</strong> System Settings → Wi-Fi → Details, next to your network → "IP Address".<br><br>
+          <strong>Linux:</strong> run <code>ip addr</code> in a terminal and look for the address under your active network interface.
+        </p>
+        <div class="form-actions">
+          <button type="button" class="btn primary small" onclick="document.getElementById('ip-help-modal').close()">Got it</button>
+        </div>
+      </form>
+    </dialog>
+
+    </div>
+  </details>
+  </div>
+
+  <div class="panel">
+    <h2>Google Drive</h2>
+    <p class="hint">
+      {% if drive_configured %}
+      Connected — new photos are backed up automatically.
+      {% else %}
+      Not connected — photos stay only on this server.
+      {% endif %}
+    </p>
+    <a href="{% url 'drive-connect' %}" class="btn secondary small">{% if drive_configured %}Manage{% else %}Connect{% endif %}</a>
+  </div>
+  </div>
+  </div>
 
   <div class="panel">
     <h2>More</h2>
     <div class="links-list">
-      <a href="{% url 'drive-connect' %}">Google Drive connection</a>
       <a href="{% url 'dashboard' %}?tab=events">All events</a>
     </div>
   </div>
