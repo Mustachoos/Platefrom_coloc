@@ -33,11 +33,18 @@ class DriveError(Exception):
     """Raised for any Drive setup/API failure; callers decide how to surface it."""
 
 
-def _token_file():
+def token_file():
+    """Path to the Drive OAuth token file (GOOGLE_OAUTH_TOKEN_FILE) — the
+    one place this env var is read; admin_views.py and the google_drive_auth
+    management command both import this instead of re-reading it."""
     return os.environ.get("GOOGLE_OAUTH_TOKEN_FILE", "").strip()
 
 
-def _client_secret_file():
+def client_secret_file():
+    """Path to the shared OAuth client credentials file
+    (GOOGLE_OAUTH_CLIENT_SECRET_FILE) — same one-place-to-read-it rationale
+    as token_file() above. "Shared" because gmail_service.py's send-mail
+    OAuth grant reuses this same client (see admin_views._google_flow)."""
     return os.environ.get("GOOGLE_OAUTH_CLIENT_SECRET_FILE", "").strip()
 
 
@@ -58,8 +65,8 @@ def is_configured():
     """Cheap, no-network check for whether Drive backup is usable at all —
     Drive is optional, so callers use this to skip it silently (not surface
     an error) on installs where it was never set up."""
-    token_file = _token_file()
-    return bool(token_file and os.path.exists(token_file) and _configured_root_folder_id())
+    token_path = token_file()
+    return bool(token_path and os.path.exists(token_path) and _configured_root_folder_id())
 
 
 def _root_folder_id():
@@ -76,11 +83,11 @@ def save_credentials(creds):
     """Persist credentials (from the initial consent flow or a refresh) to
     GOOGLE_OAUTH_TOKEN_FILE — the one place that writes this file, shared by
     the management command, the dashboard re-auth view, and token refresh."""
-    token_file = _token_file()
-    if not token_file:
+    token_path = token_file()
+    if not token_path:
         raise DriveError("GOOGLE_OAUTH_TOKEN_FILE is not set.")
-    os.makedirs(os.path.dirname(token_file) or ".", exist_ok=True)
-    with open(token_file, "w") as f:
+    os.makedirs(os.path.dirname(token_path) or ".", exist_ok=True)
+    with open(token_path, "w") as f:
         f.write(creds.to_json())
 
 
@@ -89,22 +96,22 @@ def build_oauth_flow(redirect_uri):
     from the management command's InstalledAppFlow, which opens its own
     local server/browser and only makes sense run interactively from a
     terminal, not from inside a request handler."""
-    client_secret_file = _client_secret_file()
-    if not client_secret_file or not os.path.exists(client_secret_file):
+    client_secret_path = client_secret_file()
+    if not client_secret_path or not os.path.exists(client_secret_path):
         raise DriveError(
             "GOOGLE_OAUTH_CLIENT_SECRET_FILE is not set or the file doesn't exist."
         )
-    return Flow.from_client_secrets_file(client_secret_file, scopes=SCOPES, redirect_uri=redirect_uri)
+    return Flow.from_client_secrets_file(client_secret_path, scopes=SCOPES, redirect_uri=redirect_uri)
 
 
 def _get_credentials():
-    token_file = _token_file()
-    if not token_file or not os.path.exists(token_file):
+    token_path = token_file()
+    if not token_path or not os.path.exists(token_path):
         raise DriveError(
             "No Google Drive token found. Run 'python manage.py google_drive_auth' "
             "once (locally, with a browser) to authorize this app."
         )
-    creds = Credentials.from_authorized_user_file(token_file, SCOPES)
+    creds = Credentials.from_authorized_user_file(token_path, SCOPES)
     if creds.valid:
         return creds
     if creds.expired and creds.refresh_token:

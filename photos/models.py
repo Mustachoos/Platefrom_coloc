@@ -259,7 +259,7 @@ class AdminInvite(models.Model):
     def status(self):
         if self.revoked_at:
             return self.STATUS_REVOKED
-        if self.used_at:
+        if self.is_used:
             return self.STATUS_ACTIVE
         if self.is_expired:
             return self.STATUS_EXPIRED

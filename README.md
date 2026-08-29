@@ -20,9 +20,10 @@ Application web permettant aux invités d'un événement (soirée, anniversaire,
 
 ### Stack technique
 - **Backend** : Django 5 + Django Channels (WebSocket temps réel), servi en ASGI par Daphne
-- **Base de données** : PostgreSQL 16
+- **Base de données** : PostgreSQL 16 en développement (Docker) ; SQLite dans la distribution
+  standalone packagée (voir ci-dessous)
 - **Frontend** : templates Django + JavaScript vanilla (pas de framework front)
-- **Conteneurisation** : Docker / docker-compose (services `db` + `web`)
+- **Conteneurisation** : Docker / docker-compose (services `db` + `web`) pour le développement
 - **QR code** : génération à la volée avec la librairie `qrcode`
 
 ### Lancer le projet
@@ -56,6 +57,16 @@ peut recréer un compte admin une fois qu'un premier existe.
 - **Google Drive** : voir ci-dessous, section CLI.
 </details>
 
+### Distribution standalone ("PartyBooth")
+
+Pour un usage sans Docker (un ordinateur unique, pas de compte technique) : une distribution
+autonome packagée avec PyInstaller existe (nom de produit "PartyBooth"), avec SQLite à la place de
+PostgreSQL et un seul exécutable/installeur par OS (Windows, macOS, Linux). Publiée automatiquement
+sur les releases GitHub par `.github/workflows/release.yml` ; sources de build sous `packaging/`.
+Fonctionnellement identique à la version Docker (même code Django), à la base de données près et à
+la persistance des credentials/clé secrète (dossier de données utilisateur de l'OS plutôt que des
+fichiers montés dans le conteneur).
+
 ### Configuration de l'intégration Google Drive (optionnelle)
 
 L'app peut copier chaque photo envoyée vers un dossier Google Drive dédié à l'évènement actif, et
@@ -66,27 +77,30 @@ un compte de service) : un compte de service Google n'a aucun quota de stockage 
 dehors d'un Drive Partagé, une fonctionnalité réservée aux comptes Google Workspace payants —
 inutilisable avec un Gmail personnel gratuit.
 
-**Depuis la page compte admin** (recommandé) — `/admin-account/drive/` guide dans l'ordre :
+**Depuis la page compte admin** (recommandé) — `/admin-account/` guide dans l'ordre, dans la section
+dépliable "Google Drive" :
 
 > ⚠️ Google refuse toute adresse de redirection OAuth en `http://` non-HTTPS, sauf si l'hôte est
 > exactement `localhost`/`127.0.0.1` (une IP locale comme `192.168.1.13` est rejetée même
 > enregistrée à l'identique — erreur `redirect_uri_mismatch`). L'étape "Connecter mon compte
 > Google" doit donc se faire depuis un navigateur **sur la machine qui héberge le serveur**
-> (`http://localhost:8000/admin-account/drive/`), pas depuis votre téléphone — la page l'indique
+> (`http://localhost:8000/admin-account/`), pas depuis votre téléphone — la page l'indique
 > automatiquement si ce n'est pas déjà le cas. Le reste de la page compte admin reste utilisable
 > depuis n'importe quel appareil du réseau.
 
 1. Créer un projet sur [console.cloud.google.com](https://console.cloud.google.com) et activer
-   l'**API Google Drive**.
+   l'**API Google Drive** (et l'**API Gmail** aussi si vous comptez aussi connecter l'email de
+   récupération, voir plus bas — un seul projet/identifiants OAuth sert aux deux).
 2. Configurer l'écran de consentement OAuth (type "External", vous ajouter comme "Test user").
 3. Créer des identifiants OAuth de type **Web application** (pas "Desktop app" — cette page utilise
    une vraie redirection web, pas un flux local) et coller l'adresse de redirection affichée par
    la page (toujours basée sur `localhost`, voir avertissement ci-dessus) dans "Authorized
    redirect URIs".
-4. Télécharger le fichier JSON généré et l'envoyer directement dans le formulaire de la page.
-5. Depuis `http://localhost:8000/admin-account/drive/`, cliquer "Connecter mon compte Google", puis
-   choisir ou créer le dossier Drive racine — tout
-   depuis le navigateur, aucun fichier à placer ni ID à copier-coller à la main.
+4. Télécharger le fichier JSON généré et l'envoyer directement dans le formulaire de la section
+   "Google Drive" de `/admin-account/`.
+5. Depuis cette même page, cliquer "Connecter mon compte Google" (ou "Connect my Google account"),
+   puis choisir ou créer le dossier Drive racine — tout depuis le navigateur, aucun fichier à
+   placer ni ID à copier-coller à la main.
 
 <details>
 <summary>Alternative en ligne de commande (pour qui préfère, ou pour un rattachement après coup)</summary>
@@ -109,6 +123,30 @@ Cette méthode reste disponible et fait exactement la même chose, fichiers en p
 4. Depuis le dashboard staff (`/dashboard/`), créer un évènement : son dossier Drive est
    automatiquement créé (ou retrouvé) sous le dossier racine.
 </details>
+
+### Email de récupération de mot de passe (optionnel)
+
+Un admin ou sous-admin qui oublie son mot de passe peut cliquer "Forgot password?" sur la page de
+connexion staff (`/staff-login/`) pour recevoir un lien de réinitialisation — à condition qu'un email
+de récupération soit connecté ; sinon ce lien est simplement grisé, sans jamais promettre un envoi
+qui n'aura pas lieu.
+
+Comme pour Drive, l'authentification se fait via **OAuth2** (Google a désactivé les connexions SMTP
+par mot de passe classique depuis 2022 ; seuls un mot de passe d'application ou OAuth2 fonctionnent
+encore, et ce projet a fait le choix d'OAuth2). Concrètement, cette fonctionnalité **réutilise les
+mêmes identifiants OAuth que Google Drive** (même fichier `client_secret.json`, même redirection) :
+depuis `/admin-account/`, la section dépliable "Recovery email" guide vers la même adresse de
+redirection que Drive, et le même bouton "Connecter mon compte Google" (dans l'une ou l'autre
+section) autorise les deux fonctionnalités en un seul passage par l'écran de consentement Google —
+inutile de repasser deux fois par Google Cloud Console. Prérequis côté Google Cloud Console, en plus
+de l'API Drive (voir ci-dessus) : activer l'**API Gmail**, et ajouter le scope
+`https://www.googleapis.com/auth/gmail.send` (envoi seul, aucun accès en lecture à la boîte mail) sur
+l'écran de consentement OAuth.
+
+Une fois connecté, le compte Google autorisé devient l'expéditeur des emails de réinitialisation — son
+adresse est lue en direct depuis Google (jamais tapée à la main), affichée sur `/admin-account/`, avec
+un bouton pour s'envoyer un email de test à sa propre adresse (celle du compte admin/staff connecté,
+modifiable sur `/account/`).
 
 ## Spécification fonctionnelle
 
@@ -235,6 +273,17 @@ La page est organisée en onglets (CSS pur, sans JavaScript) : **Events**, **Opt
 - **Invités** : tableau pseudo / email / statut de partage Drive / date d'arrivée, filtré sur l'évènement actif uniquement
 - **Photos** : grille des photos de l'évènement actif avec suppression en un clic (n'importe quelle photo, pas seulement les siennes — contrairement à "Mes photos") ; comme pour une suppression par son auteur, la photo est aussi retirée (mise à la corbeille) du dossier Drive si elle y avait été copiée
 
+#### 11. Compte / profil — `/account/`
+Accessible depuis un bouton flottant (icône silhouette) en haut à droite de chaque page où une
+identité de visiteur existe déjà — pages invité (upload, galerie, mes photos, whiteboard) et pages
+staff (dashboard, compte admin). Le contenu s'adapte à qui consulte la page :
+- **Invité** : pseudo et email (si renseigné à l'étape de partage Drive), lecture seule.
+- **Staff / Admin** : type de compte (badge Staff/Admin), nom d'utilisateur, email (modifiable —
+  c'est cette adresse qui reçoit les emails de test/récupération, voir la section email de
+  récupération plus haut), et un formulaire de changement de mot de passe (nécessite le mot de passe
+  actuel) ; changer son propre mot de passe ne déconnecte pas la session en cours. Un bouton de
+  déconnexion est aussi disponible ici.
+
 ### API interne (JSON)
 | Endpoint | Méthode | Description |
 |---|---|---|
@@ -268,7 +317,7 @@ Un unique canal WebSocket diffuse à tous les écrans TV connectés :
 - Une photo ne peut être supprimée que par son auteur, dans son évènement (vérifié par évènement + pseudo + identifiant de la photo)
 - Toute mutation (envoi, suppression, like, changement de réglage, changement d'évènement) est répercutée en temps réel sur l'écran TV via WebSocket, sans rechargement de page manuel
 - En mode développement (`DEBUG=True`, valeur par défaut du projet), les fichiers médias sont servis directement par Django
-- Un évènement ne peut pas être créé ou activé sans dossier Drive connecté ; l'upload d'une photo vers Drive est best-effort (une erreur ponctuelle est journalisée côté serveur sans jamais bloquer l'upload local ni l'affichage sur l'écran TV), mais le passage à un autre évènement est lui explicitement bloqué tant que toutes les photos de l'évènement sortant ne sont pas confirmées sur Drive — c'est le garde-fou contre la perte de données
+- Un évènement peut être créé et activé sans dossier Drive connecté (voir plus haut, section "Configuration de l'intégration Google Drive") ; l'upload d'une photo vers Drive est best-effort (une erreur ponctuelle est journalisée côté serveur sans jamais bloquer l'upload local ni l'affichage sur l'écran TV), mais le passage à un autre évènement **qui a un dossier Drive connecté** est lui explicitement bloqué tant que toutes ses photos ne sont pas confirmées sur Drive — c'est le garde-fou contre la perte de données ; un évènement sans Drive n'a pas ce garde-fou puisqu'il n'a rien à confirmer nulle part
 - Changer d'évènement supprime les photos locales de l'évènement sortant (déjà confirmées sur Drive au préalable) et retélécharge celles de l'évènement entrant depuis son propre dossier Drive : le stockage local ne reflète toujours que l'évènement actif, Drive reste la copie durable de tous les évènements
 - Le tableau collectif n'est jamais fusionné en une seule fois de façon définitive : chaque dessin reste un calque à part (`WhiteboardDrawing`), et l'image composite affichée est recalculée depuis zéro (tous les calques restants, du plus ancien au plus récent) à chaque suppression — c'est ce qui permet de retirer un seul dessin sans perdre les autres
 - Le délai de 30 secondes entre deux envois de dessin est appliqué par pseudo et par évènement, vérifié côté serveur (pas seulement dans l'interface)
@@ -276,12 +325,13 @@ Un unique canal WebSocket diffuse à tous les écrans TV connectés :
 ## Configuration (variables d'environnement)
 | Variable | Rôle | Valeur par défaut |
 |---|---|---|
-| `DJANGO_SECRET_KEY` | Clé secrète Django | clé de développement en dur dans le code |
+| `DJANGO_SECRET_KEY` | Clé secrète Django | clé de développement en dur dans le code (Docker/dev) ; en build packagé (PyInstaller, voir plus bas), une clé est générée puis persistée dans le dossier de données utilisateur au premier lancement |
 | `DJANGO_DB_NAME` | Nom de la base PostgreSQL | `coloc_photos` |
 | `DJANGO_DB_USER` | Utilisateur PostgreSQL | `coloc` |
 | `DJANGO_DB_PASSWORD` | Mot de passe PostgreSQL | `coloc` |
 | `DJANGO_DB_HOST` | Hôte PostgreSQL | `db` |
 | `DJANGO_DB_PORT` | Port PostgreSQL | `5432` |
-| `GOOGLE_OAUTH_CLIENT_SECRET_FILE` | Chemin vers le fichier de credentials OAuth téléchargé depuis Google Cloud Console (écrit automatiquement depuis `/admin-account/drive/`, ou placé à la main) | aucune |
-| `GOOGLE_OAUTH_TOKEN_FILE` | Chemin vers le token OAuth (contient le refresh token), écrit depuis `/admin-account/drive/` ou par `manage.py google_drive_auth` | aucune |
-| `GOOGLE_DRIVE_ROOT_FOLDER_ID` | ID du dossier Drive racine sous lequel chaque soirée crée son sous-dossier — prioritaire sur la valeur "Site settings" choisie depuis `/admin-account/drive/` | aucune (Drive désactivé si ni l'un ni l'autre n'est défini) |
+| `GOOGLE_OAUTH_CLIENT_SECRET_FILE` | Chemin vers le fichier de credentials OAuth téléchargé depuis Google Cloud Console (écrit automatiquement depuis `/admin-account/`, ou placé à la main) — partagé entre Drive et l'email de récupération | aucune |
+| `GOOGLE_OAUTH_TOKEN_FILE` | Chemin vers le token OAuth Drive (contient le refresh token), écrit depuis `/admin-account/` ou par `manage.py google_drive_auth` | aucune |
+| `GMAIL_SEND_TOKEN_FILE` | Chemin vers le token OAuth de l'email de récupération (même identifiants que Drive, scope `gmail.send` séparé), écrit depuis `/admin-account/` | aucune (email de récupération désactivé si absent — le lien "Forgot password?" reste grisé) |
+| `GOOGLE_DRIVE_ROOT_FOLDER_ID` | ID du dossier Drive racine sous lequel chaque soirée crée son sous-dossier — prioritaire sur la valeur "Site settings" choisie depuis `/admin-account/` | aucune (Drive désactivé si ni l'un ni l'autre n'est défini) |

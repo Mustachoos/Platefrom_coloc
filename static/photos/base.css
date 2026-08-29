@@ -119,9 +119,6 @@ h3 {
 .justify-between {
   justify-content: space-between;
 }
-.gap-3xs {
-  gap: var(--space-3xs);
-}
 .gap-2xs {
   gap: var(--space-2xs);
 }
@@ -131,14 +128,8 @@ h3 {
 .gap-sm {
   gap: var(--space-sm);
 }
-.gap-md {
-  gap: var(--space-md);
-}
 .text-muted {
   color: var(--ink-600);
-}
-.text-faint {
-  color: var(--ink-400);
 }
 .text-center {
   text-align: center;
@@ -154,9 +145,6 @@ h3 {
 }
 .grow {
   flex: 1;
-}
-.w-full {
-  width: 100%;
 }
 .sr-only {
   position: absolute;

@@ -1,6 +1,5 @@
 import io
 import logging
-import os
 import re
 
 import qrcode

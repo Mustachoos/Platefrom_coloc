@@ -257,9 +257,6 @@
 .input:focus-visible {
   border-color: var(--ink-900);
 }
-.input--mono {
-  font-family: var(--font-mono);
-}
 
 /* ---------- Toggle switch ---------- */
 .toggle {

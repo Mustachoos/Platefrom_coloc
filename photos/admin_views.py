@@ -154,16 +154,13 @@ class SupportEmailPasswordResetView(auth_views.PasswordResetView):
         return HttpResponseRedirect(self.get_success_url())
 
 
-def _client_secret_path():
-    return os.environ.get("GOOGLE_OAUTH_CLIENT_SECRET_FILE", "").strip()
-
-
-def _token_path():
-    return os.environ.get("GOOGLE_OAUTH_TOKEN_FILE", "").strip()
-
-
 def _is_localhost(request):
     return request.get_host().split(":", 1)[0] in ("localhost", "127.0.0.1")
+
+
+def _request_port(request):
+    host = request.get_host()
+    return host.split(":", 1)[1] if ":" in host else "8000"
 
 
 def _localhost_redirect_uri(request):
@@ -173,9 +170,7 @@ def _localhost_redirect_uri(request):
     localhost specifically, regardless of what host the current request
     actually came in on. That only resolves correctly if the browser
     completing this step is on the server machine itself; see _is_localhost."""
-    host = request.get_host()
-    port = host.split(":", 1)[1] if ":" in host else "8000"
-    return f"http://localhost:{port}{reverse('drive-google-callback')}"
+    return f"http://localhost:{_request_port(request)}{reverse('drive-google-callback')}"
 
 
 def _google_flow(request):
@@ -184,7 +179,7 @@ def _google_flow(request):
     # authorizes both at once — the admin never has to go through Google's
     # consent flow twice for what is, underneath, the same account.
     return Flow.from_client_secrets_file(
-        _client_secret_path(), scopes=drive_service.SCOPES + gmail_service.SCOPES,
+        drive_service.client_secret_file(), scopes=drive_service.SCOPES + gmail_service.SCOPES,
         redirect_uri=_localhost_redirect_uri(request),
     )
 
@@ -219,7 +214,7 @@ def drive_google_callback_view(request):
 
     # One shared credential, written to both services' token files — see
     # _google_flow's comment on why this single connect flow covers both.
-    token_path = _token_path()
+    token_path = drive_service.token_file()
     os.makedirs(os.path.dirname(token_path) or ".", exist_ok=True)
     with open(token_path, "w") as f:
         f.write(flow.credentials.to_json())
@@ -254,13 +249,12 @@ def admin_management_view(request):
             return redirect("admin-management")
         token = uuid.uuid4()
         cache.set(_verify_pending_key(token), ip_address, timeout=_VERIFY_TTL_SECONDS)
-        host = request.get_host()
-        port = host.split(":", 1)[1] if ":" in host else "8000"
+        port = _request_port(request)
         threading.Thread(target=_run_ip_check, args=(token, ip_address, port), daemon=True).start()
         return redirect(f"{reverse('admin-management')}?verify_token={token}&verify_ip={ip_address}")
 
-    client_secret_path = _client_secret_path()
-    token_path = _token_path()
+    client_secret_path = drive_service.client_secret_file()
+    token_path = drive_service.token_file()
     site_settings = SiteSettings.get_solo()
     drive_error = None
 
@@ -286,6 +280,7 @@ def admin_management_view(request):
             try:
                 email_service.send_test_email(request.user.email)
             except Exception as exc:
+                logger.exception("Failed to send test email to %s", request.user.email)
                 messages.error(request, f"Could not send test email: {exc}", extra_tags="support-email")
             else:
                 messages.success(request, f"Test email sent to {request.user.email}.", extra_tags="support-email")
@@ -355,7 +350,12 @@ def admin_management_view(request):
         try:
             Flow.from_client_secrets_file(client_secret_path, scopes=drive_service.SCOPES)
             client_secret_valid = True
-        except Exception:
+        except Exception as exc:
+            # This re-validates on every dashboard render while a bad file
+            # sits there, so this stays at debug (not exception/warning) to
+            # avoid spamming the log — still enough to diagnose "why won't
+            # step 1 go green" without an ERROR-level line on every page load.
+            logger.debug("Uploaded Google credentials file failed validation: %s", exc)
             client_secret_valid = False
 
     drive_folders = None
@@ -404,8 +404,7 @@ def admin_management_view(request):
         or (has_gmail_token and not gmail_token_valid)
     )
 
-    host = request.get_host()
-    port = host.split(":", 1)[1] if ":" in host else "8000"
+    port = _request_port(request)
 
     return render(request, "photos/admin_management.html", {
         "invites": AdminInvite.objects.all(),
