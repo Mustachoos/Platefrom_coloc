@@ -137,6 +137,18 @@ def _get_service():
         raise DriveError(f"Could not connect to Google Drive: {exc}") from exc
 
 
+def connected_email_address():
+    """The Google account currently authorized for Drive access, straight
+    from Google — never trust a locally-cached value, since it must reflect
+    a reconnect to a different account immediately."""
+    service = _get_service()
+    try:
+        about = service.about().get(fields="user").execute()
+    except HttpError as exc:
+        raise DriveError(f"Could not read the connected Google account: {exc}") from exc
+    return about.get("user", {}).get("emailAddress", "")
+
+
 def list_root_folders():
     """Folders directly under "My Drive" (not trashed) — used by the setup
     wizard's picker so the user can choose an existing root folder instead

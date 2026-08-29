@@ -375,9 +375,11 @@ def admin_management_view(request):
 
     drive_folders = None
     token_valid = False
+    drive_account_email = ""
     if has_token:
         try:
             drive_folders = drive_service.list_root_folders()
+            drive_account_email = drive_service.connected_email_address()
             token_valid = True
         except drive_service.DriveError:
             token_valid = False
@@ -422,6 +424,7 @@ def admin_management_view(request):
         "client_secret_valid": client_secret_valid,
         "has_token": has_token,
         "token_valid": token_valid,
+        "drive_account_email": drive_account_email,
         "drive_folders": drive_folders,
         "current_folder_id": current_folder_id,
         "folder_valid": folder_valid,

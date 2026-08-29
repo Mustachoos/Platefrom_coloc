@@ -396,6 +396,7 @@
         {% else %}
           {% if token_valid %}
           <p class="step-ok">✓ Connected — Google Drive is reachable with this account.</p>
+          <p class="text-sm text-muted" style="margin-top:calc(-1 * var(--space-sm));margin-bottom:var(--space-sm);">Linked Google account: {{ drive_account_email }}</p>
           {% elif has_token %}
           <p class="step-warn">⚠ The stored connection no longer works — reconnect below.</p>
           {% endif %}
