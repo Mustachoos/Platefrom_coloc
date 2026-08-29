@@ -39,15 +39,23 @@ jobs:
       - name: Build with PyInstaller
         run: pyinstaller packaging/launcher.spec
 
+      - name: Compute version
+        id: version
+        shell: bash
+        run: echo "version=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
+
       # --- Windows -------------------------------------------------------
       - name: Install Inno Setup
         if: runner.os == 'Windows'
         run: choco install innosetup --no-progress -y
 
+      # Deliberately NOT shell: bash here — Git Bash on Windows auto-converts
+      # leading-"/" arguments (like /D...) into bogus paths before iscc.exe
+      # ever sees them ("You may not specify more than one script filename").
+      # PowerShell (the default shell here) passes it through untouched.
       - name: Build Windows installer
         if: runner.os == 'Windows'
-        shell: bash
-        run: iscc "/DMyAppVersion=${GITHUB_REF_NAME#v}" packaging/windows/installer.iss
+        run: iscc "/DMyAppVersion=${{ steps.version.outputs.version }}" packaging\windows\installer.iss
 
       - name: Upload Windows installer
         if: runner.os == 'Windows'
