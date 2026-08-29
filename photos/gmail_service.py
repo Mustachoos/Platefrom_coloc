@@ -8,6 +8,13 @@ Drive's scope in one combined consent flow (see admin_views._google_flow)
 so connecting either box's "Connect your Google account" step authorizes
 both at once — there is no separate connect flow in this module, only the
 token file this one is written to and the API calls that use it.
+
+gmail.send is enough to actually send mail, but NOT enough to call Gmail's
+own users.getProfile (Google returns 403 "insufficient authentication
+scopes" — sending and reading profile/mailbox info are gated separately).
+So "which account is this" is answered via the standard OAuth2 userinfo
+endpoint instead (userinfo.email scope), not the Gmail API itself — a
+narrower, non-sensitive scope that doesn't touch the mailbox at all.
 """
 
 import base64
@@ -24,7 +31,10 @@ from googleapiclient.errors import HttpError
 
 logger = logging.getLogger(__name__)
 
-SCOPES = ["https://www.googleapis.com/auth/gmail.send"]
+SCOPES = [
+    "https://www.googleapis.com/auth/gmail.send",
+    "https://www.googleapis.com/auth/userinfo.email",
+]
 
 
 class GmailError(Exception):
@@ -80,15 +90,22 @@ def _get_service():
 
 
 def connected_email_address():
-    """The Gmail address currently authorized to send, straight from Google
-    (never trust a locally-cached value — if the account changed on Google's
-    side this must reflect that immediately)."""
-    service = _get_service()
+    """The Google account currently authorized, straight from Google (never
+    trust a locally-cached value — if the account changed on Google's side
+    this must reflect that immediately). Deliberately uses the OAuth2
+    userinfo endpoint, not Gmail's own users.getProfile — the gmail.send
+    scope alone isn't accepted by getProfile (see module docstring)."""
+    creds = _get_credentials()
     try:
-        profile = service.users().getProfile(userId="me").execute()
-    except HttpError as exc:
-        raise GmailError(f"Could not read the connected Gmail account: {exc}") from exc
-    return profile.get("emailAddress", "")
+        info_service = build("oauth2", "v2", credentials=creds, cache_discovery=False)
+        info = info_service.userinfo().get().execute()
+    except (HttpError, RefreshError) as exc:
+        # RefreshError here (distinct from the one _get_credentials already
+        # handles) comes from the API layer's own silent refresh-on-demand —
+        # e.g. a token whose granted scopes no longer match what's requested
+        # after a scope change, which a plain refresh_token grant can't fix.
+        raise GmailError(f"Could not read the connected Google account: {exc}. Reconnect below.") from exc
+    return info.get("email", "")
 
 
 def _send_raw(to_address, subject, body):
@@ -99,7 +116,7 @@ def _send_raw(to_address, subject, body):
     raw = base64.urlsafe_b64encode(mime.as_bytes()).decode("ascii")
     try:
         service.users().messages().send(userId="me", body={"raw": raw}).execute()
-    except HttpError as exc:
+    except (HttpError, RefreshError) as exc:
         raise GmailError(f"Gmail refused to send to {to_address}: {exc}") from exc
 
 
