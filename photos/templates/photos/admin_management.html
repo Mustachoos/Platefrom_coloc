@@ -328,19 +328,23 @@
         <h2>1. Upload Google credentials</h2>
         {% if client_secret_valid %}
         <p class="step-ok">✓ Credentials file looks good.</p>
-        {% elif has_client_secret %}
-        <p class="step-warn">⚠ This file isn't a valid Google OAuth credentials file — upload the right one.</p>
+        <p class="text-sm text-muted">Already did this from the Drive box or the recovery-email box? You don't need a second Google Cloud project — just make sure both the <a class="link" href="https://console.cloud.google.com/apis/library/drive.googleapis.com" target="_blank" rel="noopener">Google Drive API</a> and the <a class="link" href="https://console.cloud.google.com/apis/library/gmail.googleapis.com" target="_blank" rel="noopener">Gmail API</a> are enabled on that same project, and that both scopes are added on its <a class="link" href="https://console.cloud.google.com/apis/credentials/consent" target="_blank" rel="noopener">OAuth consent screen</a>. Uploading a file below replaces the one currently stored — no separate slot for each.</p>
+        {% else %}
+          {% if has_client_secret %}
+          <p class="step-warn">⚠ This file isn't a valid Google OAuth credentials file — upload the right one.</p>
+          {% endif %}
+          <p class="text-sm text-muted">This one set of credentials covers both Drive backups and the recovery email below — already have a Google Cloud project from setting up one of them before? Skip to whichever step you're missing (enabling the other API, or adding its scope) instead of starting a new project.</p>
+          <ol class="checklist">
+            <li><a class="link" href="https://console.cloud.google.com/projectcreate" target="_blank" rel="noopener">Create a project</a> on Google Cloud Console.</li>
+            <li><a class="link" href="https://console.cloud.google.com/apis/library/drive.googleapis.com" target="_blank" rel="noopener">Enable the Google Drive API</a> and the <a class="link" href="https://console.cloud.google.com/apis/library/gmail.googleapis.com" target="_blank" rel="noopener">Gmail API</a> for that project.</li>
+            <li><a class="link" href="https://console.cloud.google.com/apis/credentials/consent" target="_blank" rel="noopener">Configure the OAuth consent screen</a> — type "External", and add both the Drive and <span class="mono text-sm">gmail.send</span> scopes.</li>
+            <li><a class="link" href="https://console.cloud.google.com/auth/audience" target="_blank" rel="noopener">Add yourself as a test user</a> — add your address, it's the same one used in step 2.</li>
+            <li><a class="link" href="https://console.cloud.google.com/apis/credentials" target="_blank" rel="noopener">Create OAuth credentials</a> → type <strong>Web application</strong> (not Desktop app) → add this exact address as an authorized redirect URI:
+              <div class="redirect-uri">{{ drive_redirect_uri }}</div>
+            </li>
+            <li>Download the generated JSON file and upload it below.</li>
+          </ol>
         {% endif %}
-        <ol class="checklist">
-          <li><a class="link" href="https://console.cloud.google.com/projectcreate" target="_blank" rel="noopener">Create a project</a> on Google Cloud Console.</li>
-          <li><a class="link" href="https://console.cloud.google.com/apis/library/drive.googleapis.com" target="_blank" rel="noopener">Enable the Google Drive API</a> for that project.</li>
-          <li><a class="link" href="https://console.cloud.google.com/apis/credentials/consent" target="_blank" rel="noopener">Configure the OAuth consent screen</a> — type "External".</li>
-          <li><a class="link" href="https://console.cloud.google.com/auth/audience" target="_blank" rel="noopener">Add yourself as a test user</a> — add your address, it's the same one used in step 2.</li>
-          <li><a class="link" href="https://console.cloud.google.com/apis/credentials" target="_blank" rel="noopener">Create OAuth credentials</a> → type <strong>Web application</strong> (not Desktop app) → add this exact address as an authorized redirect URI:
-            <div class="redirect-uri">{{ drive_redirect_uri }}</div>
-          </li>
-          <li>Download the generated JSON file and upload it below.</li>
-        </ol>
         <div class="field" style="margin-top:var(--space-sm);">
           <label for="{{ client_secret_form.client_secret_file.id_for_label }}">Credentials file (JSON)</label>
           {{ client_secret_form.client_secret_file }}
