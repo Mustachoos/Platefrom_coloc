@@ -282,7 +282,7 @@ def admin_management_view(request):
         if new_email and email_changed:
             if not request.user.email:
                 messages.error(
-                    request, "Set your own email above first — that's where the verification link goes.",
+                    request, "Set your own email on your profile page first — that's where the verification link goes.",
                     extra_tags="support-email",
                 )
             else:

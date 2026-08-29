@@ -72,7 +72,13 @@ def account_view(request):
 
     password_form = None
     if request.user.is_authenticated:
-        if request.method == "POST":
+        if request.method == "POST" and "update_email" in request.POST:
+            request.user.email = request.POST.get("email", "").strip()
+            request.user.save(update_fields=["email"])
+            messages.success(request, "Email updated.")
+            return redirect("account")
+
+        if request.method == "POST" and "change_password" in request.POST:
             password_form = StyledPasswordChangeForm(request.user, request.POST)
             if password_form.is_valid():
                 user = password_form.save()
