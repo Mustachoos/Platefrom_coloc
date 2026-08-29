@@ -25,6 +25,11 @@ sys.path.insert(0, REPO_ROOT)
 
 datas = [
     (os.path.join(REPO_ROOT, "staticfiles"), "staticfiles"),
+    # The raw static/ source tree, separate from the collectstatic OUTPUT
+    # above: django.contrib.staticfiles.finders.find() (used directly by
+    # photos/templatetags/icons.py to inline SVGs) searches STATICFILES_DIRS
+    # — the source directories — not STATIC_ROOT, so both have to ship.
+    (os.path.join(REPO_ROOT, "static"), "static"),
     (os.path.join(REPO_ROOT, "photos", "templates"), "photos/templates"),
     (os.path.join(DJANGO_DIR, "contrib", "admin", "templates"), "django/contrib/admin/templates"),
     (os.path.join(DJANGO_DIR, "contrib", "admin", "static"), "django/contrib/admin/static"),

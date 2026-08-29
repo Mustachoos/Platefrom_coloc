@@ -46,7 +46,8 @@ jobs:
 
       - name: Build Windows installer
         if: runner.os == 'Windows'
-        run: iscc packaging\windows\installer.iss
+        shell: bash
+        run: iscc "/DMyAppVersion=${GITHUB_REF_NAME#v}" packaging/windows/installer.iss
 
       - name: Upload Windows installer
         if: runner.os == 'Windows'

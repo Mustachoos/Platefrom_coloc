@@ -4,7 +4,12 @@
 ; i.e. run this after `pyinstaller packaging\launcher.spec` from the repo root.
 ;
 #define MyAppName "PartyBooth"
-#define MyAppVersion "0.1.0"
+; Overridable from the command line via `iscc /DMyAppVersion=x.y.z ...`
+; (the release workflow passes the actual git tag) — this fallback is
+; only used for a manual local build.
+#ifndef MyAppVersion
+  #define MyAppVersion "0.0.0-dev"
+#endif
 #define MyAppExeName "launcher.exe"
 
 [Setup]
