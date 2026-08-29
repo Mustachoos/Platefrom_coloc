@@ -51,6 +51,13 @@ logger = logging.getLogger(__name__)
 # only ever applies to the localhost-only redirect this flow is locked to.
 os.environ.setdefault("OAUTHLIB_INSECURE_TRANSPORT", "1")
 
+# Google silently adds "openid" to the granted scope whenever an identity
+# scope like userinfo.email is requested, even though it wasn't explicitly
+# asked for. oauthlib treats any such scope mismatch as a hard error by
+# default (raises Warning as an actual exception, not just warns) — this
+# relaxes that check to match Google's real, well-documented behavior here.
+os.environ.setdefault("OAUTHLIB_RELAX_TOKEN_SCOPE", "1")
+
 superuser_required = user_passes_test(lambda u: u.is_authenticated and u.is_superuser, login_url="dashboard")
 
 _VERIFY_TTL_SECONDS = 600
