@@ -5,3 +5,11 @@ data/
 *.sqlite3
 credentials/
 .env
+
+# PyInstaller / packaging build output (packaging/*.spec source files are
+# still tracked — only the generated artifacts are ignored)
+/build/
+/dist/
+/dist-installers/
+/staticfiles/
+/AppDir/

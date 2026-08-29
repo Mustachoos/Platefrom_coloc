@@ -1,0 +1,100 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            artifact: windows-installer
+          - os: macos-latest
+            artifact: macos-dmg
+          - os: ubuntu-latest
+            artifact: linux-appimage
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install build dependencies
+        run: pip install -r packaging/requirements-frozen.txt
+
+      - name: Collect static files
+        run: python manage.py collectstatic --noinput
+        env:
+          DJANGO_DB_ENGINE: sqlite
+
+      - name: Build with PyInstaller
+        run: pyinstaller packaging/launcher.spec
+
+      # --- Windows -------------------------------------------------------
+      - name: Install Inno Setup
+        if: runner.os == 'Windows'
+        run: choco install innosetup --no-progress -y
+
+      - name: Build Windows installer
+        if: runner.os == 'Windows'
+        run: iscc packaging\windows\installer.iss
+
+      - name: Upload Windows installer
+        if: runner.os == 'Windows'
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact }}
+          path: dist-installers/*.exe
+
+      # --- macOS -----------------------------------------------------------
+      - name: Build macOS dmg
+        if: runner.os == 'macOS'
+        run: |
+          mkdir -p dist-installers
+          hdiutil create -volname PartyBooth -srcfolder dist/PartyBooth.app -ov -format UDZO dist-installers/PartyBooth-${{ github.ref_name }}.dmg
+
+      - name: Upload macOS dmg
+        if: runner.os == 'macOS'
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact }}
+          path: dist-installers/*.dmg
+
+      # --- Linux -----------------------------------------------------------
+      - name: Build Linux AppImage
+        if: runner.os == 'Linux'
+        run: |
+          mkdir -p dist-installers AppDir/usr/bin
+          cp -r dist/launcher AppDir/usr/bin/launcher
+          cp packaging/linux/AppRun AppDir/AppRun
+          chmod +x AppDir/AppRun
+          cp packaging/linux/partybooth.desktop AppDir/partybooth.desktop
+          cp packaging/linux/app-icon.png AppDir/app-icon.png
+          wget -q -O appimagetool https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage
+          chmod +x appimagetool
+          ./appimagetool --appimage-extract-and-run AppDir dist-installers/PartyBooth-${{ github.ref_name }}-x86_64.AppImage
+
+      - name: Upload Linux AppImage
+        if: runner.os == 'Linux'
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact }}
+          path: dist-installers/*.AppImage
+
+  publish:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: artifacts/**/*

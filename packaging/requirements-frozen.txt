@@ -1,0 +1,17 @@
+# Used only to build the PyInstaller bundle (CI + local packaging builds).
+# Deliberately excludes psycopg2-binary: the packaged app only ever runs
+# against SQLite (see config/settings.py's IS_FROZEN branch), and Django
+# resolves DB backends via a dynamic import from a string, so leaving
+# psycopg2 out of this environment keeps it out of the frozen build with
+# no explicit exclusion needed in launcher.spec.
+Django>=5.0,<6.0
+Pillow
+channels
+daphne
+qrcode
+google-api-python-client
+google-auth-httplib2
+google-auth-oauthlib
+platformdirs
+whitenoise
+pyinstaller

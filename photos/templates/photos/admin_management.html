@@ -44,7 +44,7 @@
     .row-actions{display:flex;gap:var(--space-2xs);align-items:center;justify-content:flex-end}
     .links-list{display:flex;flex-direction:column;gap:var(--space-xs)}
 
-    dialog{border:none;border-radius:var(--radius-lg);padding:0;width:min(90vw,420px);box-shadow:var(--shadow-lg)}
+    dialog{border:none;border-radius:var(--radius-lg);padding:0;width:min(90vw,420px);box-shadow:var(--shadow-lg);margin:auto}
     dialog.wide{width:min(90vw,560px)}
     dialog::backdrop{background:rgba(27,26,36,0.45)}
     dialog form{padding:var(--space-md) var(--space-lg)}
@@ -306,6 +306,10 @@
         <div class="field" style="margin-top:var(--space-sm);">
           <label for="{{ client_secret_form.client_secret_file.id_for_label }}">Credentials file (JSON)</label>
           {{ client_secret_form.client_secret_file }}
+          <div class="flex gap-sm items-center flex-wrap">
+            <button type="button" id="choose-credentials-btn" class="btn btn--light btn--sm">Choose file</button>
+            <span id="credentials-filename" class="text-sm text-muted">No file chosen</span>
+          </div>
         </div>
         <div class="flex gap-sm items-center" style="margin-top:var(--space-md);">
           <button type="button" class="btn btn--outline btn--sm" onclick="document.getElementById('drive-step1-modal').close()">Close</button>
@@ -313,6 +317,18 @@
         </div>
       </form>
     </dialog>
+    <script>
+      (function () {
+        var input = document.getElementById('{{ client_secret_form.client_secret_file.id_for_label }}');
+        var chooseBtn = document.getElementById('choose-credentials-btn');
+        var filename = document.getElementById('credentials-filename');
+        if (!input || !chooseBtn) return;
+        chooseBtn.addEventListener('click', function () { input.click(); });
+        input.addEventListener('change', function () {
+          filename.textContent = input.files && input.files.length > 0 ? input.files[0].name : 'No file chosen';
+        });
+      })();
+    </script>
 
     <dialog id="drive-step2-modal">
       <form method="dialog">

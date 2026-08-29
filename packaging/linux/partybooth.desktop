@@ -1,0 +1,7 @@
+[Desktop Entry]
+Name=PartyBooth
+Exec=launcher
+Icon=app-icon
+Type=Application
+Categories=Network;
+Terminal=true

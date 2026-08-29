@@ -1,0 +1,5 @@
+#!/bin/sh
+# Standard AppImage entry point. appimagetool stages this at the AppDir
+# root alongside the PyInstaller onedir output copied in as usr/bin/launcher/.
+HERE="$(dirname "$(readlink -f "${0}")")"
+exec "${HERE}/usr/bin/launcher/launcher" "$@"

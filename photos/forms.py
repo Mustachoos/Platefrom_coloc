@@ -36,4 +36,7 @@ class AdminAccountForm(forms.Form):
 
 
 class DriveClientSecretForm(forms.Form):
-    client_secret_file = forms.FileField(label="Google OAuth credentials (JSON)")
+    client_secret_file = forms.FileField(
+        label="Google OAuth credentials (JSON)",
+        widget=forms.ClearableFileInput(attrs={"style": "display:none"}),
+    )
