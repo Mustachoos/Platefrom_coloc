@@ -9,6 +9,7 @@ from channels.layers import get_channel_layer
 from django.contrib import messages
 from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth import login as auth_login
+from django.contrib.auth import update_session_auth_hash
 from django.db import IntegrityError
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
@@ -16,7 +17,7 @@ from django.urls import reverse
 from django.utils import timezone
 
 from . import drive_service, event_service, whiteboard_service
-from .forms import PseudoForm, ShareDriveForm, StaffLoginForm
+from .forms import PseudoForm, ShareDriveForm, StaffLoginForm, StyledPasswordChangeForm
 from .models import Event, Like, Photo, SiteSettings, SlideshowSettings, UserIdentity, WhiteboardDrawing
 
 logger = logging.getLogger(__name__)
@@ -62,6 +63,28 @@ def _get_user_identity(request):
     if not active_event:
         return None
     return UserIdentity.objects.filter(session_key=session_key, event=active_event).first()
+
+
+def account_view(request):
+    identity = _get_user_identity(request)
+    if not request.user.is_authenticated and not identity:
+        return redirect("choose-pseudo")
+
+    password_form = None
+    if request.user.is_authenticated:
+        if request.method == "POST":
+            password_form = StyledPasswordChangeForm(request.user, request.POST)
+            if password_form.is_valid():
+                user = password_form.save()
+                # Changing your own password rotates the session auth hash —
+                # without this you'd be logged out by your own request.
+                update_session_auth_hash(request, user)
+                messages.success(request, "Password changed.")
+                return redirect("account")
+        else:
+            password_form = StyledPasswordChangeForm(request.user)
+
+    return render(request, "photos/account.html", {"identity": identity, "password_form": password_form})
 
 
 def choose_pseudo(request):

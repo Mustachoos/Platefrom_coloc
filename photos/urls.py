@@ -8,6 +8,7 @@ urlpatterns = [
     path("", RedirectView.as_view(pattern_name="upload", permanent=False)),
     path("staff-login/", views.staff_login_view, name="staff-login"),
     path("logout/", LogoutView.as_view(next_page=reverse_lazy("staff-login")), name="staff-logout"),
+    path("account/", views.account_view, name="account"),
     path("create-admin/", admin_views.create_admin_view, name="create-admin"),
     path("admin-account/", admin_views.admin_management_view, name="admin-management"),
     path("admin-account/drive/google/connect/", admin_views.drive_google_connect_view, name="drive-google-connect"),

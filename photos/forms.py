@@ -1,10 +1,16 @@
 from django import forms
-from django.contrib.auth.forms import AuthenticationForm
+from django.contrib.auth.forms import AuthenticationForm, PasswordChangeForm
 
 
 class StaffLoginForm(AuthenticationForm):
     username = forms.CharField(widget=forms.TextInput(attrs={"class": "input", "autofocus": True}))
     password = forms.CharField(widget=forms.PasswordInput(attrs={"class": "input"}))
+
+
+class StyledPasswordChangeForm(PasswordChangeForm):
+    old_password = forms.CharField(widget=forms.PasswordInput(attrs={"class": "input", "autofocus": True}))
+    new_password1 = forms.CharField(widget=forms.PasswordInput(attrs={"class": "input"}))
+    new_password2 = forms.CharField(widget=forms.PasswordInput(attrs={"class": "input"}))
 
 
 class PseudoForm(forms.Form):

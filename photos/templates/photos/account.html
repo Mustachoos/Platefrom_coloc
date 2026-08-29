@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Your account</title>
+  {% load static %}
+  {% load icons %}
+  <link rel="stylesheet" href="{% static 'photos/tokens.css' %}">
+  <link rel="stylesheet" href="{% static 'photos/base.css' %}">
+  <link rel="stylesheet" href="{% static 'photos/components.css' %}">
+</head>
+<body>
+  <div class="page shell" style="min-height:100vh;display:flex;align-items:center;justify-content:center;">
+    <main class="card" style="width:100%;max-width:420px;">
+      {% if messages %}
+      <div class="flex-col gap-2xs" style="display:flex;margin-bottom:var(--space-md);">
+        {% for message in messages %}
+        <div class="alert alert--boxed{% if "success" in message.tags %} alert--success{% endif %}">{{ message }}</div>
+        {% endfor %}
+      </div>
+      {% endif %}
+
+      {% if request.user.is_authenticated %}
+      <div class="flex items-center gap-2xs">
+        <a href="#" class="link link--icon" onclick="history.back();return false;" aria-label="Go back">{% icon 'arrow-left' size=36 %}</a>
+        <h1 style="margin:0;">Your account</h1>
+      </div>
+      <p class="text-muted text-sm" style="margin-top:var(--space-2xs);margin-bottom:var(--space-md);">
+        Account type: <strong>{% if request.user.is_superuser %}Admin{% else %}Staff{% endif %}</strong>
+      </p>
+      <p class="text-sm" style="margin-bottom:var(--space-2xs);"><span class="text-muted">Username</span> — {{ request.user.username }}</p>
+      <p class="text-sm" style="margin-bottom:var(--space-md);">
+        <span class="text-muted">Email</span> —
+        {% if request.user.email %}{{ request.user.email }}{% else %}<span class="text-muted" style="font-style:italic;">not set — add one on <a class="link" href="{% url 'admin-management' %}">the admin account page</a></span>{% endif %}
+      </p>
+
+      <div style="padding-top:var(--space-md);border-top:1px dashed var(--line);">
+        <p class="card__title" style="margin-bottom:var(--space-2xs);">Change password</p>
+        <form method="post">
+          {% csrf_token %}
+          <div class="field">
+            <label for="{{ password_form.old_password.id_for_label }}">Current password</label>
+            {{ password_form.old_password }}
+            {% if password_form.old_password.errors %}
+            <p class="text-sm" style="color:var(--danger);">{{ password_form.old_password.errors }}</p>
+            {% endif %}
+          </div>
+          <div class="field" style="margin-top:var(--space-sm);">
+            <label for="{{ password_form.new_password1.id_for_label }}">New password</label>
+            {{ password_form.new_password1 }}
+            {% if password_form.new_password1.errors %}
+            <p class="text-sm" style="color:var(--danger);">{{ password_form.new_password1.errors }}</p>
+            {% endif %}
+          </div>
+          <div class="field" style="margin-top:var(--space-sm);">
+            <label for="{{ password_form.new_password2.id_for_label }}">Confirm new password</label>
+            {{ password_form.new_password2 }}
+            {% if password_form.new_password2.errors %}
+            <p class="text-sm" style="color:var(--danger);">{{ password_form.new_password2.errors }}</p>
+            {% endif %}
+          </div>
+          <div class="flex flex-wrap gap-sm items-center" style="margin-top:var(--space-md);">
+            <button type="submit" class="btn btn--dark">Change password</button>
+          </div>
+        </form>
+      </div>
+
+      <div style="padding-top:var(--space-md);border-top:1px dashed var(--line);">
+        <form method="post" action="{% url 'staff-logout' %}">
+          {% csrf_token %}
+          <button type="submit" class="btn btn--light btn--sm">Log out</button>
+        </form>
+      </div>
+      {% else %}
+      <div class="flex items-center gap-2xs">
+        <a href="#" class="link link--icon" onclick="history.back();return false;" aria-label="Go back">{% icon 'arrow-left' size=36 %}</a>
+        <h1 style="margin:0;">Your account</h1>
+      </div>
+      <p class="text-muted text-sm" style="margin-top:var(--space-2xs);margin-bottom:var(--space-md);">Account type: <strong>Guest</strong></p>
+      <p class="text-sm" style="margin-bottom:var(--space-2xs);"><span class="text-muted">Name</span> — {{ identity.pseudo }}</p>
+      <p class="text-sm">
+        <span class="text-muted">Email</span> —
+        {% if identity.email %}{{ identity.email }}{% else %}<span class="text-muted" style="font-style:italic;">no email on file</span>{% endif %}
+      </p>
+      {% endif %}
+    </main>
+  </div>
+</body>
+</html>
