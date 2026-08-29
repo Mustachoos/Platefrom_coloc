@@ -4,8 +4,9 @@
 # (this spec bundles the collectstatic OUTPUT, not the raw static/ source
 # tree — see the `staticfiles` entry below).
 #
-# Icons under packaging/{windows,macos,linux}/app-icon.* are placeholders
-# (generated, not designed) — swap the files, nothing else needs to change.
+# Icons under packaging/{windows,macos,linux}/app-icon.* are generated from
+# Icon/redPlaneIcon.png (upscaled from its native 64x64) — swap the source
+# and regenerate, or replace the files directly, nothing else needs to change.
 
 import os
 import sys
@@ -87,7 +88,11 @@ exe = EXE(
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
-    upx=True,
+    # UPX-compressing compiled C extensions (Pillow's _imaging.pyd in
+    # particular) is a well-documented cause of "cannot import name
+    # '_imaging' from PIL" — the file survives but its exported symbols
+    # break. Not worth the size savings for a one-time download.
+    upx=False,
     console=True,
     disable_windowed_traceback=False,
     argv_emulation=False,
@@ -100,7 +105,7 @@ coll = COLLECT(
     a.zipfiles,
     a.datas,
     strip=False,
-    upx=True,
+    upx=False,
     upx_exclude=[],
     name="launcher",
 )
