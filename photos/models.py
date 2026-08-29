@@ -197,17 +197,9 @@ class SiteSettings(models.Model):
     )
     support_email = models.EmailField(
         blank=True,
-        help_text="Gmail address used to send admin password-reset emails.",
-    )
-    support_email_app_password = models.CharField(
-        max_length=255,
-        blank=True,
-        help_text="Gmail app password (not the account password) for support_email.",
-    )
-    support_email_verified = models.BooleanField(
-        default=False,
-        help_text="Set once the verification link sent to the admin's own email has been clicked. "
-        "Reset to False whenever support_email is changed.",
+        help_text="Gmail address used to send admin password-reset emails. Auto-filled from "
+        "whichever Google account is connected via OAuth2 (see gmail_service.py) — never "
+        "typed in directly, since Google no longer accepts plain-password Gmail logins.",
     )
 
     class Meta:

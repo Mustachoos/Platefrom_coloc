@@ -30,6 +30,7 @@ def main():
     creds_dir.mkdir(parents=True, exist_ok=True)
     os.environ.setdefault("GOOGLE_OAUTH_CLIENT_SECRET_FILE", str(creds_dir / "client_secret.json"))
     os.environ.setdefault("GOOGLE_OAUTH_TOKEN_FILE", str(creds_dir / "token.json"))
+    os.environ.setdefault("GMAIL_SEND_TOKEN_FILE", str(creds_dir / "gmail_send_token.json"))
 
     from django.core.management import call_command
 

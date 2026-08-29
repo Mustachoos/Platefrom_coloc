@@ -30,6 +30,7 @@ services:
       DJANGO_DB_PORT: "5432"
       GOOGLE_OAUTH_CLIENT_SECRET_FILE: "/app/credentials/client_secret.json"
       GOOGLE_OAUTH_TOKEN_FILE: "/app/credentials/token.json"
+      GMAIL_SEND_TOKEN_FILE: "/app/credentials/gmail_send_token.json"
       GOOGLE_DRIVE_ROOT_FOLDER_ID: "${GOOGLE_DRIVE_ROOT_FOLDER_ID:-}"
     depends_on:
       db:

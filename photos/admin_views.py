@@ -1,5 +1,6 @@
 """Admin account management: first-run admin creation, the post-setup hub,
-subadmin invites, Google Drive connection, and network address verification.
+subadmin invites, Google Drive connection, Gmail-send connection (for
+password-reset emails), and network address verification.
 
 Access rule: creating the admin account is open to anyone while no
 superuser exists yet (that's the "fresh install" state); once one exists,
@@ -32,15 +33,13 @@ from django.contrib.auth import views as auth_views
 from django.contrib.auth.decorators import user_passes_test
 from django.contrib.auth.models import User
 from django.core.cache import cache
-from django.core.exceptions import ValidationError
-from django.core.validators import validate_email
 from django.http import HttpResponseRedirect, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse, reverse_lazy
 from django.utils import timezone
 from google_auth_oauthlib.flow import Flow
 
-from . import drive_service, email_service
+from . import drive_service, email_service, gmail_service
 from .forms import AdminAccountForm, DriveClientSecretForm, StyledPasswordResetForm
 from .models import AdminInvite, SiteSettings
 
@@ -56,25 +55,6 @@ superuser_required = user_passes_test(lambda u: u.is_authenticated and u.is_supe
 
 _VERIFY_TTL_SECONDS = 600
 _VERIFY_CHECK_TIMEOUT_SECONDS = 5
-_SUPPORT_EMAIL_VERIFY_TTL_SECONDS = 1800
-
-
-def _support_email_verify_pending_key(token):
-    return f"verify-support-email-pending:{token}"
-
-
-def _send_support_email_verification(request):
-    """Sends a fresh verification link for the currently-saved support_email
-    to the admin's own account email — click-through proof it's usable,
-    same honesty principle as the network-address round trip below."""
-    site_settings = SiteSettings.get_solo()
-    token = uuid.uuid4()
-    cache.set(
-        _support_email_verify_pending_key(token), site_settings.support_email,
-        timeout=_SUPPORT_EMAIL_VERIFY_TTL_SECONDS,
-    )
-    verify_url = request.build_absolute_uri(reverse("verify-support-email", args=[token]))
-    email_service.send_verification_email(request.user.email, verify_url)
 
 
 def _verify_pending_key(token):
@@ -136,10 +116,10 @@ def create_admin_view(request):
 
 
 class SupportEmailPasswordResetView(auth_views.PasswordResetView):
-    """Same as Django's PasswordResetView, except the SMTP credentials come
-    from SiteSettings (set via the admin UI) instead of the global
-    EMAIL_HOST_* settings — this app also ships as a standalone .exe where
-    end users can't set environment variables."""
+    """Same as Django's PasswordResetView, except it sends through the Gmail
+    account connected via OAuth2 in the admin UI (see gmail_service.py)
+    instead of the global EMAIL_HOST_* settings — this app also ships as a
+    standalone .exe where end users can't set environment variables."""
 
     template_name = "photos/password_reset_form.html"
     email_template_name = "photos/password_reset_email.txt"
@@ -234,6 +214,52 @@ def drive_google_callback_view(request):
     return redirect("admin-management")
 
 
+def _gmail_localhost_redirect_uri(request):
+    # Same localhost-only requirement as Drive's callback — see
+    # _localhost_redirect_uri above.
+    host = request.get_host()
+    port = host.split(":", 1)[1] if ":" in host else "8000"
+    return f"http://localhost:{port}{reverse('gmail-google-callback')}"
+
+
+def _gmail_flow(request):
+    return gmail_service.build_oauth_flow(_gmail_localhost_redirect_uri(request))
+
+
+@superuser_required
+def gmail_google_connect_view(request):
+    if not _is_localhost(request):
+        return redirect("admin-management")
+    try:
+        flow = _gmail_flow(request)
+    except gmail_service.GmailError:
+        return redirect("admin-management")
+    auth_url, state = flow.authorization_url(
+        access_type="offline", include_granted_scopes="true", prompt="consent"
+    )
+    request.session["gmail_oauth_state"] = state
+    request.session["gmail_oauth_code_verifier"] = flow.code_verifier
+    return redirect(auth_url)
+
+
+@superuser_required
+def gmail_google_callback_view(request):
+    flow = _gmail_flow(request)
+    flow.state = request.session.get("gmail_oauth_state")
+    flow.code_verifier = request.session.get("gmail_oauth_code_verifier")
+    flow.fetch_token(authorization_response=request.build_absolute_uri())
+    gmail_service.save_credentials(flow.credentials)
+
+    site_settings = SiteSettings.get_solo()
+    try:
+        site_settings.support_email = gmail_service.connected_email_address()
+    except gmail_service.GmailError:
+        pass
+    else:
+        site_settings.save(update_fields=["support_email"])
+    return redirect("admin-management")
+
+
 @superuser_required
 def admin_management_view(request):
     if request.method == "POST" and "generate_invite" in request.POST:
@@ -263,63 +289,26 @@ def admin_management_view(request):
     site_settings = SiteSettings.get_solo()
     drive_error = None
 
-    if request.method == "POST" and "save_support_email" in request.POST:
-        new_email = request.POST.get("support_email", "").strip()
-        try:
-            if new_email:
-                validate_email(new_email)
-        except ValidationError:
-            messages.error(request, "That doesn't look like a valid email address.", extra_tags="support-email")
-            return redirect("admin-management")
-
-        email_changed = new_email != site_settings.support_email
-        site_settings.support_email = new_email
-        site_settings.support_email_app_password = request.POST.get("support_email_app_password", "").strip()
-        if email_changed:
-            site_settings.support_email_verified = False
-        site_settings.save(update_fields=["support_email", "support_email_app_password", "support_email_verified"])
-
-        if new_email and email_changed:
-            if not request.user.email:
-                messages.error(
-                    request, "Set your own email on your profile page first — that's where the verification link goes.",
-                    extra_tags="support-email",
-                )
-            else:
-                try:
-                    _send_support_email_verification(request)
-                except Exception:
-                    logger.exception("Failed to send support-email verification email")
-                    messages.error(
-                        request, "Support email saved, but the verification email couldn't be sent — check "
-                        "the address and app password, then use \"Resend verification email\" below.",
-                        extra_tags="support-email",
-                    )
-                else:
-                    messages.success(
-                        request, f"Support email saved — check {request.user.email} for a verification link.",
-                        extra_tags="support-email",
-                    )
-        else:
-            messages.success(request, "Support email saved.", extra_tags="support-email")
-        return redirect("admin-management")
-
-    if request.method == "POST" and "resend_support_email_verification" in request.POST:
-        try:
-            _send_support_email_verification(request)
-        except Exception as exc:
-            messages.error(request, f"Could not send verification email: {exc}", extra_tags="support-email")
-        else:
-            messages.success(request, f"Verification email sent to {request.user.email}.", extra_tags="support-email")
+    if request.method == "POST" and "disconnect_gmail" in request.POST:
+        gmail_service.disconnect()
+        site_settings.support_email = ""
+        site_settings.save(update_fields=["support_email"])
+        messages.success(request, "Gmail connection removed.", extra_tags="support-email")
         return redirect("admin-management")
 
     if request.method == "POST" and "send_test_email" in request.POST:
-        try:
-            email_service.send_test_email(request.user.email)
-        except Exception as exc:
-            messages.error(request, f"Could not send test email: {exc}", extra_tags="account")
+        if not request.user.email:
+            messages.error(
+                request, "Set your own email on your profile page first — that's where the test email goes.",
+                extra_tags="support-email",
+            )
         else:
-            messages.success(request, f"Test email sent to {request.user.email}.", extra_tags="account")
+            try:
+                email_service.send_test_email(request.user.email)
+            except Exception as exc:
+                messages.error(request, f"Could not send test email: {exc}", extra_tags="support-email")
+            else:
+                messages.success(request, f"Test email sent to {request.user.email}.", extra_tags="support-email")
         return redirect("admin-management")
 
     if request.method == "POST" and "upload_client_secret" in request.POST:
@@ -403,12 +392,21 @@ def admin_management_view(request):
     )
     drive_progress = sum([client_secret_valid, token_valid, folder_valid])
 
-    support_email_format_valid = True
-    if site_settings.support_email:
+    # Gmail-send status — same live-check honesty principle as Drive: a
+    # stored token only counts as "connected" once it's proven to still
+    # work, not just "a file is present".
+    has_gmail_token = gmail_service.is_configured()
+    gmail_token_valid = False
+    if has_gmail_token:
         try:
-            validate_email(site_settings.support_email)
-        except ValidationError:
-            support_email_format_valid = False
+            connected_address = gmail_service.connected_email_address()
+        except gmail_service.GmailError:
+            gmail_token_valid = False
+        else:
+            gmail_token_valid = True
+            if site_settings.support_email != connected_address:
+                site_settings.support_email = connected_address
+                site_settings.save(update_fields=["support_email"])
 
     host = request.get_host()
     port = host.split(":", 1)[1] if ":" in host else "8000"
@@ -434,7 +432,11 @@ def admin_management_view(request):
         "drive_redirect_uri": _localhost_redirect_uri(request),
         "drive_is_localhost": _is_localhost(request),
         "drive_localhost_url": f"http://localhost:{port}{reverse('admin-management')}",
-        "support_email_format_valid": support_email_format_valid,
+        "has_gmail_token": has_gmail_token,
+        "gmail_token_valid": gmail_token_valid,
+        "gmail_redirect_uri": _gmail_localhost_redirect_uri(request),
+        "gmail_is_localhost": _is_localhost(request),
+        "gmail_localhost_url": f"http://localhost:{port}{reverse('admin-management')}",
     })
 
 
@@ -458,22 +460,6 @@ def verify_ip_page_view(request, token):
     site_settings.server_host = confirmed_host
     site_settings.save(update_fields=["server_host"])
     return render(request, "photos/verify_ip_page.html", {"expired": False, "host": confirmed_host})
-
-
-def verify_support_email_view(request, token):
-    key = _support_email_verify_pending_key(token)
-    pending_email = cache.get(key)
-    if pending_email is None:
-        return render(request, "photos/verify_support_email_page.html", {"expired": True})
-    cache.delete(key)
-    site_settings = SiteSettings.get_solo()
-    if pending_email != site_settings.support_email:
-        # The support email was changed again after this link was sent —
-        # don't let a stale link verify whatever address is current now.
-        return render(request, "photos/verify_support_email_page.html", {"expired": True})
-    site_settings.support_email_verified = True
-    site_settings.save(update_fields=["support_email_verified"])
-    return render(request, "photos/verify_support_email_page.html", {"expired": False})
 
 
 @superuser_required
