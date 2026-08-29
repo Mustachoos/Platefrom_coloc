@@ -486,7 +486,10 @@ def staff_login_view(request):
                 return _post_login_redirect(user)
     else:
         form = StaffLoginForm(request)
-    return render(request, "photos/staff_login.html", {"form": form})
+    recovery_email_configured = bool(SiteSettings.get_solo().support_email)
+    return render(request, "photos/staff_login.html", {
+        "form": form, "recovery_email_configured": recovery_email_configured,
+    })
 
 
 @staff_member_required(login_url="staff-login")

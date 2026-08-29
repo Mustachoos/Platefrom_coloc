@@ -31,7 +31,11 @@
         </div>
         <div class="flex flex-wrap gap-sm items-center" style="margin-top:var(--space-md);">
           <button type="submit" class="btn btn--dark">Sign in</button>
+          {% if recovery_email_configured %}
           <a class="link text-sm" href="{% url 'password-reset' %}">Forgot password?</a>
+          {% else %}
+          <span class="link text-sm" style="color:var(--ink-400);text-decoration-color:var(--ink-400);cursor:not-allowed;" title="The admin hasn't set up a recovery email yet — ask them to configure one from the admin dashboard.">Forgot password?</span>
+          {% endif %}
         </div>
       </form>
     </main>
