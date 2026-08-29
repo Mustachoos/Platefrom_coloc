@@ -173,8 +173,12 @@ def _localhost_redirect_uri(request):
 
 
 def _google_flow(request):
+    # Drive and Gmail-send are requested together in one consent screen, so
+    # connecting from either the Drive box or the recovery-email box
+    # authorizes both at once — the admin never has to go through Google's
+    # consent flow twice for what is, underneath, the same account.
     return Flow.from_client_secrets_file(
-        _client_secret_path(), scopes=drive_service.SCOPES,
+        _client_secret_path(), scopes=drive_service.SCOPES + gmail_service.SCOPES,
         redirect_uri=_localhost_redirect_uri(request),
     )
 
@@ -207,47 +211,12 @@ def drive_google_callback_view(request):
     flow.code_verifier = request.session.get("google_oauth_code_verifier")
     flow.fetch_token(authorization_response=request.build_absolute_uri())
 
+    # One shared credential, written to both services' token files — see
+    # _google_flow's comment on why this single connect flow covers both.
     token_path = _token_path()
     os.makedirs(os.path.dirname(token_path) or ".", exist_ok=True)
     with open(token_path, "w") as f:
         f.write(flow.credentials.to_json())
-    return redirect("admin-management")
-
-
-def _gmail_localhost_redirect_uri(request):
-    # Same localhost-only requirement as Drive's callback — see
-    # _localhost_redirect_uri above.
-    host = request.get_host()
-    port = host.split(":", 1)[1] if ":" in host else "8000"
-    return f"http://localhost:{port}{reverse('gmail-google-callback')}"
-
-
-def _gmail_flow(request):
-    return gmail_service.build_oauth_flow(_gmail_localhost_redirect_uri(request))
-
-
-@superuser_required
-def gmail_google_connect_view(request):
-    if not _is_localhost(request):
-        return redirect("admin-management")
-    try:
-        flow = _gmail_flow(request)
-    except gmail_service.GmailError:
-        return redirect("admin-management")
-    auth_url, state = flow.authorization_url(
-        access_type="offline", include_granted_scopes="true", prompt="consent"
-    )
-    request.session["gmail_oauth_state"] = state
-    request.session["gmail_oauth_code_verifier"] = flow.code_verifier
-    return redirect(auth_url)
-
-
-@superuser_required
-def gmail_google_callback_view(request):
-    flow = _gmail_flow(request)
-    flow.state = request.session.get("gmail_oauth_state")
-    flow.code_verifier = request.session.get("gmail_oauth_code_verifier")
-    flow.fetch_token(authorization_response=request.build_absolute_uri())
     gmail_service.save_credentials(flow.credentials)
 
     site_settings = SiteSettings.get_solo()
@@ -290,10 +259,15 @@ def admin_management_view(request):
     drive_error = None
 
     if request.method == "POST" and "disconnect_gmail" in request.POST:
+        # Same underlying account as Drive's connection (see _google_flow) —
+        # disconnecting here breaks Drive's step 2/3 too, honestly reflected
+        # next render rather than left silently out of sync.
+        if token_path and os.path.exists(token_path):
+            os.remove(token_path)
         gmail_service.disconnect()
         site_settings.support_email = ""
         site_settings.save(update_fields=["support_email"])
-        messages.success(request, "Gmail connection removed.", extra_tags="support-email")
+        messages.success(request, "Google account disconnected.", extra_tags="support-email")
         return redirect("admin-management")
 
     if request.method == "POST" and "send_test_email" in request.POST:
@@ -324,9 +298,14 @@ def admin_management_view(request):
         for path in (client_secret_path, token_path):
             if path and os.path.exists(path):
                 os.remove(path)
+        gmail_service.disconnect()
         site_settings.drive_root_folder_id = ""
-        site_settings.save(update_fields=["drive_root_folder_id"])
-        messages.success(request, "Drive connection removed — start again from step 1.", extra_tags="drive")
+        site_settings.support_email = ""
+        site_settings.save(update_fields=["drive_root_folder_id", "support_email"])
+        messages.success(
+            request, "Drive connection removed — start again from step 1. This also disconnects the "
+            "recovery email, since it's the same Google account.", extra_tags="drive",
+        )
         return redirect("admin-management")
 
     if request.method == "POST" and "choose_folder" in request.POST:
@@ -396,7 +375,10 @@ def admin_management_view(request):
 
     # Gmail-send status — same live-check honesty principle as Drive: a
     # stored token only counts as "connected" once it's proven to still
-    # work, not just "a file is present".
+    # work, not just "a file is present". Steps 1 and 2 here are the exact
+    # same steps shown in the Drive box (same client_secret file, same
+    # shared token written by the one connect flow in _google_flow) — this
+    # box just live-checks them via the Gmail API instead of the Drive API.
     has_gmail_token = gmail_service.is_configured()
     gmail_token_valid = False
     if has_gmail_token:
@@ -409,6 +391,12 @@ def admin_management_view(request):
             if site_settings.support_email != connected_address:
                 site_settings.support_email = connected_address
                 site_settings.save(update_fields=["support_email"])
+
+    email_ready = bool(client_secret_valid and gmail_token_valid)
+    email_attention = bool(
+        (has_client_secret and not client_secret_valid)
+        or (has_gmail_token and not gmail_token_valid)
+    )
 
     host = request.get_host()
     port = host.split(":", 1)[1] if ":" in host else "8000"
@@ -437,9 +425,8 @@ def admin_management_view(request):
         "drive_localhost_url": f"http://localhost:{port}{reverse('admin-management')}",
         "has_gmail_token": has_gmail_token,
         "gmail_token_valid": gmail_token_valid,
-        "gmail_redirect_uri": _gmail_localhost_redirect_uri(request),
-        "gmail_is_localhost": _is_localhost(request),
-        "gmail_localhost_url": f"http://localhost:{port}{reverse('admin-management')}",
+        "email_ready": email_ready,
+        "email_attention": email_attention,
     })
 
 

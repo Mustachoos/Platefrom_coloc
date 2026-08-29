@@ -3,11 +3,11 @@ real Google account's OAuth2 consent — not SMTP with a Gmail app password.
 
 Google has rejected plain-password SMTP logins since 2022; the only ways to
 send as a Gmail account now are an app password (16-char, requires 2FA) or
-OAuth2. This reuses the same OAuth2 client (client_secret.json) already
-required for Google Drive, requesting the narrow gmail.send scope only —
-enough to send mail as that account, not read or manage it. The connect
-flow and token storage mirror drive_service.py exactly, down to reusing its
-"real personal account, not a service account" reasoning.
+OAuth2. The gmail.send scope defined here is requested together with
+Drive's scope in one combined consent flow (see admin_views._google_flow)
+so connecting either box's "Connect your Google account" step authorizes
+both at once — there is no separate connect flow in this module, only the
+token file this one is written to and the API calls that use it.
 """
 
 import base64
@@ -19,7 +19,6 @@ from django.core.mail.backends.base import BaseEmailBackend
 from google.auth.exceptions import RefreshError
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
-from google_auth_oauthlib.flow import Flow
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 
@@ -34,14 +33,6 @@ class GmailError(Exception):
 
 def _token_file():
     return os.environ.get("GMAIL_SEND_TOKEN_FILE", "").strip()
-
-
-def _client_secret_file():
-    # Deliberately the same env var as drive_service — one Google Cloud
-    # OAuth client covers both scopes; admins only ever upload one
-    # credentials file, then authorize it separately for Drive and for
-    # sending mail (possibly as different Google accounts).
-    return os.environ.get("GOOGLE_OAUTH_CLIENT_SECRET_FILE", "").strip()
 
 
 def is_configured():
@@ -62,16 +53,6 @@ def disconnect():
     token_file = _token_file()
     if token_file and os.path.exists(token_file):
         os.remove(token_file)
-
-
-def build_oauth_flow(redirect_uri):
-    client_secret_file = _client_secret_file()
-    if not client_secret_file or not os.path.exists(client_secret_file):
-        raise GmailError(
-            "GOOGLE_OAUTH_CLIENT_SECRET_FILE is not set or the file doesn't exist — "
-            "upload Google credentials in the Drive section first."
-        )
-    return Flow.from_client_secrets_file(client_secret_file, scopes=SCOPES, redirect_uri=redirect_uri)
 
 
 def _get_credentials():

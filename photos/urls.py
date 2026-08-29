@@ -35,8 +35,6 @@ urlpatterns = [
     path("admin-account/", admin_views.admin_management_view, name="admin-management"),
     path("admin-account/drive/google/connect/", admin_views.drive_google_connect_view, name="drive-google-connect"),
     path("admin-account/drive/google/callback/", admin_views.drive_google_callback_view, name="drive-google-callback"),
-    path("admin-account/gmail/google/connect/", admin_views.gmail_google_connect_view, name="gmail-google-connect"),
-    path("admin-account/gmail/google/callback/", admin_views.gmail_google_callback_view, name="gmail-google-callback"),
     path(
         "admin-account/invites/<uuid:token>/revoke/",
         admin_views.revoke_invite_view,

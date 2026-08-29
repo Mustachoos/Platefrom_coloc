@@ -289,43 +289,32 @@
           {% endif %}{% endfor %}
           <details id="support-email-details" class="hub-details">
             <summary>
-              <h2><span class="status-circle{% if gmail_token_valid %} verified{% elif has_gmail_token %} failed{% endif %}"></span>Recovery email</h2>
+              <h2><span class="status-circle{% if email_ready %} verified{% elif email_attention %} failed{% endif %}"></span>Recovery email</h2>
             </summary>
             <div class="details-body">
-              <p class="text-sm text-muted" style="margin-bottom:var(--space-sm);">Sends password-reset links to admins and subadmins who forget their password, via a real Google account connected through OAuth2 — Google no longer accepts plain-password Gmail logins, so there's no address or password to type here.</p>
-              {% if not client_secret_valid %}
-              <p class="step-locked">Upload Google credentials in the Drive section above first — the same OAuth client is reused here.</p>
-              {% else %}
-              <p class="text-sm text-muted" style="margin-bottom:var(--space-sm);">Add this exact address as an additional authorized redirect URI on that same OAuth client:</p>
-              <div class="redirect-uri" style="margin-bottom:var(--space-sm);">{{ gmail_redirect_uri }}</div>
-                {% if gmail_token_valid %}
-                <p class="step-ok">✓ Connected as {{ site_settings.support_email }}.</p>
-                <div class="flex gap-sm items-center flex-wrap">
-                  {% if request.user.email %}
-                  <form method="post">
-                    {% csrf_token %}
-                    <button type="submit" name="send_test_email" class="btn btn--outline btn--sm">Send test email to {{ request.user.email }}</button>
-                  </form>
-                  {% endif %}
-                  <form method="post">
-                    {% csrf_token %}
-                    <button type="submit" name="disconnect_gmail" class="btn btn--danger btn--sm">Disconnect</button>
-                  </form>
-                </div>
-                {% else %}
-                  {% if has_gmail_token %}
-                  <p class="step-warn">⚠ The stored connection no longer works — reconnect below.</p>
-                  {% endif %}
-                  {% if not gmail_is_localhost %}
-                  <p class="text-sm text-muted">
-                    This step requires a browser running on the server machine itself. Open this button from a browser
-                    <strong>on that machine</strong> to connect:
-                  </p>
-                  <a class="btn btn--dark btn--sm" href="{{ gmail_localhost_url }}">Open on localhost</a>
-                  {% else %}
-                  <a class="btn btn--dark btn--sm" href="{% url 'gmail-google-connect' %}">{% if has_gmail_token %}Reconnect{% else %}Connect Gmail account{% endif %}</a>
-                  {% endif %}
-                {% endif %}
+              <p class="text-sm text-muted" style="margin-bottom:var(--space-sm);">Sends password-reset links to admins and subadmins who forget their password, via the same Google account connected below — Google no longer accepts plain-password Gmail logins, so there's no address or password to type here. Steps 1 and 2 are the exact same steps as the Google Drive box: connecting either one connects both.</p>
+              <button type="button" class="drive-step-row" onclick="document.getElementById('drive-step1-modal').showModal()">
+                <span class="status-circle{% if has_client_secret and not client_secret_valid %} failed{% elif client_secret_valid %} verified{% endif %}"></span>
+                1. Upload Google credentials
+              </button>
+              <button type="button" class="drive-step-row" onclick="document.getElementById('drive-step2-modal').showModal()">
+                <span class="status-circle{% if has_gmail_token and not gmail_token_valid %} failed{% elif gmail_token_valid %} verified{% endif %}"></span>
+                2. Connect your Google account
+              </button>
+              {% if gmail_token_valid %}
+              <p class="step-ok" style="margin-top:var(--space-sm);">✓ Ready — sending as {{ site_settings.support_email }}.</p>
+              {% if request.user.email %}
+              <form method="post" style="margin-top:var(--space-xs);">
+                {% csrf_token %}
+                <button type="submit" name="send_test_email" class="btn btn--outline btn--sm">Send test email to {{ request.user.email }}</button>
+              </form>
+              {% endif %}
+              {% endif %}
+              {% if has_gmail_token %}
+              <form method="post" style="margin-top:var(--space-xs);">
+                {% csrf_token %}
+                <button type="submit" name="disconnect_gmail" class="btn btn--danger btn--sm">Disconnect</button>
+              </form>
               {% endif %}
             </div>
           </details>
@@ -395,7 +384,7 @@
         </div>
         {% else %}
           {% if token_valid %}
-          <p class="step-ok">✓ Connected — Google Drive is reachable with this account.</p>
+          <p class="step-ok">✓ Connected — used for Drive backups and, if Gmail is granted below, for password-reset emails too.</p>
           <p class="text-sm text-muted" style="margin-top:calc(-1 * var(--space-sm));margin-bottom:var(--space-sm);">Linked Google account: {{ drive_account_email }}</p>
           {% elif has_token %}
           <p class="step-warn">⚠ The stored connection no longer works — reconnect below.</p>
