@@ -12,6 +12,7 @@
 </head>
 <body>
   <div class="page shell" style="max-width:1100px;padding-bottom:var(--space-xl);">
+    {% include "photos/_account_button.html" %}
     <div class="flex justify-between items-center gap-sm flex-wrap" style="margin-bottom:var(--space-md);">
       <div>
         <h1>Event dashboard{% if active_event %} — {{ active_event.name }}{% endif %}</h1>

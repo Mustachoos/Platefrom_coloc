@@ -10,6 +10,7 @@ urlpatterns = [
     path("", RedirectView.as_view(pattern_name="upload", permanent=False)),
     path("staff-login/", views.staff_login_view, name="staff-login"),
     path("logout/", LogoutView.as_view(next_page=reverse_lazy("staff-login")), name="staff-logout"),
+    path("account/", views.account_view, name="account"),
     path("staff-login/reset/", admin_views.SupportEmailPasswordResetView.as_view(), name="password-reset"),
     path(
         "staff-login/reset/done/",

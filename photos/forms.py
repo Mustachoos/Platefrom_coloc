@@ -1,5 +1,10 @@
 from django import forms
-from django.contrib.auth.forms import AuthenticationForm, PasswordResetForm, SetPasswordForm
+from django.contrib.auth.forms import (
+    AuthenticationForm,
+    PasswordChangeForm,
+    PasswordResetForm,
+    SetPasswordForm,
+)
 
 
 class StaffLoginForm(AuthenticationForm):
@@ -13,6 +18,12 @@ class StyledPasswordResetForm(PasswordResetForm):
 
 class StyledSetPasswordForm(SetPasswordForm):
     new_password1 = forms.CharField(widget=forms.PasswordInput(attrs={"class": "input", "autofocus": True}))
+    new_password2 = forms.CharField(widget=forms.PasswordInput(attrs={"class": "input"}))
+
+
+class StyledPasswordChangeForm(PasswordChangeForm):
+    old_password = forms.CharField(widget=forms.PasswordInput(attrs={"class": "input", "autofocus": True}))
+    new_password1 = forms.CharField(widget=forms.PasswordInput(attrs={"class": "input"}))
     new_password2 = forms.CharField(widget=forms.PasswordInput(attrs={"class": "input"}))
 
 
