@@ -29,59 +29,86 @@ Application web permettant aux invités d'un événement (soirée, anniversaire,
 ```
 docker compose up --build
 ```
+Puis ouvrir **http://localhost:8000** : tant qu'aucun compte admin n'existe, toute page redirige
+automatiquement vers la création du compte admin (`/create-admin/`) — aucune commande à lancer, ni
+fichier à éditer. Une fois le compte créé, vous arrivez sur la **page compte admin**
+(`/admin-account/`), le point d'entrée pour tout configurer :
+- Adresse réseau du QR code (vérifiée par scan, voir plus bas)
+- Connexion Google Drive (optionnelle)
+- Invitation de sous-administrateurs
+- Liste des évènements
+
+Et ensuite :
 - Application : http://localhost:8000
 - Écran TV : http://localhost:8000/tv/
 - Admin Django : http://localhost:8000/admin/
 - Dashboard staff : http://localhost:8000/dashboard/
+- Compte admin : http://localhost:8000/admin-account/
 
-Le QR code d'upload affiché sur `/tv/` a besoin de connaître l'IP locale de la machine qui héberge le serveur (voir section QR code plus bas) — sans quoi il pointerait vers `localhost`, inutilisable depuis le téléphone d'un invité. Cette IP est lue depuis la variable d'environnement `QR_HOST_IP` (fichier `.env` à la racine, non versionné, chargé automatiquement par `docker compose`), renseignée par un script qui détecte l'IP LAN actuelle de la machine plutôt que de la coder en dur dans `docker-compose.yml` :
+La page `/create-admin/` n'est accessible que tant qu'aucun compte admin n'existe (ou en étant déjà
+connecté en tant qu'admin, pour vérifier le nom d'utilisateur) — personne d'autre sur le réseau ne
+peut recréer un compte admin une fois qu'un premier existe.
 
-- **Windows (PowerShell)** :
-  ```powershell
-  .\scripts\update-lan-ip.ps1
-  docker compose up -d
-  ```
-  ou en une seule commande (détecte l'IP puis lance `docker compose up --build`) :
-  ```powershell
-  .\scripts\start.ps1
-  ```
-- **macOS / Linux (bash)** :
-  ```bash
-  ./scripts/update-lan-ip.sh
-  docker compose up -d
-  ```
-  ou en une seule commande :
-  ```bash
-  ./scripts/start.sh
-  ```
+<details>
+<summary>Configuration manuelle (optionnelle, pour les cas non couverts par la page compte admin)</summary>
 
-Les deux versions font la même chose (trouver l'interface réseau qui a une route par défaut, donc celle réellement connectée au routeur, et écrire son IP dans `.env`) mais ne sont pas interchangeables : les cmdlets PowerShell utilisées (`Get-NetIPConfiguration`) n'existent que sur Windows, y compris sous PowerShell Core installé sur Mac.
-
-À relancer après un changement de réseau (nouvelle box, nouveau Wi-Fi, renouvellement DHCP) — l'ancienne IP hardcodée dans `docker-compose.yml` devenait périmée à chaque changement de réseau, ce que ces scripts évitent.
-
-Au premier lancement, créer un compte admin si besoin :
-```
-docker compose exec web python manage.py createsuperuser
-```
+- **Compte admin** : `docker compose exec web python manage.py createsuperuser`
+- **Google Drive** : voir ci-dessous, section CLI.
+</details>
 
 ### Configuration de l'intégration Google Drive (optionnelle)
 
-L'app copie chaque photo envoyée vers un dossier Google Drive dédié à l'évènement actif, et propose aux invités de partager ce dossier vers leur email. Un dossier Drive est **obligatoire** pour qu'un évènement puisse être créé/activé : c'est ce qui permet de changer d'évènement sans jamais risquer de perdre des photos (voir la section Dashboard). L'authentification se fait via **OAuth2 sur un compte Google personnel** (et non un compte de service) : un compte de service Google n'a aucun quota de stockage Drive propre en dehors d'un Drive Partagé, une fonctionnalité réservée aux comptes Google Workspace payants — inutilisable avec un Gmail personnel gratuit.
+L'app peut copier chaque photo envoyée vers un dossier Google Drive dédié à l'évènement actif, et
+proposer aux invités de partager ce dossier vers leur email. C'est entièrement optionnel : un
+évènement peut être créé/activé sans dossier Drive connecté (ses photos restent alors uniquement
+sur le serveur). L'authentification se fait via **OAuth2 sur un compte Google personnel** (et non
+un compte de service) : un compte de service Google n'a aucun quota de stockage Drive propre en
+dehors d'un Drive Partagé, une fonctionnalité réservée aux comptes Google Workspace payants —
+inutilisable avec un Gmail personnel gratuit.
 
-Mise en place, à faire une seule fois :
+**Depuis la page compte admin** (recommandé) — `/admin-account/drive/` guide dans l'ordre :
 
-1. **Créer un projet Google Cloud** sur [console.cloud.google.com](https://console.cloud.google.com), puis activer l'**API Google Drive** (menu "APIs & Services" → "Enable APIs and services").
-2. **Configurer l'écran de consentement OAuth** ("OAuth consent screen") : type "External", ajouter votre propre adresse Gmail comme "Test user" (suffisant tant que l'app reste en mode test, pas besoin de validation Google pour un usage personnel).
-3. **Créer des identifiants OAuth** ("Credentials" → "Create credentials" → "OAuth client ID"), type d'application **Desktop app**. Télécharger le fichier JSON généré.
-4. Placer ce fichier dans `credentials/client_secret.json` à la racine du projet (dossier ignoré par git).
-5. **Créer un dossier racine** dans votre Drive personnel (ex. "Coloc Photos"), qui contiendra un sous-dossier par soirée. Récupérer son ID dans l'URL du dossier (`https://drive.google.com/drive/folders/<ID>`), et le renseigner dans `GOOGLE_DRIVE_ROOT_FOLDER_ID` (dans `docker-compose.yml`).
-6. **Lancer l'autorisation initiale**, en local (hors conteneur, car un navigateur doit s'ouvrir) :
+> ⚠️ Google refuse toute adresse de redirection OAuth en `http://` non-HTTPS, sauf si l'hôte est
+> exactement `localhost`/`127.0.0.1` (une IP locale comme `192.168.1.13` est rejetée même
+> enregistrée à l'identique — erreur `redirect_uri_mismatch`). L'étape "Connecter mon compte
+> Google" doit donc se faire depuis un navigateur **sur la machine qui héberge le serveur**
+> (`http://localhost:8000/admin-account/drive/`), pas depuis votre téléphone — la page l'indique
+> automatiquement si ce n'est pas déjà le cas. Le reste de la page compte admin reste utilisable
+> depuis n'importe quel appareil du réseau.
+
+1. Créer un projet sur [console.cloud.google.com](https://console.cloud.google.com) et activer
+   l'**API Google Drive**.
+2. Configurer l'écran de consentement OAuth (type "External", vous ajouter comme "Test user").
+3. Créer des identifiants OAuth de type **Web application** (pas "Desktop app" — cette page utilise
+   une vraie redirection web, pas un flux local) et coller l'adresse de redirection affichée par
+   la page (toujours basée sur `localhost`, voir avertissement ci-dessus) dans "Authorized
+   redirect URIs".
+4. Télécharger le fichier JSON généré et l'envoyer directement dans le formulaire de la page.
+5. Depuis `http://localhost:8000/admin-account/drive/`, cliquer "Connecter mon compte Google", puis
+   choisir ou créer le dossier Drive racine — tout
+   depuis le navigateur, aucun fichier à placer ni ID à copier-coller à la main.
+
+<details>
+<summary>Alternative en ligne de commande (pour qui préfère, ou pour un rattachement après coup)</summary>
+
+Cette méthode reste disponible et fait exactement la même chose, fichiers en plus :
+
+1. Suivre les étapes 1-2 ci-dessus, mais créer des identifiants de type **Desktop app** cette fois.
+   Télécharger le JSON et le placer dans `credentials/client_secret.json` (dossier ignoré par git).
+2. Créer un dossier racine dans votre Drive, récupérer son ID dans l'URL
+   (`https://drive.google.com/drive/folders/<ID>`), et le renseigner dans
+   `GOOGLE_DRIVE_ROOT_FOLDER_ID` (dans `.env` ou `docker-compose.yml` — prioritaire sur la valeur
+   choisie depuis la page compte admin si les deux sont définis).
+3. Lancer l'autorisation, en local hors conteneur (un navigateur doit s'ouvrir) :
    ```
    pip install -r requirements.txt
    GOOGLE_OAUTH_CLIENT_SECRET_FILE=credentials/client_secret.json GOOGLE_OAUTH_TOKEN_FILE=credentials/token.json python manage.py google_drive_auth
    ```
-   Cela ouvre un navigateur pour valider l'accès avec votre compte Google, puis écrit le refresh token dans `credentials/token.json`. Ce fichier est ensuite monté dans le conteneur `web` et réutilisé/rafraîchi automatiquement (le fichier doit rester accessible en écriture au conteneur, le token d'accès expirant environ toutes les heures) — plus jamais besoin de repasser par cette étape sauf révocation manuelle de l'accès.
-7. Depuis le dashboard staff (`/dashboard/`), créer un évènement (nom au choix) : son dossier Drive est automatiquement créé (ou retrouvé s'il existe déjà sous le dossier racine) au moment de la création.
+   Écrit le refresh token dans `credentials/token.json`, monté dans le conteneur `web` et
+   réutilisé/rafraîchi automatiquement ensuite.
+4. Depuis le dashboard staff (`/dashboard/`), créer un évènement : son dossier Drive est
+   automatiquement créé (ou retrouvé) sous le dossier racine.
+</details>
 
 ## Spécification fonctionnelle
 
@@ -164,7 +191,7 @@ Mise en place, à faire une seule fois :
 
 #### 8. QR code d'upload — `/qr/upload.png`
 - Génère à la volée une image PNG encodant l'URL absolue de la page `/upload/`
-- Si la variable d'environnement `QR_HOST_IP` est définie, cette IP est utilisée à la place du nom d'hôte de la requête — utile pour garantir que le QR code reste scannable sur le réseau local du logement même quand le serveur tourne dans un conteneur (typiquement l'écran TV charge `/tv/` via `localhost`, ce qui donnerait un QR code inutilisable pour un téléphone sans cette variable). Voir [Lancer le projet](#lancer-le-projet) : `scripts/update-lan-ip.ps1` détecte et renseigne cette IP automatiquement, plutôt que de la coder en dur dans `docker-compose.yml`.
+- Adresse encodée : toujours dérivée de l'en-tête `Host` de la requête qui a chargé la page courante (`request.build_absolute_uri`) — rien à configurer ni détecter. Concrètement : si l'écran TV charge `/tv/` via l'IP locale de la machine (ex. `http://192.168.1.13:8000/tv/`) plutôt que via `localhost`, le QR code généré sur cette même page encode automatiquement cette même adresse, scannable par n'importe quel téléphone du réseau — et reste correct même si l'IP change (nouvelle box, DHCP), sans redémarrage ni réglage.
 
 #### 8bis. QR code Wi-Fi — `/qr/wifi.png`
 - Génère à la volée une image PNG au format standard `WIFI:T:<sécurité>;S:<SSID>;P:<mot de passe>;;`, reconnu nativement par l'appareil photo d'iOS et d'Android (propose directement "Rejoindre le réseau" au scan)
@@ -186,17 +213,17 @@ Page dédiée, distincte de `/admin/`, réservée au staff (`staff_member_requir
 La page est organisée en onglets (CSS pur, sans JavaScript) : **Events**, **Optional features**, **TV layout**, **Whiteboard**, **Guests**, **Photos**. L'onglet actif est conservé après chaque action grâce à un paramètre `?tab=` porté par la redirection qui suit chaque soumission de formulaire.
 
 - **Events** : liste de tous les évènements créés (nom, badge ACTIVE, nombre de photos, lien vers le dossier Drive), avec un bouton "Switch to this event" pour chacun des évènements inactifs
-  - **Créer un évènement** : formulaire avec un champ nom ; à la création, son dossier Drive est immédiatement recherché/créé sous le dossier racine configuré (voir `GOOGLE_DRIVE_ROOT_FOLDER_ID`) — un évènement ne peut pas être activé sans dossier Drive connecté
+  - **Créer un évènement** : formulaire avec un champ nom ; si Drive est configuré, son dossier est immédiatement recherché/créé sous le dossier racine configuré (voir `GOOGLE_DRIVE_ROOT_FOLDER_ID`) — sinon l'évènement est créé/activable sans dossier Drive, ses photos restant uniquement sur le serveur
   - Si un évènement du même nom existe déjà, il est réutilisé plutôt que dupliqué
 - **Changer d'évènement actif — confirmation obligatoire** (`/dashboard/events/<id>/switch/`) : avant tout changement, une page de confirmation dédiée s'affiche pour éviter toute perte de données :
   - Elle affiche le nombre de photos de l'évènement actif actuel et combien d'entre elles ne sont **pas encore** sauvegardées sur Drive
   - Si des photos ne sont pas sauvegardées, le bouton de confirmation est masqué : seul un bouton "Back up the N missing photo(s) now" est proposé, qui relance l'upload Drive des photos manquantes puis réaffiche la page
   - Le changement ne devient possible qu'une fois toutes les photos de l'évènement sortant confirmées sur Drive (bandeau vert "Safe to switch")
-  - Au moment du switch effectif : le stockage local ne conserve jamais que l'évènement actif. Les photos de l'évènement sortant sont **supprimées du disque et de la base** (sans danger, puisqu'elles viennent d'être confirmées sur Drive), puis toutes les photos du dossier Drive du nouvel évènement actif sont **téléchargées** localement (pseudo reconstitué depuis le nom de fichier `<pseudo>_<HHhMM>_<uuid>.<ext>`) — Drive fait office de stockage durable, le local n'est qu'un cache de travail pour l'évènement en cours
+  - Au moment du switch effectif : si l'évènement sortant a un dossier Drive connecté, ses photos locales sont **supprimées du disque et de la base** (sans danger, puisqu'elles viennent d'être confirmées sur Drive) — sinon (Drive non configuré pour cet évènement) elles sont **laissées en place**, simplement masquées tant que cet évènement n'est pas réactivé (aucune sauvegarde externe à cette exception près). Puis toutes les photos du dossier Drive du nouvel évènement actif, s'il en a un, sont **téléchargées** localement (pseudo reconstitué depuis le nom de fichier `<pseudo>_<HHhMM>_<uuid>.<ext>`) — Drive fait office de stockage durable quand il est connecté, le local reste dans tous les cas le cache de travail de l'évènement en cours
   - Rien n'est jamais perdu : la suppression locale d'un évènement sortant n'est déclenchée qu'une fois toutes ses photos confirmées sur Drive (cf. garde-fou ci-dessus), et sa copie Drive n'est elle-même jamais touchée par ce nettoyage local
   - Une fois le switch effectué, tous les écrans TV connectés sont notifiés via WebSocket et rechargent automatiquement la page pour refléter le nouvel évènement
 - **Réglages de l'évènement actif** :
-  - **Google Drive backup** : toujours actif pour l'évènement actif (obligatoire) ; affiche le lien vers le dossier connecté, ou un message d'erreur si le dossier a été supprimé/est injoignable, avec un bouton pour en recréer un neuf (les photos locales non confirmées y sont aussitôt re-uploadées)
+  - **Google Drive backup** : optionnel ; si connecté pour l'évènement actif, affiche le lien vers le dossier, ou un message d'erreur si le dossier a été supprimé/est injoignable avec un bouton pour en recréer un neuf (les photos locales non confirmées y sont aussitôt re-uploadées) ; si non connecté, un bouton permet d'en connecter un à tout moment
   - **Share Drive with participants** (toggle) :
     - Activé → tous les invités de l'évènement actif ayant renseigné un email sont ajoutés en lecteur sur le dossier (ceux qui l'ont déjà ne sont pas re-partagés)
     - Désactivé → l'accès est révoqué pour tous les invités actuellement partagés (`drive_permission_id` utilisé pour cibler la permission exacte à supprimer, puis effacé)
@@ -255,7 +282,6 @@ Un unique canal WebSocket diffuse à tous les écrans TV connectés :
 | `DJANGO_DB_PASSWORD` | Mot de passe PostgreSQL | `coloc` |
 | `DJANGO_DB_HOST` | Hôte PostgreSQL | `db` |
 | `DJANGO_DB_PORT` | Port PostgreSQL | `5432` |
-| `QR_HOST_IP` | IP forcée dans l'URL encodée par le QR code d'upload | aucune (utilise l'hôte de la requête) |
-| `GOOGLE_OAUTH_CLIENT_SECRET_FILE` | Chemin vers le fichier de credentials OAuth (Desktop app) téléchargé depuis Google Cloud Console | aucune |
-| `GOOGLE_OAUTH_TOKEN_FILE` | Chemin vers le token OAuth généré par `manage.py google_drive_auth` (contient le refresh token) | aucune |
-| `GOOGLE_DRIVE_ROOT_FOLDER_ID` | ID du dossier Drive racine sous lequel chaque soirée crée son sous-dossier | aucune (obligatoire si Drive activé) |
+| `GOOGLE_OAUTH_CLIENT_SECRET_FILE` | Chemin vers le fichier de credentials OAuth téléchargé depuis Google Cloud Console (écrit automatiquement depuis `/admin-account/drive/`, ou placé à la main) | aucune |
+| `GOOGLE_OAUTH_TOKEN_FILE` | Chemin vers le token OAuth (contient le refresh token), écrit depuis `/admin-account/drive/` ou par `manage.py google_drive_auth` | aucune |
+| `GOOGLE_DRIVE_ROOT_FOLDER_ID` | ID du dossier Drive racine sous lequel chaque soirée crée son sous-dossier — prioritaire sur la valeur "Site settings" choisie depuis `/admin-account/drive/` | aucune (Drive désactivé si ni l'un ni l'autre n'est défini) |

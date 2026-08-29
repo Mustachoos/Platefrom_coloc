@@ -200,6 +200,14 @@
   background: var(--surface-sunken);
   color: var(--ink-600);
 }
+.badge--warning {
+  background: var(--warning-bg);
+  color: var(--warning-ink);
+}
+.badge--danger {
+  background: rgba(227, 74, 83, 0.14);
+  color: var(--danger);
+}
 
 .alert {
   display: flex;

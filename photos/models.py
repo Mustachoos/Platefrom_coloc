@@ -1,6 +1,8 @@
 import os
 import uuid
+from datetime import timedelta
 
+from django.conf import settings
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.utils import timezone
@@ -31,12 +33,14 @@ def whiteboard_board_path(instance, filename):
 
 
 class Event(models.Model):
-    """One 'soirée': its own guests, photos, and Drive folder.
+    """One 'soirée': its own guests, photos, and (optionally) Drive folder.
 
     Exactly one Event has is_active=True at a time — that's the one the
-    public pages (upload, tv, gallery) read and write. A Drive folder is
-    mandatory: switching the active event always backs up/restores through
-    it, so local photos are never at risk of being silently lost.
+    public pages (upload, tv, gallery) read and write. A connected Drive
+    folder is optional but recommended: switching away from an event with
+    one backs up/restores its photos safely through it; an event with no
+    Drive folder just keeps its local photos in place (hidden, not deleted)
+    while it's inactive, with no off-machine backup.
     """
 
     name = models.CharField(max_length=200, unique=True, default=default_drive_folder_name)
@@ -173,6 +177,87 @@ class Like(models.Model):
 
     def __str__(self):
         return f"{self.user.pseudo} ♥ {self.photo.id}"
+
+
+class SiteSettings(models.Model):
+    server_host = models.CharField(
+        max_length=255,
+        blank=True,
+        help_text="Address guests' phones use to reach this server (e.g. 192.168.1.13:8000), "
+        "encoded in the upload QR code. Only ever set by scanning the verification QR code on "
+        "the admin account page — that's what proves the address is actually reachable. Leave "
+        "blank to fall back to whatever address loaded the current page.",
+    )
+    drive_root_folder_id = models.CharField(
+        max_length=200,
+        blank=True,
+        help_text="ID of the Drive folder under which each event creates its own subfolder. "
+        "Set from the setup wizard's Drive step (or the GOOGLE_DRIVE_ROOT_FOLDER_ID env var, "
+        "which takes priority if set).",
+    )
+
+    class Meta:
+        verbose_name = "Site settings"
+        verbose_name_plural = "Site settings"
+
+    def __str__(self):
+        return f"Site settings: {self.server_host or '(not set)'}"
+
+    @classmethod
+    def get_solo(cls):
+        obj, _ = cls.objects.get_or_create(pk=1)
+        return obj
+
+
+class AdminInvite(models.Model):
+    """A single-use link the admin can hand out so someone else can create
+    their own subadmin account (is_staff, not is_superuser) without needing
+    the admin's own credentials."""
+
+    STATUS_PENDING = "pending"
+    STATUS_ACTIVE = "active"
+    STATUS_REVOKED = "revoked"
+    STATUS_EXPIRED = "expired"
+
+    EXPIRY = timedelta(hours=1)
+
+    invitee_name = models.CharField(
+        max_length=150, help_text="Who this invite link was generated for."
+    )
+    token = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, related_name="invites_created", on_delete=models.CASCADE
+    )
+    used_at = models.DateTimeField(null=True, blank=True)
+    used_by = models.OneToOneField(
+        settings.AUTH_USER_MODEL, related_name="used_invite", null=True, blank=True, on_delete=models.SET_NULL
+    )
+    revoked_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"Invite for {self.invitee_name} ({self.status})"
+
+    @property
+    def is_used(self):
+        return self.used_at is not None
+
+    @property
+    def is_expired(self):
+        return timezone.now() > self.created_at + self.EXPIRY
+
+    @property
+    def status(self):
+        if self.revoked_at:
+            return self.STATUS_REVOKED
+        if self.used_at:
+            return self.STATUS_ACTIVE
+        if self.is_expired:
+            return self.STATUS_EXPIRED
+        return self.STATUS_PENDING
 
 
 class SlideshowSettings(models.Model):

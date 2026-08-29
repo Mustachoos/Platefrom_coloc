@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Create your admin account</title>
+  {% load static %}
+  <link rel="stylesheet" href="{% static 'photos/tokens.css' %}">
+  <link rel="stylesheet" href="{% static 'photos/base.css' %}">
+  <link rel="stylesheet" href="{% static 'photos/components.css' %}">
+</head>
+<body>
+  <div class="page shell" style="min-height:100vh;display:flex;align-items:center;justify-content:center;">
+    <main class="card" style="width:100%;max-width:480px;">
+      {% if existing_admin %}
+      <h1>Admin account already created</h1>
+      <p class="text-muted" style="margin-top:var(--space-2xs);margin-bottom:var(--space-sm);">
+        You're set up as <strong>{{ existing_admin.username }}</strong>. This is what you use to
+        log into <span class="mono text-sm">/admin/</span>, the staff dashboard at
+        <span class="mono text-sm">/dashboard/</span>, and the admin account page where you manage
+        events and subadmins.
+      </p>
+      <p class="text-muted" style="margin-bottom:var(--space-md);">
+        Want to change the password? Do that from
+        <a class="link" href="{% url 'admin:password_change' %}">the admin password change page</a>
+        — this page only creates the account once, it doesn't edit it.
+      </p>
+      <div class="flex flex-wrap gap-sm items-center">
+        <a class="btn btn--dark" href="{% url 'admin-management' %}">Continue</a>
+      </div>
+      {% else %}
+      <h1>Create your admin account</h1>
+      <p class="text-muted" style="margin-top:var(--space-2xs);margin-bottom:var(--space-md);">
+        This becomes a full Django admin account — it's how you'll log into
+        <span class="mono text-sm">/admin/</span>, the staff dashboard
+        (<span class="mono text-sm">/dashboard/</span>), and the admin account page afterward, to
+        manage events, invite subadmins, moderate photos, and change settings. Only one gets
+        created here; invite subadmins afterward if you need more staff accounts.
+      </p>
+
+      <form method="post">
+        {% csrf_token %}
+        <div class="field">
+          <label for="{{ form.username.id_for_label }}">Username</label>
+          {{ form.username }}
+          {% if form.username.errors %}
+          <p class="text-sm" style="color:var(--danger);">{{ form.username.errors }}</p>
+          {% endif %}
+        </div>
+        <div class="field" style="margin-top:var(--space-sm);">
+          <label for="{{ form.password.id_for_label }}">Password</label>
+          {{ form.password }}
+        </div>
+        <div class="field" style="margin-top:var(--space-sm);">
+          <label for="{{ form.password_confirm.id_for_label }}">Confirm password</label>
+          {{ form.password_confirm }}
+          {% if form.password_confirm.errors %}
+          <p class="text-sm" style="color:var(--danger);">{{ form.password_confirm.errors }}</p>
+          {% endif %}
+        </div>
+        <div class="flex flex-wrap gap-sm items-center" style="margin-top:var(--space-md);">
+          <button type="submit" class="btn btn--dark">Continue</button>
+        </div>
+      </form>
+      {% endif %}
+    </main>
+  </div>
+</body>
+</html>

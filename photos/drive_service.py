@@ -41,12 +41,33 @@ def _client_secret_file():
     return os.environ.get("GOOGLE_OAUTH_CLIENT_SECRET_FILE", "").strip()
 
 
+def _configured_root_folder_id():
+    """The env var wins if set (back-compat with existing installs); otherwise
+    the DB-backed value the admin account page's Drive step writes — that one
+    has to live in the DB rather than a file/env var since it must take
+    effect without a container restart."""
+    env_value = os.environ.get("GOOGLE_DRIVE_ROOT_FOLDER_ID", "").strip()
+    if env_value:
+        return env_value
+    from .models import SiteSettings
+
+    return SiteSettings.get_solo().drive_root_folder_id
+
+
+def is_configured():
+    """Cheap, no-network check for whether Drive backup is usable at all —
+    Drive is optional, so callers use this to skip it silently (not surface
+    an error) on installs where it was never set up."""
+    token_file = _token_file()
+    return bool(token_file and os.path.exists(token_file) and _configured_root_folder_id())
+
+
 def _root_folder_id():
-    root = os.environ.get("GOOGLE_DRIVE_ROOT_FOLDER_ID", "").strip()
+    root = _configured_root_folder_id()
     if not root:
         raise DriveError(
-            "GOOGLE_DRIVE_ROOT_FOLDER_ID is not set. Create a folder in your Drive, "
-            "share it with yourself if needed, and put its ID in that env var."
+            "No Drive root folder configured. Set it from the admin account page's Drive "
+            "step, or set GOOGLE_DRIVE_ROOT_FOLDER_ID."
         )
     return root
 
@@ -114,6 +135,36 @@ def _get_service():
         return build("drive", "v3", credentials=creds, cache_discovery=False)
     except HttpError as exc:
         raise DriveError(f"Could not connect to Google Drive: {exc}") from exc
+
+
+def list_root_folders():
+    """Folders directly under "My Drive" (not trashed) — used by the setup
+    wizard's picker so the user can choose an existing root folder instead
+    of typing/pasting an ID."""
+    service = _get_service()
+    try:
+        results = service.files().list(
+            q=f"'root' in parents and mimeType = '{FOLDER_MIME_TYPE}' and trashed = false",
+            fields="files(id, name)",
+            spaces="drive",
+            orderBy="name",
+        ).execute()
+        return results.get("files", [])
+    except HttpError as exc:
+        raise DriveError(f"Could not list your Drive folders: {exc}") from exc
+
+
+def create_root_folder(name):
+    """Create a new folder directly under "My Drive". Returns its id."""
+    service = _get_service()
+    try:
+        folder = service.files().create(
+            body={"name": name, "mimeType": FOLDER_MIME_TYPE, "parents": ["root"]},
+            fields="id",
+        ).execute()
+        return folder["id"]
+    except HttpError as exc:
+        raise DriveError(f"Could not create Drive folder '{name}': {exc}") from exc
 
 
 def get_or_create_event_folder(name):

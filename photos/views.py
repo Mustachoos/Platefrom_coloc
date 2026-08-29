@@ -8,6 +8,7 @@ from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
 from django.contrib import messages
 from django.contrib.admin.views.decorators import staff_member_required
+from django.contrib.auth import login as auth_login
 from django.db import IntegrityError
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
@@ -15,8 +16,8 @@ from django.urls import reverse
 from django.utils import timezone
 
 from . import drive_service, event_service, whiteboard_service
-from .forms import PseudoForm, ShareDriveForm
-from .models import Event, Like, Photo, SlideshowSettings, UserIdentity, WhiteboardDrawing
+from .forms import PseudoForm, ShareDriveForm, StaffLoginForm
+from .models import Event, Like, Photo, SiteSettings, SlideshowSettings, UserIdentity, WhiteboardDrawing
 
 logger = logging.getLogger(__name__)
 
@@ -346,17 +347,14 @@ def slideshow_settings_api(request):
 
 
 def upload_qr_code(request):
-    forced_ip = os.environ.get("QR_HOST_IP", "").strip()
-    if forced_ip:
+    # A verified address (see the admin account page) always wins — it's
+    # been proven reachable by an actual phone scan, and already carries its
+    # own port (captured straight from that verifying request's Host header).
+    # Otherwise, derive it live from whatever request loaded this page.
+    server_host = SiteSettings.get_solo().server_host
+    if server_host:
         scheme = "https" if request.is_secure() else "http"
-        raw_host = request.get_host()
-        if raw_host.count(":") == 1 and not raw_host.startswith("["):
-            _, port = raw_host.rsplit(":", 1)
-        else:
-            port = request.get_port()
-        default_port = "443" if scheme == "https" else "80"
-        host = forced_ip if str(port) == default_port else f"{forced_ip}:{port}"
-        upload_url = f"{scheme}://{host}{reverse('upload')}"
+        upload_url = f"{scheme}://{server_host}{reverse('upload')}"
     else:
         upload_url = request.build_absolute_uri(reverse("upload"))
     image = qrcode.make(upload_url)
@@ -395,7 +393,7 @@ def wifi_qr_code(request):
     return HttpResponse(buffer.getvalue(), content_type="image/png")
 
 
-@staff_member_required
+@staff_member_required(login_url="staff-login")
 def drive_reauth_start(request):
     """Kicks off the web-based OAuth flow: redirect the admin's own browser
     to Google's consent screen, distinct from `manage.py google_drive_auth`
@@ -418,7 +416,7 @@ def drive_reauth_start(request):
     return redirect(auth_url)
 
 
-@staff_member_required
+@staff_member_required(login_url="staff-login")
 def drive_reauth_callback(request):
     expected_state = request.session.pop("drive_oauth_state", None)
     if not expected_state or request.GET.get("state") != expected_state:
@@ -440,7 +438,29 @@ def drive_reauth_callback(request):
     return _dashboard_redirect(tab="features")
 
 
-@staff_member_required
+def _post_login_redirect(user):
+    return redirect("admin-management" if user.is_superuser else "dashboard")
+
+
+def staff_login_view(request):
+    if request.user.is_authenticated and request.user.is_staff:
+        return _post_login_redirect(request.user)
+
+    if request.method == "POST":
+        form = StaffLoginForm(request, data=request.POST)
+        if form.is_valid():
+            user = form.get_user()
+            if not user.is_staff:
+                form.add_error(None, "This account doesn't have staff access.")
+            else:
+                auth_login(request, user)
+                return _post_login_redirect(user)
+    else:
+        form = StaffLoginForm(request)
+    return render(request, "photos/staff_login.html", {"form": form})
+
+
+@staff_member_required(login_url="staff-login")
 def dashboard_view(request):
     active_event = Event.get_active()
 
@@ -614,7 +634,7 @@ def dashboard_view(request):
     )
 
 
-@staff_member_required
+@staff_member_required(login_url="staff-login")
 def dashboard_delete_photo(request, photo_id):
     if request.method == "POST":
         photo = get_object_or_404(Photo, id=photo_id)
@@ -623,7 +643,7 @@ def dashboard_delete_photo(request, photo_id):
     return _dashboard_redirect(tab="photos")
 
 
-@staff_member_required
+@staff_member_required(login_url="staff-login")
 def dashboard_delete_guest(request, identity_id):
     if request.method == "POST":
         identity = get_object_or_404(UserIdentity, id=identity_id)
@@ -647,7 +667,7 @@ def dashboard_delete_guest(request, identity_id):
     return _dashboard_redirect(tab="guests")
 
 
-@staff_member_required
+@staff_member_required(login_url="staff-login")
 def dashboard_delete_whiteboard_drawing(request, drawing_id):
     if request.method == "POST":
         drawing = get_object_or_404(WhiteboardDrawing, id=drawing_id)
@@ -663,7 +683,7 @@ def dashboard_delete_whiteboard_drawing(request, drawing_id):
     return _dashboard_redirect(tab="whiteboard")
 
 
-@staff_member_required
+@staff_member_required(login_url="staff-login")
 def create_event_view(request):
     if request.method != "POST":
         return redirect("dashboard")
@@ -675,7 +695,7 @@ def create_event_view(request):
     event = Event.objects.filter(name=name).first()
     if event is None:
         event = Event.objects.create(name=name)
-    if not event.drive_folder_id:
+    if not event.drive_folder_id and drive_service.is_configured():
         ok, message = event_service.ensure_drive_folder(event)
         if not ok:
             messages.error(
@@ -687,7 +707,7 @@ def create_event_view(request):
     return redirect("event-switch", event_id=event.id)
 
 
-@staff_member_required
+@staff_member_required(login_url="staff-login")
 def event_switch_view(request, event_id):
     target = get_object_or_404(Event, id=event_id)
     active = Event.get_active()
@@ -698,10 +718,15 @@ def event_switch_view(request, event_id):
 
     # Live, uncached check every time this page is hit — a cached
     # drive_folder_id can't tell us the folder wasn't deleted/unshared since
-    # the last time we looked.
-    active_drive_ok = drive_service.folder_exists(active.drive_folder_id) if active else True
-    target_drive_ok = drive_service.folder_exists(target.drive_folder_id)
-    broken = active if (active and not active_drive_ok) else (target if not target_drive_ok else None)
+    # the last time we looked. An event with no Drive folder at all (Drive
+    # is optional) isn't "broken" — only a folder that existed and is now
+    # unreachable counts as broken.
+    active_drive_ok = drive_service.folder_exists(active.drive_folder_id) if (active and active.drive_folder_id) else True
+    target_drive_ok = drive_service.folder_exists(target.drive_folder_id) if target.drive_folder_id else True
+    broken = (
+        active if (active and active.drive_folder_id and not active_drive_ok)
+        else (target if (target.drive_folder_id and not target_drive_ok) else None)
+    )
 
     if request.method == "POST":
         if "recreate_folder" in request.POST:
@@ -758,7 +783,7 @@ def event_switch_view(request, event_id):
             if broken:
                 messages.error(request, f"Drive folder for '{broken.name}' is still unreachable.")
                 return redirect("event-switch", event_id=target.id)
-            if active:
+            if active and active.drive_folder_id:
                 pending = event_service.unbacked_up_photo_count(active)
                 if pending:
                     messages.error(
@@ -778,7 +803,7 @@ def event_switch_view(request, event_id):
 
         return redirect("event-switch", event_id=target.id)
 
-    pending = event_service.unbacked_up_photo_count(active) if (active and active_drive_ok) else 0
+    pending = event_service.unbacked_up_photo_count(active) if (active and active.drive_folder_id and active_drive_ok) else 0
     active_photo_count = active.photos.count() if active else 0
     return render(
         request,

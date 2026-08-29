@@ -1,0 +1,399 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Admin account</title>
+  {% load static %}
+  {% load icons %}
+  <link rel="stylesheet" href="{% static 'photos/tokens.css' %}">
+  <link rel="stylesheet" href="{% static 'photos/base.css' %}">
+  <link rel="stylesheet" href="{% static 'photos/components.css' %}">
+  <style>
+    .hub-layout{display:flex;gap:var(--space-md);align-items:flex-start}
+    .col-left{flex:0 0 62%;min-width:0}
+    .col-right{flex:1;min-width:0;display:flex;flex-direction:column;gap:var(--space-md)}
+    @media(max-width:720px){
+      .hub-layout{flex-direction:column}
+      .col-left,.col-right{width:100%;flex:0 0 auto}
+    }
+
+    .hub-details summary{list-style:none;cursor:pointer;display:flex;align-items:center;justify-content:space-between}
+    .hub-details summary::-webkit-details-marker{display:none}
+    .hub-details summary h2{margin:0;display:flex;align-items:center;font-size:var(--text-md)}
+    .hub-details summary::after{content:'▸';color:var(--ink-600);font-size:0.9rem;margin-left:12px;transition:transform .2s ease}
+    .hub-details[open] summary::after{transform:rotate(90deg)}
+    .hub-details .details-body{margin-top:var(--space-sm)}
+
+    .status-circle{box-sizing:border-box;display:inline-block;width:18px;height:18px;border-radius:50%;background:var(--line-strong);border:2px solid transparent;vertical-align:middle;margin-right:var(--space-2xs);transition:background .3s ease}
+    .status-circle.verified{background:var(--success-ink)}
+    .status-circle.partial{background:var(--warning-ink)}
+    .status-circle.failed{background:var(--danger)}
+    .status-circle.checking{background:transparent;border-color:var(--line-strong);border-top-color:var(--ink-900);animation:spin .8s linear infinite}
+    @keyframes spin{to{transform:rotate(360deg)}}
+
+    .drive-step-row{display:flex;justify-content:flex-start;align-items:center;padding:var(--space-xs) 4px var(--space-xs) var(--space-sm);border-bottom:1px solid var(--line);width:100%;text-align:left;font-weight:700;font-size:var(--text-sm)}
+    .drive-step-row:last-child{border-bottom:none}
+    .drive-step-row:hover{background:var(--surface-sunken);border-radius:var(--radius-sm)}
+    .step-locked{color:var(--ink-600);font-style:italic}
+    .step-ok{color:var(--success-ink);font-weight:700;margin-bottom:var(--space-sm)}
+    .step-warn{color:var(--danger);font-weight:700;margin-bottom:var(--space-sm)}
+    .checklist{padding-left:20px;display:flex;flex-direction:column;gap:var(--space-2xs)}
+    .redirect-uri{background:var(--surface-sunken);border-radius:var(--radius-sm);padding:var(--space-2xs) var(--space-xs);font-family:var(--font-mono);font-size:var(--text-xs);word-break:break-all;user-select:all}
+
+    .row-actions{display:flex;gap:var(--space-2xs);align-items:center;justify-content:flex-end}
+    .links-list{display:flex;flex-direction:column;gap:var(--space-xs)}
+
+    dialog{border:none;border-radius:var(--radius-lg);padding:0;width:min(90vw,420px);box-shadow:var(--shadow-lg)}
+    dialog.wide{width:min(90vw,560px)}
+    dialog::backdrop{background:rgba(27,26,36,0.45)}
+    dialog form{padding:var(--space-md) var(--space-lg)}
+    dialog h2{margin-bottom:var(--space-2xs);font-size:var(--text-lg)}
+
+    .ip-verify-row{display:flex;gap:var(--space-xs);align-items:flex-end;flex-wrap:wrap}
+    .ip-verify-row .field{flex:1;min-width:200px}
+    #checking-action,#action-buttons{flex:1 1 100%;display:flex;flex-direction:row;gap:var(--space-2xs)}
+    .help-btn{display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:50%;background:var(--surface-sunken);color:var(--ink-600);font-size:0.7rem;font-weight:700;padding:0;margin-left:var(--space-3xs);vertical-align:middle}
+    #ip_address:read-only{background:var(--surface-sunken);color:var(--ink-600)}
+    .textbox-btn{display:block;flex:1;padding:var(--space-2xs);border-radius:var(--radius-md);border:1px solid var(--line);background:var(--surface-solid);color:var(--ink-900);font-weight:700;font-size:var(--text-sm);text-align:center}
+    .textbox-btn:hover{background:var(--surface-sunken)}
+    .textbox-btn:disabled{background:var(--surface-sunken);color:var(--ink-400);cursor:not-allowed}
+  </style>
+</head>
+<body>
+  <div class="page shell">
+    <div class="flex justify-between items-start gap-sm flex-wrap" style="margin-bottom:var(--space-md);">
+      <div>
+        <h1>Admin account</h1>
+        <p class="text-muted text-sm" style="margin-top:var(--space-2xs);">Signed in as <strong>{{ request.user.username }}</strong> (admin).</p>
+      </div>
+      <form method="post" action="{% url 'staff-logout' %}">
+        {% csrf_token %}
+        <button type="submit" class="btn btn--light btn--sm">Log out</button>
+      </form>
+    </div>
+
+    <div class="hub-layout">
+      <div class="col-left">
+        <div class="card card--solid">
+          {% for message in messages %}{% if "staff" in message.tags %}
+          <div class="alert alert--boxed{% if "success" in message.tags %} alert--success{% endif %}" style="margin-bottom:var(--space-sm);">{{ message }}</div>
+          {% endif %}{% endfor %}
+          <p class="card__title" style="margin-bottom:var(--space-2xs);">Staff ({{ invites|length }})</p>
+          <p class="text-muted text-sm" style="margin-bottom:var(--space-sm);">Generate a one-time link and share it with someone to let them create their own staff
+            account. They'll be able to use the dashboard, but not manage subadmins themselves.</p>
+
+          <button type="button" class="btn btn--dark btn--sm" onclick="document.getElementById('invite-modal').showModal()">Generate invite link</button>
+
+          <dialog id="invite-modal">
+            <form method="post">
+              {% csrf_token %}
+              <h2>Who is this invite for?</h2>
+              <div class="field">
+                <label for="invitee_name">Name</label>
+                <input class="input" type="text" id="invitee_name" name="invitee_name" required placeholder="e.g. Alex" autofocus>
+              </div>
+              <div class="flex gap-sm items-center" style="margin-top:var(--space-md);">
+                <button type="button" class="btn btn--outline btn--sm" onclick="document.getElementById('invite-modal').close()">Cancel</button>
+                <button type="submit" name="generate_invite" class="btn btn--dark btn--sm">Generate link</button>
+              </div>
+            </form>
+          </dialog>
+
+          {% if invites %}
+          <div style="overflow-x:auto;margin-top:var(--space-sm);">
+            <table class="table">
+              <thead><tr><th>Name</th><th>Status</th><th></th></tr></thead>
+              <tbody>
+                {% for invite in invites %}
+                <tr>
+                  <td>{{ invite.invitee_name }}</td>
+                  <td><span class="badge {% if invite.status == "active" %}badge--success{% elif invite.status == "pending" %}badge--warning{% elif invite.status == "expired" %}badge--danger{% else %}badge--neutral{% endif %}">{{ invite.status|title }}</span></td>
+                  <td>
+                    <div class="row-actions">
+                      <button
+                        type="button" class="btn btn--outline btn--sm copy-link-btn"
+                        data-url="{{ request.scheme }}://{% if site_settings.server_host %}{{ site_settings.server_host }}{% else %}{{ request.get_host }}{% endif %}{% url 'subadmin-invite' invite.token %}"
+                        {% if invite.status != "pending" %}disabled{% endif %}
+                      >Copy link</button>
+                      {% if invite.status != "revoked" %}
+                      <form method="post" action="{% url 'admin-invite-revoke' invite.token %}">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn--danger btn--sm">Revoke</button>
+                      </form>
+                      {% else %}
+                      <form method="post" action="{% url 'admin-invite-delete' invite.token %}">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn--danger btn--sm" aria-label="Delete">{% icon 'trash' size=16 %}</button>
+                      </form>
+                      {% endif %}
+                    </div>
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+          {% else %}
+          <p class="text-muted text-sm" style="font-style:italic;margin-top:var(--space-sm);">No subadmin invited yet.</p>
+          {% endif %}
+        </div>
+
+        <script>
+          document.querySelectorAll('.copy-link-btn').forEach(function (btn) {
+            btn.addEventListener('click', function () {
+              navigator.clipboard.writeText(btn.dataset.url).then(function () {
+                var original = btn.textContent;
+                btn.textContent = 'Copied!';
+                setTimeout(function () { btn.textContent = original; }, 1500);
+              });
+            });
+          });
+        </script>
+      </div>
+
+      <div class="col-right">
+        <div class="card card--solid">
+          {% for message in messages %}{% if "network" in message.tags %}
+          <div class="alert alert--boxed{% if "success" in message.tags %} alert--success{% endif %}" style="margin-bottom:var(--space-sm);">{{ message }}</div>
+          {% endif %}{% endfor %}
+          <details id="network-details" class="hub-details" {% if verify_token %}open{% endif %}>
+            <summary>
+              <h2><span
+                class="status-circle{% if verify_token %} checking{% elif verified_ip %} verified{% endif %}"
+                id="ip-status-circle"
+              ></span>Network address</h2>
+            </summary>
+            <div class="details-body">
+
+            <form method="post" class="ip-verify-row" id="ip-form">
+              {% csrf_token %}
+              <div class="field">
+                <label for="ip_address">IP address <button type="button" class="help-btn" onclick="document.getElementById('ip-help-modal').showModal()">?</button></label>
+                <input
+                  class="input" type="text" id="ip_address" name="ip_address" placeholder="e.g. 192.168.1.13"
+                  value="{% if verify_token %}{{ verify_ip }}{% else %}{{ verified_ip }}{% endif %}"
+                  {% if verify_token or verified_ip %}readonly{% endif %}
+                  required
+                >
+              </div>
+              <div id="checking-action" {% if not verify_token %}style="display:none"{% endif %}>
+                <button type="button" class="textbox-btn" disabled>Checking IP</button>
+              </div>
+              <div id="action-buttons" {% if verify_token %}style="display:none"{% endif %}>
+                <button type="button" class="textbox-btn" id="modify-ip-btn" {% if not verified_ip %}disabled{% endif %}>Modify</button>
+                <button type="submit" name="start_verify_ip" class="textbox-btn">Check the IP</button>
+              </div>
+            </form>
+
+            {% if verify_token %}
+            <script>
+              (function () {
+                var input = document.getElementById('ip_address');
+                var modifyBtn = document.getElementById('modify-ip-btn');
+                var checkingAction = document.getElementById('checking-action');
+                var actionButtons = document.getElementById('action-buttons');
+                var statusCircle = document.getElementById('ip-status-circle');
+                var poll = setInterval(function () {
+                  fetch("{% url 'verify-ip-status' verify_token %}")
+                    .then(function (r) { return r.json(); })
+                    .then(function (data) {
+                      if (data.verified) {
+                        clearInterval(poll);
+                        input.value = data.host.split(':')[0];
+                        input.readOnly = true;
+                        modifyBtn.disabled = false;
+                        checkingAction.style.display = 'none';
+                        actionButtons.style.display = '';
+                        statusCircle.classList.remove('checking');
+                        statusCircle.classList.add('verified');
+                      } else if (data.failed) {
+                        clearInterval(poll);
+                        input.readOnly = false;
+                        modifyBtn.disabled = true;
+                        checkingAction.style.display = 'none';
+                        actionButtons.style.display = '';
+                        statusCircle.classList.remove('checking');
+                        statusCircle.classList.add('failed');
+                      }
+                    });
+                }, 1500);
+              })();
+            </script>
+            {% endif %}
+
+            <script>
+              document.getElementById('modify-ip-btn').addEventListener('click', function () {
+                var input = document.getElementById('ip_address');
+                input.readOnly = false;
+                input.focus();
+                input.select();
+                this.disabled = true;
+                document.getElementById('ip-status-circle').classList.remove('verified', 'failed');
+              });
+            </script>
+
+            <dialog id="ip-help-modal">
+              <form method="dialog">
+                <h2>Where do I find my IP address?</h2>
+                <p class="text-sm text-muted">
+                  <strong>Windows:</strong> Settings → Network &amp; Internet → Wi-Fi → click your network → look for "IPv4 address".<br><br>
+                  <strong>macOS:</strong> System Settings → Wi-Fi → Details, next to your network → "IP Address".<br><br>
+                  <strong>Linux:</strong> run <span class="mono">ip addr</span> in a terminal and look for the address under your active network interface.
+                </p>
+                <div class="flex gap-sm items-center" style="margin-top:var(--space-md);">
+                  <button type="button" class="btn btn--dark btn--sm" onclick="document.getElementById('ip-help-modal').close()">Got it</button>
+                </div>
+              </form>
+            </dialog>
+
+            </div>
+          </details>
+        </div>
+
+        <div class="card card--solid">
+          {% for message in messages %}{% if "drive" in message.tags %}
+          <div class="alert alert--boxed{% if "success" in message.tags %} alert--success{% endif %}" style="margin-bottom:var(--space-sm);">{{ message }}</div>
+          {% endif %}{% endfor %}
+          <details id="drive-details" class="hub-details" {% if drive_error or drive_attention %}open{% endif %}>
+            <summary>
+              <h2><span class="status-circle{% if drive_ready %} verified{% elif drive_attention %} failed{% elif drive_progress > 0 %} partial{% endif %}"></span>Google Drive</h2>
+            </summary>
+            <div class="details-body">
+              <button type="button" class="drive-step-row" onclick="document.getElementById('drive-step1-modal').showModal()">
+                <span class="status-circle{% if has_client_secret and not client_secret_valid %} failed{% elif client_secret_valid %} verified{% endif %}"></span>
+                1. Upload Google credentials
+              </button>
+              <button type="button" class="drive-step-row" onclick="document.getElementById('drive-step2-modal').showModal()">
+                <span class="status-circle{% if has_token and not token_valid %} failed{% elif token_valid %} verified{% endif %}"></span>
+                2. Connect your Google account
+              </button>
+              <button type="button" class="drive-step-row" onclick="document.getElementById('drive-step3-modal').showModal()">
+                <span class="status-circle{% if current_folder_id and not folder_valid %} failed{% elif folder_valid %} verified{% endif %}"></span>
+                3. Choose Drive folder
+              </button>
+              {% if has_client_secret or has_token or current_folder_id %}
+              <form method="post" style="margin-top:var(--space-sm);">
+                {% csrf_token %}
+                <button type="submit" name="disconnect_drive" class="btn btn--danger btn--sm">Remove Drive connection</button>
+              </form>
+              {% endif %}
+            </div>
+          </details>
+        </div>
+      </div>
+    </div>
+
+    <dialog id="drive-step1-modal" class="wide">
+      <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <h2>1. Upload Google credentials</h2>
+        {% if client_secret_valid %}
+        <p class="step-ok">✓ Credentials file looks good.</p>
+        {% elif has_client_secret %}
+        <p class="step-warn">⚠ This file isn't a valid Google OAuth credentials file — upload the right one.</p>
+        {% endif %}
+        <ol class="checklist">
+          <li><a class="link" href="https://console.cloud.google.com/projectcreate" target="_blank" rel="noopener">Create a project</a> on Google Cloud Console.</li>
+          <li><a class="link" href="https://console.cloud.google.com/apis/library/drive.googleapis.com" target="_blank" rel="noopener">Enable the Google Drive API</a> for that project.</li>
+          <li><a class="link" href="https://console.cloud.google.com/apis/credentials/consent" target="_blank" rel="noopener">Configure the OAuth consent screen</a> — type "External".</li>
+          <li><a class="link" href="https://console.cloud.google.com/auth/audience" target="_blank" rel="noopener">Add yourself as a test user</a> — add your address, it's the same one used in step 2.</li>
+          <li><a class="link" href="https://console.cloud.google.com/apis/credentials" target="_blank" rel="noopener">Create OAuth credentials</a> → type <strong>Web application</strong> (not Desktop app) → add this exact address as an authorized redirect URI:
+            <div class="redirect-uri">{{ drive_redirect_uri }}</div>
+          </li>
+          <li>Download the generated JSON file and upload it below.</li>
+        </ol>
+        <div class="field" style="margin-top:var(--space-sm);">
+          <label for="{{ client_secret_form.client_secret_file.id_for_label }}">Credentials file (JSON)</label>
+          {{ client_secret_form.client_secret_file }}
+        </div>
+        <div class="flex gap-sm items-center" style="margin-top:var(--space-md);">
+          <button type="button" class="btn btn--outline btn--sm" onclick="document.getElementById('drive-step1-modal').close()">Close</button>
+          <button type="submit" name="upload_client_secret" class="btn btn--dark btn--sm">{% if client_secret_valid %}Replace file{% else %}Upload{% endif %}</button>
+        </div>
+      </form>
+    </dialog>
+
+    <dialog id="drive-step2-modal">
+      <form method="dialog">
+        <h2>2. Connect your Google account</h2>
+        {% if not client_secret_valid %}
+        <p class="step-locked">Complete step 1 first.</p>
+        {% elif not drive_is_localhost %}
+        <p class="text-sm text-muted">
+          This step requires a browser running on the server machine itself (Google rejects
+          plain http:// addresses that aren't "localhost"). Open this button from a browser
+          <strong>on that machine</strong> to connect:
+        </p>
+        <div class="flex gap-sm items-center" style="margin-top:var(--space-sm);">
+          <a class="btn btn--dark btn--sm" href="{{ drive_localhost_url }}">Open on localhost</a>
+        </div>
+        {% else %}
+          {% if token_valid %}
+          <p class="step-ok">✓ Connected — Google Drive is reachable with this account.</p>
+          {% elif has_token %}
+          <p class="step-warn">⚠ The stored connection no longer works — reconnect below.</p>
+          {% endif %}
+          <div class="flex gap-sm items-center">
+            <a class="btn btn--dark btn--sm" href="{% url 'drive-google-connect' %}">{% if token_valid %}Reconnect{% else %}Connect my Google account{% endif %}</a>
+          </div>
+        {% endif %}
+        <div class="flex gap-sm items-center" style="margin-top:var(--space-md);">
+          <button type="submit" class="btn btn--outline btn--sm">Close</button>
+        </div>
+      </form>
+    </dialog>
+
+    <dialog id="drive-step3-modal" class="wide">
+      <form method="post">
+        {% csrf_token %}
+        <h2>3. Choose Drive folder</h2>
+        {% if not token_valid %}
+        <p class="step-locked">Complete step 2 first.</p>
+        {% else %}
+          {% if drive_error %}
+          <div class="alert alert--boxed" style="margin-bottom:var(--space-sm);">{{ drive_error }}</div>
+          {% elif folder_valid %}
+          <p class="step-ok">✓ Connected — each event creates its own subfolder inside this one.</p>
+          {% elif current_folder_id %}
+          <p class="step-warn">⚠ The previously chosen folder is no longer reachable — pick another one.</p>
+          {% endif %}
+          <div class="field">
+            <label for="folder_choice">Folder</label>
+            <select
+              class="input" name="folder_choice" id="folder_choice"
+              onchange="document.getElementById('new-folder-name-row').style.display = (this.value === '__new__') ? '' : 'none'"
+            >
+              {% for folder in drive_folders %}
+              <option value="{{ folder.id }}" {% if folder.id == current_folder_id %}selected{% endif %}>{{ folder.name }}</option>
+              {% endfor %}
+              <option value="__new__">+ Create a new folder</option>
+            </select>
+          </div>
+          <div class="field" id="new-folder-name-row" style="display:none;margin-top:var(--space-sm);">
+            <label for="new_folder_name">New folder name</label>
+            <input class="input" type="text" id="new_folder_name" name="new_folder_name" placeholder="e.g. Coloc Photos">
+          </div>
+        {% endif %}
+        <div class="flex gap-sm items-center" style="margin-top:var(--space-md);">
+          <button type="button" class="btn btn--outline btn--sm" onclick="document.getElementById('drive-step3-modal').close()">Close</button>
+          {% if token_valid %}
+          <button type="submit" name="choose_folder" class="btn btn--dark btn--sm">{% if folder_valid %}Change folder{% else %}Connect folder{% endif %}</button>
+          {% endif %}
+        </div>
+      </form>
+    </dialog>
+
+    {% if drive_error %}
+    <script>document.getElementById('drive-step3-modal').showModal();</script>
+    {% endif %}
+
+    <div class="card card--solid" style="margin-top:var(--space-md);">
+      <p class="card__title">More</p>
+      <div class="links-list">
+        <a class="link" href="{% url 'dashboard' %}?tab=events">All events</a>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

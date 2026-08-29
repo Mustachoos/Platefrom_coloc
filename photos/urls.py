@@ -1,10 +1,34 @@
-from django.urls import path
+from django.contrib.auth.views import LogoutView
+from django.urls import path, reverse_lazy
 from django.views.generic import RedirectView
 
-from . import views
+from . import admin_views, views
 
 urlpatterns = [
     path("", RedirectView.as_view(pattern_name="upload", permanent=False)),
+    path("staff-login/", views.staff_login_view, name="staff-login"),
+    path("logout/", LogoutView.as_view(next_page=reverse_lazy("staff-login")), name="staff-logout"),
+    path("create-admin/", admin_views.create_admin_view, name="create-admin"),
+    path("admin-account/", admin_views.admin_management_view, name="admin-management"),
+    path("admin-account/drive/google/connect/", admin_views.drive_google_connect_view, name="drive-google-connect"),
+    path("admin-account/drive/google/callback/", admin_views.drive_google_callback_view, name="drive-google-callback"),
+    path(
+        "admin-account/invites/<uuid:token>/revoke/",
+        admin_views.revoke_invite_view,
+        name="admin-invite-revoke",
+    ),
+    path(
+        "admin-account/invites/<uuid:token>/delete/",
+        admin_views.delete_invite_view,
+        name="admin-invite-delete",
+    ),
+    path("admin-account/invite/<uuid:token>/", admin_views.subadmin_invite_view, name="subadmin-invite"),
+    path(
+        "admin-account/verify-ip/<uuid:token>/status/",
+        admin_views.verify_ip_status_view,
+        name="verify-ip-status",
+    ),
+    path("admin-account/verify-ip/<uuid:token>/", admin_views.verify_ip_page_view, name="verify-ip-page"),
     path("pseudo/", views.choose_pseudo, name="choose-pseudo"),
     path("pseudo/share-drive/", views.share_drive_view, name="share-drive"),
     path("upload/", views.upload_view, name="upload"),

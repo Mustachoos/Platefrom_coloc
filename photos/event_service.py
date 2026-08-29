@@ -169,7 +169,12 @@ def switch_active_event(event):
     the active event, and tell connected TV screens to refresh. Returns
     (downloaded_count, failed_count) from the Drive download step."""
     previous = Event.get_active()
-    if previous and previous.pk != event.pk:
+    # Only safe to clear the outgoing event's local copies if they're
+    # actually backed up somewhere else first — an event with no Drive
+    # folder (Drive is optional) has no such backup, so its photos are left
+    # in place instead: harmless (event-scoped queries already hide them
+    # once it's no longer active) and recoverable if it's reactivated later.
+    if previous and previous.pk != event.pk and previous.drive_folder_id:
         _clear_local_photos(previous)
 
     downloaded, failed = sync_photos_from_drive(event)
