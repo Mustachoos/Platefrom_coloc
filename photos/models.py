@@ -195,6 +195,15 @@ class SiteSettings(models.Model):
         "Set from the setup wizard's Drive step (or the GOOGLE_DRIVE_ROOT_FOLDER_ID env var, "
         "which takes priority if set).",
     )
+    support_email = models.EmailField(
+        blank=True,
+        help_text="Gmail address used to send admin password-reset emails.",
+    )
+    support_email_app_password = models.CharField(
+        max_length=255,
+        blank=True,
+        help_text="Gmail app password (not the account password) for support_email.",
+    )
 
     class Meta:
         verbose_name = "Site settings"

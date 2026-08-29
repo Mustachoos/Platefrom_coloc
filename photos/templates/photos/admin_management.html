@@ -281,6 +281,44 @@
             </div>
           </details>
         </div>
+
+        <div class="card card--solid">
+          {% for message in messages %}{% if "account" in message.tags %}
+          <div class="alert alert--boxed{% if "success" in message.tags %} alert--success{% endif %}" style="margin-bottom:var(--space-sm);">{{ message }}</div>
+          {% endif %}{% endfor %}
+          <p class="card__title" style="margin-bottom:var(--space-2xs);">Account &amp; password reset</p>
+
+          <form method="post" class="flex gap-sm items-end flex-wrap">
+            {% csrf_token %}
+            <div class="field grow" style="min-width:180px;">
+              <label for="account_email">Your email</label>
+              <input class="input" type="email" id="account_email" name="email" value="{{ request.user.email }}" placeholder="you@example.com">
+            </div>
+            <button type="submit" name="update_email" class="btn btn--light btn--sm">Save</button>
+          </form>
+
+          <div style="margin-top:var(--space-md);padding-top:var(--space-sm);border-top:1px dashed var(--line);">
+            <p class="text-sm text-muted" style="margin-bottom:var(--space-sm);">Support email — sends password-reset links to admins and subadmins who forget their password. Uses a <a class="link" href="https://myaccount.google.com/apppasswords" target="_blank" rel="noopener">Gmail app password</a>, not your normal Gmail password.</p>
+            <form method="post" class="flex gap-sm items-end flex-wrap">
+              {% csrf_token %}
+              <div class="field grow" style="min-width:160px;">
+                <label for="support_email">Gmail address</label>
+                <input class="input" type="email" id="support_email" name="support_email" value="{{ site_settings.support_email }}" placeholder="you@gmail.com">
+              </div>
+              <div class="field grow" style="min-width:160px;">
+                <label for="support_email_app_password">App password</label>
+                <input class="input" type="password" id="support_email_app_password" name="support_email_app_password" value="{{ site_settings.support_email_app_password }}" placeholder="16-character app password">
+              </div>
+              <button type="submit" name="save_support_email" class="btn btn--light btn--sm">Save</button>
+            </form>
+            {% if site_settings.support_email and request.user.email %}
+            <form method="post" style="margin-top:var(--space-xs);">
+              {% csrf_token %}
+              <button type="submit" name="send_test_email" class="btn btn--outline btn--sm">Send test email to {{ request.user.email }}</button>
+            </form>
+            {% endif %}
+          </div>
+        </div>
       </div>
     </div>
 

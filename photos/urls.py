@@ -1,13 +1,35 @@
+from django.contrib.auth import views as auth_views
 from django.contrib.auth.views import LogoutView
 from django.urls import path, reverse_lazy
 from django.views.generic import RedirectView
 
 from . import admin_views, views
+from .forms import StyledSetPasswordForm
 
 urlpatterns = [
     path("", RedirectView.as_view(pattern_name="upload", permanent=False)),
     path("staff-login/", views.staff_login_view, name="staff-login"),
     path("logout/", LogoutView.as_view(next_page=reverse_lazy("staff-login")), name="staff-logout"),
+    path("staff-login/reset/", admin_views.SupportEmailPasswordResetView.as_view(), name="password-reset"),
+    path(
+        "staff-login/reset/done/",
+        auth_views.PasswordResetDoneView.as_view(template_name="photos/password_reset_done.html"),
+        name="password-reset-done",
+    ),
+    path(
+        "staff-login/reset/<uidb64>/<token>/",
+        auth_views.PasswordResetConfirmView.as_view(
+            template_name="photos/password_reset_confirm.html",
+            success_url=reverse_lazy("password-reset-complete"),
+            form_class=StyledSetPasswordForm,
+        ),
+        name="password-reset-confirm",
+    ),
+    path(
+        "staff-login/reset/complete/",
+        auth_views.PasswordResetCompleteView.as_view(template_name="photos/password_reset_complete.html"),
+        name="password-reset-complete",
+    ),
     path("create-admin/", admin_views.create_admin_view, name="create-admin"),
     path("admin-account/", admin_views.admin_management_view, name="admin-management"),
     path("admin-account/drive/google/connect/", admin_views.drive_google_connect_view, name="drive-google-connect"),

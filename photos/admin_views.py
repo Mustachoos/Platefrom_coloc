@@ -19,6 +19,7 @@ not whatever the admin typed. Pending/result/failure state lives in the
 cache (short-lived, no need to persist it).
 """
 
+import logging
 import os
 import threading
 import urllib.error
@@ -27,18 +28,21 @@ import uuid
 
 from django.contrib import messages
 from django.contrib.auth import login
+from django.contrib.auth import views as auth_views
 from django.contrib.auth.decorators import user_passes_test
 from django.contrib.auth.models import User
 from django.core.cache import cache
+from django.http import HttpResponseRedirect, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
-from django.urls import reverse
+from django.urls import reverse, reverse_lazy
 from django.utils import timezone
-from django.http import JsonResponse
 from google_auth_oauthlib.flow import Flow
 
-from . import drive_service
-from .forms import AdminAccountForm, DriveClientSecretForm
+from . import drive_service, email_service
+from .forms import AdminAccountForm, DriveClientSecretForm, StyledPasswordResetForm
 from .models import AdminInvite, SiteSettings
+
+logger = logging.getLogger(__name__)
 
 # oauthlib refuses any OAuth exchange over plain http by default. Google
 # itself allows http://localhost specifically (see _localhost_redirect_uri
@@ -100,12 +104,47 @@ def create_admin_view(request):
             if User.objects.filter(username=username).exists():
                 form.add_error("username", "That username is already taken.")
             else:
-                user = User.objects.create_superuser(username, "", form.cleaned_data["password"])
+                user = User.objects.create_superuser(
+                    username, form.cleaned_data["email"].strip(), form.cleaned_data["password"]
+                )
                 login(request, user)
                 return redirect("admin-management")
     else:
         form = AdminAccountForm()
     return render(request, "photos/create_admin.html", {"form": form})
+
+
+class SupportEmailPasswordResetView(auth_views.PasswordResetView):
+    """Same as Django's PasswordResetView, except the SMTP credentials come
+    from SiteSettings (set via the admin UI) instead of the global
+    EMAIL_HOST_* settings — this app also ships as a standalone .exe where
+    end users can't set environment variables."""
+
+    template_name = "photos/password_reset_form.html"
+    email_template_name = "photos/password_reset_email.txt"
+    subject_template_name = "photos/password_reset_subject.txt"
+    success_url = reverse_lazy("password-reset-done")
+    form_class = StyledPasswordResetForm
+
+    def form_valid(self, form):
+        # Never let an SMTP failure surface differently from "no matching
+        # account" — either way the response must look identical, so this
+        # always redirects to the same success page; a misconfigured
+        # support email only shows up in the server log, not to whoever
+        # submitted the form.
+        try:
+            form.save(
+                use_https=self.request.is_secure(),
+                token_generator=self.token_generator,
+                from_email=SiteSettings.get_solo().support_email,
+                email_template_name=self.email_template_name,
+                subject_template_name=self.subject_template_name,
+                request=self.request,
+                email_backend=email_service.build_backend(),
+            )
+        except Exception:
+            logger.exception("Failed to send password-reset email")
+        return HttpResponseRedirect(self.get_success_url())
 
 
 def _client_secret_path():
@@ -202,6 +241,28 @@ def admin_management_view(request):
     token_path = _token_path()
     site_settings = SiteSettings.get_solo()
     drive_error = None
+
+    if request.method == "POST" and "update_email" in request.POST:
+        request.user.email = request.POST.get("email", "").strip()
+        request.user.save(update_fields=["email"])
+        messages.success(request, "Email updated.", extra_tags="account")
+        return redirect("admin-management")
+
+    if request.method == "POST" and "save_support_email" in request.POST:
+        site_settings.support_email = request.POST.get("support_email", "").strip()
+        site_settings.support_email_app_password = request.POST.get("support_email_app_password", "").strip()
+        site_settings.save(update_fields=["support_email", "support_email_app_password"])
+        messages.success(request, "Support email saved.", extra_tags="account")
+        return redirect("admin-management")
+
+    if request.method == "POST" and "send_test_email" in request.POST:
+        try:
+            email_service.send_test_email(request.user.email)
+        except Exception as exc:
+            messages.error(request, f"Could not send test email: {exc}", extra_tags="account")
+        else:
+            messages.success(request, f"Test email sent to {request.user.email}.", extra_tags="account")
+        return redirect("admin-management")
 
     if request.method == "POST" and "upload_client_secret" in request.POST:
         client_secret_form = DriveClientSecretForm(request.POST, request.FILES)
@@ -370,7 +431,7 @@ def subadmin_invite_view(request, token):
                 form.add_error("username", "That username is already taken.")
             else:
                 user = User.objects.create_user(
-                    username, "", form.cleaned_data["password"], is_staff=True
+                    username, form.cleaned_data["email"].strip(), form.cleaned_data["password"], is_staff=True
                 )
                 invite.used_at = timezone.now()
                 invite.used_by = user

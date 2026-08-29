@@ -1,10 +1,19 @@
 from django import forms
-from django.contrib.auth.forms import AuthenticationForm
+from django.contrib.auth.forms import AuthenticationForm, PasswordResetForm, SetPasswordForm
 
 
 class StaffLoginForm(AuthenticationForm):
     username = forms.CharField(widget=forms.TextInput(attrs={"class": "input", "autofocus": True}))
     password = forms.CharField(widget=forms.PasswordInput(attrs={"class": "input"}))
+
+
+class StyledPasswordResetForm(PasswordResetForm):
+    email = forms.EmailField(widget=forms.EmailInput(attrs={"class": "input", "autofocus": True}))
+
+
+class StyledSetPasswordForm(SetPasswordForm):
+    new_password1 = forms.CharField(widget=forms.PasswordInput(attrs={"class": "input", "autofocus": True}))
+    new_password2 = forms.CharField(widget=forms.PasswordInput(attrs={"class": "input"}))
 
 
 class PseudoForm(forms.Form):
@@ -20,6 +29,10 @@ class ShareDriveForm(forms.Form):
 class AdminAccountForm(forms.Form):
     username = forms.CharField(
         max_length=150, label="Admin username", widget=forms.TextInput(attrs={"class": "input"})
+    )
+    email = forms.EmailField(
+        label="Email", widget=forms.EmailInput(attrs={"class": "input"}),
+        help_text="Used for password reset if you forget it.",
     )
     password = forms.CharField(
         widget=forms.PasswordInput(attrs={"class": "input"}), label="Password"

@@ -48,6 +48,14 @@
           {% endif %}
         </div>
         <div class="field" style="margin-top:var(--space-sm);">
+          <label for="{{ form.email.id_for_label }}">Email</label>
+          {{ form.email }}
+          <p class="text-xs text-muted">{{ form.email.help_text }}</p>
+          {% if form.email.errors %}
+          <p class="text-sm" style="color:var(--danger);">{{ form.email.errors }}</p>
+          {% endif %}
+        </div>
+        <div class="field" style="margin-top:var(--space-sm);">
           <label for="{{ form.password.id_for_label }}">Password</label>
           {{ form.password }}
         </div>
