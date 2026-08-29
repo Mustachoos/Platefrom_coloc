@@ -32,6 +32,8 @@ from django.contrib.auth import views as auth_views
 from django.contrib.auth.decorators import user_passes_test
 from django.contrib.auth.models import User
 from django.core.cache import cache
+from django.core.exceptions import ValidationError
+from django.core.validators import validate_email
 from django.http import HttpResponseRedirect, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse, reverse_lazy
@@ -54,6 +56,25 @@ superuser_required = user_passes_test(lambda u: u.is_authenticated and u.is_supe
 
 _VERIFY_TTL_SECONDS = 600
 _VERIFY_CHECK_TIMEOUT_SECONDS = 5
+_SUPPORT_EMAIL_VERIFY_TTL_SECONDS = 1800
+
+
+def _support_email_verify_pending_key(token):
+    return f"verify-support-email-pending:{token}"
+
+
+def _send_support_email_verification(request):
+    """Sends a fresh verification link for the currently-saved support_email
+    to the admin's own account email — click-through proof it's usable,
+    same honesty principle as the network-address round trip below."""
+    site_settings = SiteSettings.get_solo()
+    token = uuid.uuid4()
+    cache.set(
+        _support_email_verify_pending_key(token), site_settings.support_email,
+        timeout=_SUPPORT_EMAIL_VERIFY_TTL_SECONDS,
+    )
+    verify_url = request.build_absolute_uri(reverse("verify-support-email", args=[token]))
+    email_service.send_verification_email(request.user.email, verify_url)
 
 
 def _verify_pending_key(token):
@@ -242,17 +263,54 @@ def admin_management_view(request):
     site_settings = SiteSettings.get_solo()
     drive_error = None
 
-    if request.method == "POST" and "update_email" in request.POST:
-        request.user.email = request.POST.get("email", "").strip()
-        request.user.save(update_fields=["email"])
-        messages.success(request, "Email updated.", extra_tags="account")
+    if request.method == "POST" and "save_support_email" in request.POST:
+        new_email = request.POST.get("support_email", "").strip()
+        try:
+            if new_email:
+                validate_email(new_email)
+        except ValidationError:
+            messages.error(request, "That doesn't look like a valid email address.", extra_tags="support-email")
+            return redirect("admin-management")
+
+        email_changed = new_email != site_settings.support_email
+        site_settings.support_email = new_email
+        site_settings.support_email_app_password = request.POST.get("support_email_app_password", "").strip()
+        if email_changed:
+            site_settings.support_email_verified = False
+        site_settings.save(update_fields=["support_email", "support_email_app_password", "support_email_verified"])
+
+        if new_email and email_changed:
+            if not request.user.email:
+                messages.error(
+                    request, "Set your own email above first — that's where the verification link goes.",
+                    extra_tags="support-email",
+                )
+            else:
+                try:
+                    _send_support_email_verification(request)
+                except Exception:
+                    logger.exception("Failed to send support-email verification email")
+                    messages.error(
+                        request, "Support email saved, but the verification email couldn't be sent — check "
+                        "the address and app password, then use \"Resend verification email\" below.",
+                        extra_tags="support-email",
+                    )
+                else:
+                    messages.success(
+                        request, f"Support email saved — check {request.user.email} for a verification link.",
+                        extra_tags="support-email",
+                    )
+        else:
+            messages.success(request, "Support email saved.", extra_tags="support-email")
         return redirect("admin-management")
 
-    if request.method == "POST" and "save_support_email" in request.POST:
-        site_settings.support_email = request.POST.get("support_email", "").strip()
-        site_settings.support_email_app_password = request.POST.get("support_email_app_password", "").strip()
-        site_settings.save(update_fields=["support_email", "support_email_app_password"])
-        messages.success(request, "Support email saved.", extra_tags="account")
+    if request.method == "POST" and "resend_support_email_verification" in request.POST:
+        try:
+            _send_support_email_verification(request)
+        except Exception as exc:
+            messages.error(request, f"Could not send verification email: {exc}", extra_tags="support-email")
+        else:
+            messages.success(request, f"Verification email sent to {request.user.email}.", extra_tags="support-email")
         return redirect("admin-management")
 
     if request.method == "POST" and "send_test_email" in request.POST:
@@ -345,6 +403,13 @@ def admin_management_view(request):
     )
     drive_progress = sum([client_secret_valid, token_valid, folder_valid])
 
+    support_email_format_valid = True
+    if site_settings.support_email:
+        try:
+            validate_email(site_settings.support_email)
+        except ValidationError:
+            support_email_format_valid = False
+
     host = request.get_host()
     port = host.split(":", 1)[1] if ":" in host else "8000"
 
@@ -369,6 +434,7 @@ def admin_management_view(request):
         "drive_redirect_uri": _localhost_redirect_uri(request),
         "drive_is_localhost": _is_localhost(request),
         "drive_localhost_url": f"http://localhost:{port}{reverse('admin-management')}",
+        "support_email_format_valid": support_email_format_valid,
     })
 
 
@@ -392,6 +458,22 @@ def verify_ip_page_view(request, token):
     site_settings.server_host = confirmed_host
     site_settings.save(update_fields=["server_host"])
     return render(request, "photos/verify_ip_page.html", {"expired": False, "host": confirmed_host})
+
+
+def verify_support_email_view(request, token):
+    key = _support_email_verify_pending_key(token)
+    pending_email = cache.get(key)
+    if pending_email is None:
+        return render(request, "photos/verify_support_email_page.html", {"expired": True})
+    cache.delete(key)
+    site_settings = SiteSettings.get_solo()
+    if pending_email != site_settings.support_email:
+        # The support email was changed again after this link was sent —
+        # don't let a stale link verify whatever address is current now.
+        return render(request, "photos/verify_support_email_page.html", {"expired": True})
+    site_settings.support_email_verified = True
+    site_settings.save(update_fields=["support_email_verified"])
+    return render(request, "photos/verify_support_email_page.html", {"expired": False})
 
 
 @superuser_required

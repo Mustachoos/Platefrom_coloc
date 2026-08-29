@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>Admin account</title>
+  <title>Admin dashboard</title>
   {% load static %}
   {% load icons %}
   <link rel="stylesheet" href="{% static 'photos/tokens.css' %}">
@@ -58,13 +58,18 @@
     .textbox-btn{display:block;flex:1;padding:var(--space-2xs);border-radius:var(--radius-md);border:1px solid var(--line);background:var(--surface-solid);color:var(--ink-900);font-weight:700;font-size:var(--text-sm);text-align:center}
     .textbox-btn:hover{background:var(--surface-sunken)}
     .textbox-btn:disabled{background:var(--surface-sunken);color:var(--ink-400);cursor:not-allowed}
+
+    .password-field-wrap{position:relative}
+    .password-field-wrap .input{padding-right:38px}
+    .password-toggle-btn{position:absolute;right:4px;top:50%;transform:translateY(-50%);display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:50%;color:var(--ink-600)}
+    .password-toggle-btn:hover{background:var(--surface-sunken)}
   </style>
 </head>
 <body>
   <div class="page shell">
     <div class="flex justify-between items-start gap-sm flex-wrap" style="margin-bottom:var(--space-md);">
       <div>
-        <h1>Admin account</h1>
+        <h1>Admin dashboard</h1>
         <p class="text-muted text-sm" style="margin-top:var(--space-2xs);">Signed in as <strong>{{ request.user.username }}</strong> (admin).</p>
       </div>
       <form method="post" action="{% url 'staff-logout' %}">
@@ -283,42 +288,78 @@
         </div>
 
         <div class="card card--solid">
-          {% for message in messages %}{% if "account" in message.tags %}
+          {% for message in messages %}{% if "support-email" in message.tags %}
           <div class="alert alert--boxed{% if "success" in message.tags %} alert--success{% endif %}" style="margin-bottom:var(--space-sm);">{{ message }}</div>
           {% endif %}{% endfor %}
-          <p class="card__title" style="margin-bottom:var(--space-2xs);">Account &amp; password reset</p>
-
-          <form method="post" class="flex gap-sm items-end flex-wrap">
-            {% csrf_token %}
-            <div class="field grow" style="min-width:180px;">
-              <label for="account_email">Your email</label>
-              <input class="input" type="email" id="account_email" name="email" value="{{ request.user.email }}" placeholder="you@example.com">
+          <details id="support-email-details" class="hub-details">
+            <summary>
+              <h2><span
+                class="status-circle{% if not site_settings.support_email %}{% elif not support_email_format_valid %} failed{% elif site_settings.support_email_verified %} verified{% else %} checking{% endif %}"
+                id="support-email-status-circle"
+              ></span>Recovery email</h2>
+            </summary>
+            <div class="details-body">
+              <p class="text-sm text-muted" style="margin-bottom:var(--space-sm);">Sends password-reset links to admins and subadmins who forget their password. Uses a <a class="link" href="https://myaccount.google.com/apppasswords" target="_blank" rel="noopener">Gmail app password</a>, not your normal Gmail password. Saving a new address emails a verification link to <strong>your own</strong> address above — click it to confirm this one actually works.</p>
+              <form method="post" class="flex gap-sm items-end flex-wrap">
+                {% csrf_token %}
+                <div class="field grow" style="min-width:160px;">
+                  <label for="support_email">Gmail address</label>
+                  <input class="input" type="email" id="support_email" name="support_email" value="{{ site_settings.support_email }}" placeholder="you@gmail.com">
+                </div>
+                <div class="field grow" style="min-width:160px;">
+                  <label for="support_email_app_password">App password</label>
+                  <div class="password-field-wrap">
+                    <input class="input" type="password" id="support_email_app_password" name="support_email_app_password" value="{{ site_settings.support_email_app_password }}" placeholder="16-character app password">
+                    <button type="button" class="password-toggle-btn" id="toggle-app-password-btn" aria-label="Show password">
+                      <span id="eye-icon">{% icon 'eye' size=18 %}</span>
+                      <span id="eye-off-icon" style="display:none;">{% icon 'eye-off' size=18 %}</span>
+                    </button>
+                  </div>
+                </div>
+                <button type="submit" name="save_support_email" class="btn btn--light btn--sm">Save</button>
+              </form>
+              {% if site_settings.support_email and request.user.email %}
+              <form method="post" style="margin-top:var(--space-xs);">
+                {% csrf_token %}
+                <button type="submit" name="resend_support_email_verification" class="btn btn--outline btn--sm">Resend verification email</button>
+              </form>
+              {% endif %}
             </div>
-            <button type="submit" name="update_email" class="btn btn--light btn--sm">Save</button>
-          </form>
-
-          <div style="margin-top:var(--space-md);padding-top:var(--space-sm);border-top:1px dashed var(--line);">
-            <p class="text-sm text-muted" style="margin-bottom:var(--space-sm);">Support email — sends password-reset links to admins and subadmins who forget their password. Uses a <a class="link" href="https://myaccount.google.com/apppasswords" target="_blank" rel="noopener">Gmail app password</a>, not your normal Gmail password.</p>
-            <form method="post" class="flex gap-sm items-end flex-wrap">
-              {% csrf_token %}
-              <div class="field grow" style="min-width:160px;">
-                <label for="support_email">Gmail address</label>
-                <input class="input" type="email" id="support_email" name="support_email" value="{{ site_settings.support_email }}" placeholder="you@gmail.com">
-              </div>
-              <div class="field grow" style="min-width:160px;">
-                <label for="support_email_app_password">App password</label>
-                <input class="input" type="password" id="support_email_app_password" name="support_email_app_password" value="{{ site_settings.support_email_app_password }}" placeholder="16-character app password">
-              </div>
-              <button type="submit" name="save_support_email" class="btn btn--light btn--sm">Save</button>
-            </form>
-            {% if site_settings.support_email and request.user.email %}
-            <form method="post" style="margin-top:var(--space-xs);">
-              {% csrf_token %}
-              <button type="submit" name="send_test_email" class="btn btn--outline btn--sm">Send test email to {{ request.user.email }}</button>
-            </form>
-            {% endif %}
-          </div>
+          </details>
         </div>
+
+        <script>
+          (function () {
+            var input = document.getElementById('support_email');
+            var circle = document.getElementById('support-email-status-circle');
+            if (!input || !circle) return;
+            var savedState = circle.className;
+            var emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            input.addEventListener('input', function () {
+              if (!input.value) {
+                circle.className = 'status-circle';
+              } else if (!emailRe.test(input.value)) {
+                circle.className = 'status-circle failed';
+              } else {
+                circle.className = savedState;
+              }
+            });
+          })();
+          (function () {
+            var input = document.getElementById('support_email_app_password');
+            var toggleBtn = document.getElementById('toggle-app-password-btn');
+            var eyeIcon = document.getElementById('eye-icon');
+            var eyeOffIcon = document.getElementById('eye-off-icon');
+            if (!input || !toggleBtn) return;
+            toggleBtn.addEventListener('click', function () {
+              var showing = input.type === 'text';
+              input.type = showing ? 'password' : 'text';
+              eyeIcon.style.display = showing ? '' : 'none';
+              eyeOffIcon.style.display = showing ? 'none' : '';
+              toggleBtn.setAttribute('aria-label', showing ? 'Show password' : 'Hide password');
+            });
+          })();
+        </script>
       </div>
     </div>
 

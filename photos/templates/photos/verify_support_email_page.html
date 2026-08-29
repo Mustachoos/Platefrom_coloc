@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>{% if expired %}Link expired{% else %}Recovery email verified{% endif %}</title>
+  <style>
+    html,body{margin:0;padding:0;min-height:100vh;font-family:"Trebuchet MS","Segoe UI",sans-serif}
+    body{
+      display:flex;align-items:center;justify-content:center;text-align:center;
+      background:{% if expired %}#dc2626{% else %}#16a34a{% endif %};color:#fff;
+      padding:max(24px, env(safe-area-inset-top)) max(24px, env(safe-area-inset-right)) max(24px, env(safe-area-inset-bottom)) max(24px, env(safe-area-inset-left));
+    }
+    .icon{font-size:5rem;line-height:1;margin-bottom:14px}
+    h1{margin:0;font-size:1.8rem;font-weight:800}
+    p{margin-top:10px;opacity:0.9}
+  </style>
+</head>
+<body>
+  {% if expired %}
+  <div>
+    <div class="icon">⚠️</div>
+    <h1>Link expired</h1>
+    <p>Go back to the admin page and resend the verification email.</p>
+  </div>
+  {% else %}
+  <div>
+    <div class="icon">✓</div>
+    <h1>Recovery email verified</h1>
+  </div>
+  {% endif %}
+</body>
+</html>

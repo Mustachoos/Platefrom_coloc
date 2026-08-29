@@ -19,7 +19,7 @@
       </div>
       <div class="flex gap-2xs items-center">
         {% if user.is_superuser %}
-        <a href="{% url 'admin-management' %}" class="btn btn--outline btn--sm">Admin account</a>
+        <a href="{% url 'admin-management' %}" class="btn btn--outline btn--sm">Admin dashboard</a>
         {% endif %}
         <form method="post" action="{% url 'staff-logout' %}">
           {% csrf_token %}

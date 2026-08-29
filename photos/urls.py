@@ -51,6 +51,11 @@ urlpatterns = [
         name="verify-ip-status",
     ),
     path("admin-account/verify-ip/<uuid:token>/", admin_views.verify_ip_page_view, name="verify-ip-page"),
+    path(
+        "admin-account/verify-support-email/<uuid:token>/",
+        admin_views.verify_support_email_view,
+        name="verify-support-email",
+    ),
     path("pseudo/", views.choose_pseudo, name="choose-pseudo"),
     path("pseudo/share-drive/", views.share_drive_view, name="share-drive"),
     path("upload/", views.upload_view, name="upload"),

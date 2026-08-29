@@ -29,3 +29,19 @@ def send_test_email(to_address):
         to=[to_address],
         connection=build_backend(),
     ).send()
+
+
+def send_verification_email(to_address, verify_url):
+    email, _ = _credentials()
+    EmailMessage(
+        subject="Verify your PartyBooth recovery email",
+        body=(
+            "Someone just set this address as the recovery email for password resets on your "
+            "PartyBooth admin account. Click the link below to confirm it works:\n\n"
+            f"{verify_url}\n\n"
+            "If you didn't request this, you can ignore this email."
+        ),
+        from_email=email,
+        to=[to_address],
+        connection=build_backend(),
+    ).send()

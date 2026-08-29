@@ -204,6 +204,11 @@ class SiteSettings(models.Model):
         blank=True,
         help_text="Gmail app password (not the account password) for support_email.",
     )
+    support_email_verified = models.BooleanField(
+        default=False,
+        help_text="Set once the verification link sent to the admin's own email has been clicked. "
+        "Reset to False whenever support_email is changed.",
+    )
 
     class Meta:
         verbose_name = "Site settings"
