@@ -15,8 +15,10 @@ import logging
 import os
 import re
 
+from google.auth.exceptions import RefreshError
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
+from google_auth_oauthlib.flow import Flow
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 from googleapiclient.http import MediaFileUpload, MediaIoBaseDownload
@@ -49,6 +51,31 @@ def _root_folder_id():
     return root
 
 
+def save_credentials(creds):
+    """Persist credentials (from the initial consent flow or a refresh) to
+    GOOGLE_OAUTH_TOKEN_FILE — the one place that writes this file, shared by
+    the management command, the dashboard re-auth view, and token refresh."""
+    token_file = _token_file()
+    if not token_file:
+        raise DriveError("GOOGLE_OAUTH_TOKEN_FILE is not set.")
+    os.makedirs(os.path.dirname(token_file) or ".", exist_ok=True)
+    with open(token_file, "w") as f:
+        f.write(creds.to_json())
+
+
+def build_oauth_flow(redirect_uri):
+    """Flow for the web-based (dashboard button) re-auth path — distinct
+    from the management command's InstalledAppFlow, which opens its own
+    local server/browser and only makes sense run interactively from a
+    terminal, not from inside a request handler."""
+    client_secret_file = _client_secret_file()
+    if not client_secret_file or not os.path.exists(client_secret_file):
+        raise DriveError(
+            "GOOGLE_OAUTH_CLIENT_SECRET_FILE is not set or the file doesn't exist."
+        )
+    return Flow.from_client_secrets_file(client_secret_file, scopes=SCOPES, redirect_uri=redirect_uri)
+
+
 def _get_credentials():
     token_file = _token_file()
     if not token_file or not os.path.exists(token_file):
@@ -60,13 +87,24 @@ def _get_credentials():
     if creds.valid:
         return creds
     if creds.expired and creds.refresh_token:
-        creds.refresh(Request())
-        with open(token_file, "w") as f:
-            f.write(creds.to_json())
+        try:
+            creds.refresh(Request())
+        except RefreshError as exc:
+            # Google rejected the refresh token itself (revoked, expired, or
+            # the OAuth consent screen is still in "Testing" publishing
+            # status, where refresh tokens only last 7 days) — a different
+            # failure mode than "no token file yet", but callers only need
+            # to know Drive isn't reachable right now, same as any other
+            # DriveError.
+            raise DriveError(
+                f"Google Drive authorization has expired or was revoked ({exc}). "
+                "Use the 'Reconnect Google Drive' button on the dashboard to re-authorize."
+            ) from exc
+        save_credentials(creds)
         return creds
     raise DriveError(
         "Stored Google Drive credentials are invalid and can't be refreshed. "
-        "Run 'python manage.py google_drive_auth' again."
+        "Use the 'Reconnect Google Drive' button on the dashboard to re-authorize."
     )
 
 

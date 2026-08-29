@@ -396,6 +396,51 @@ def wifi_qr_code(request):
 
 
 @staff_member_required
+def drive_reauth_start(request):
+    """Kicks off the web-based OAuth flow: redirect the admin's own browser
+    to Google's consent screen, distinct from `manage.py google_drive_auth`
+    which opens a browser and a local server on whatever machine runs the
+    command — meaningless from inside this container. Only works when the
+    dashboard itself is loaded via localhost, since the OAuth client is a
+    Desktop-app type (only accepts loopback redirect URIs)."""
+    if request.method != "POST":
+        return _dashboard_redirect(tab="features")
+    redirect_uri = request.build_absolute_uri(reverse("drive-reauth-callback"))
+    try:
+        flow = drive_service.build_oauth_flow(redirect_uri)
+    except drive_service.DriveError as exc:
+        messages.error(request, f"Could not start Google Drive authorization: {exc}")
+        return _dashboard_redirect(tab="features")
+    auth_url, state = flow.authorization_url(
+        access_type="offline", prompt="consent", include_granted_scopes="true"
+    )
+    request.session["drive_oauth_state"] = state
+    return redirect(auth_url)
+
+
+@staff_member_required
+def drive_reauth_callback(request):
+    expected_state = request.session.pop("drive_oauth_state", None)
+    if not expected_state or request.GET.get("state") != expected_state:
+        messages.error(request, "Google Drive authorization failed (session expired) — try again.")
+        return _dashboard_redirect(tab="features")
+    if "error" in request.GET:
+        messages.error(request, f"Google Drive authorization was not completed: {request.GET['error']}")
+        return _dashboard_redirect(tab="features")
+    redirect_uri = request.build_absolute_uri(reverse("drive-reauth-callback"))
+    try:
+        flow = drive_service.build_oauth_flow(redirect_uri)
+        flow.fetch_token(authorization_response=request.build_absolute_uri())
+        drive_service.save_credentials(flow.credentials)
+    except Exception as exc:
+        logger.warning("Drive re-auth callback failed: %s", exc)
+        messages.error(request, f"Google Drive authorization failed: {exc}")
+        return _dashboard_redirect(tab="features")
+    messages.success(request, "Google Drive reconnected.")
+    return _dashboard_redirect(tab="features")
+
+
+@staff_member_required
 def dashboard_view(request):
     active_event = Event.get_active()
 
@@ -576,6 +621,30 @@ def dashboard_delete_photo(request, photo_id):
         photo.delete()
         messages.success(request, "Photo deleted.")
     return _dashboard_redirect(tab="photos")
+
+
+@staff_member_required
+def dashboard_delete_guest(request, identity_id):
+    if request.method == "POST":
+        identity = get_object_or_404(UserIdentity, id=identity_id)
+        pseudo = identity.pseudo
+        revoke_failed = False
+        if identity.drive_shared and identity.drive_permission_id and identity.event.drive_folder_id:
+            try:
+                drive_service.revoke_folder_permission(identity.event.drive_folder_id, identity.drive_permission_id)
+            except drive_service.DriveError as exc:
+                revoke_failed = True
+                logger.warning("Could not revoke Drive access for %s: %s", identity.email, exc)
+        identity.delete()
+        if revoke_failed:
+            messages.error(
+                request,
+                f"'{pseudo}' removed, but revoking their Drive access failed — "
+                "you may need to remove it manually in Drive's sharing settings.",
+            )
+        else:
+            messages.success(request, f"'{pseudo}' removed from the event.")
+    return _dashboard_redirect(tab="guests")
 
 
 @staff_member_required

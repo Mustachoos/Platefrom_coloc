@@ -12,7 +12,7 @@ import os
 from django.core.management.base import BaseCommand, CommandError
 from google_auth_oauthlib.flow import InstalledAppFlow
 
-from photos.drive_service import SCOPES
+from photos.drive_service import SCOPES, save_credentials
 
 
 class Command(BaseCommand):
@@ -32,9 +32,6 @@ class Command(BaseCommand):
 
         flow = InstalledAppFlow.from_client_secrets_file(client_secret_file, SCOPES)
         creds = flow.run_local_server(port=0)
-
-        os.makedirs(os.path.dirname(token_file) or ".", exist_ok=True)
-        with open(token_file, "w") as f:
-            f.write(creds.to_json())
+        save_credentials(creds)
 
         self.stdout.write(self.style.SUCCESS(f"Saved Google Drive token to {token_file}"))

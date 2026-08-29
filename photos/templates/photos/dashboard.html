@@ -86,12 +86,18 @@
             {% endif %}
           </div>
         </div>
-        {% if active_event.drive_status == "broken" %}
-        <form method="post">
-          {% csrf_token %}
-          <button type="submit" name="recreate_drive_folder" class="btn btn--dark btn--sm">Create a new Drive folder</button>
-        </form>
-        {% endif %}
+        <div class="flex gap-2xs flex-wrap">
+          {% if active_event.drive_status == "broken" %}
+          <form method="post">
+            {% csrf_token %}
+            <button type="submit" name="recreate_drive_folder" class="btn btn--dark btn--sm">Create a new Drive folder</button>
+          </form>
+          {% endif %}
+          <form method="post" action="{% url 'drive-reauth-start' %}">
+            {% csrf_token %}
+            <button type="submit" class="btn btn--outline btn--sm">Reconnect Google Drive</button>
+          </form>
+        </div>
       </div>
 
       <div class="flex justify-between items-center gap-sm">
@@ -237,7 +243,7 @@
       {% if identities %}
       <div style="overflow-x:auto;">
         <table class="table">
-          <thead><tr><th>Pseudo</th><th>Email</th><th>Drive shared</th><th>Joined</th></tr></thead>
+          <thead><tr><th>Pseudo</th><th>Email</th><th>Drive shared</th><th>Joined</th><th></th></tr></thead>
           <tbody>
             {% for identity in identities %}
             <tr>
@@ -245,6 +251,12 @@
               <td>{{ identity.email|default:"—" }}</td>
               <td>{{ identity.drive_shared|yesno:"Yes,No" }}</td>
               <td>{{ identity.created_at }}</td>
+              <td>
+                <form method="post" action="{% url 'dashboard-delete-guest' identity.id %}">
+                  {% csrf_token %}
+                  <button type="submit" class="btn btn--danger btn--sm">Delete</button>
+                </form>
+              </td>
             </tr>
             {% endfor %}
           </tbody>
