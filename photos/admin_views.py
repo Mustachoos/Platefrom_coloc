@@ -148,7 +148,6 @@ class SupportEmailPasswordResetView(auth_views.PasswordResetView):
                 email_template_name=self.email_template_name,
                 subject_template_name=self.subject_template_name,
                 request=self.request,
-                email_backend=email_service.build_backend(),
             )
         except Exception:
             logger.exception("Failed to send password-reset email")

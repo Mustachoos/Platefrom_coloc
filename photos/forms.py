@@ -5,6 +5,10 @@ from django.contrib.auth.forms import (
     PasswordResetForm,
     SetPasswordForm,
 )
+from django.core.mail import EmailMultiAlternatives
+from django.template import loader
+
+from . import email_service
 
 
 class StaffLoginForm(AuthenticationForm):
@@ -14,6 +18,26 @@ class StaffLoginForm(AuthenticationForm):
 
 class StyledPasswordResetForm(PasswordResetForm):
     email = forms.EmailField(widget=forms.EmailInput(attrs={"class": "input", "autofocus": True}))
+
+    def send_mail(
+        self, subject_template_name, email_template_name, context, from_email, to_email,
+        html_email_template_name=None,
+    ):
+        # PasswordResetForm.save() has no hook to choose an email backend —
+        # it always sends through settings.EMAIL_BACKEND. This mirrors
+        # Django's own send_mail() exactly, only adding `connection` so the
+        # Gmail account connected via OAuth2 (see gmail_service.py) is what
+        # actually sends it, not the global (unconfigured) backend.
+        subject = loader.render_to_string(subject_template_name, context)
+        subject = "".join(subject.splitlines())
+        body = loader.render_to_string(email_template_name, context)
+        email_message = EmailMultiAlternatives(
+            subject, body, from_email, [to_email], connection=email_service.build_backend(),
+        )
+        if html_email_template_name is not None:
+            html_email = loader.render_to_string(html_email_template_name, context)
+            email_message.attach_alternative(html_email, "text/html")
+        email_message.send()
 
 
 class StyledSetPasswordForm(SetPasswordForm):
