@@ -60,7 +60,7 @@
       "_callable_class": true,
       "_origin": "ast",
       "community": 0,
-      "community_name": "admin.py",
+      "community_name": "models.py",
       "file_type": "code",
       "norm_label": "eventadmin",
       "source_file": "photos/admin.py",
@@ -73,7 +73,7 @@
       "_callable_class": true,
       "_origin": "ast",
       "community": 0,
-      "community_name": "admin.py",
+      "community_name": "models.py",
       "file_type": "code",
       "norm_label": "likeadmin",
       "source_file": "photos/admin.py",
@@ -86,7 +86,7 @@
       "_callable_class": true,
       "_origin": "ast",
       "community": 0,
-      "community_name": "admin.py",
+      "community_name": "models.py",
       "file_type": "code",
       "norm_label": "photoadmin",
       "source_file": "photos/admin.py",
@@ -99,7 +99,7 @@
       "_callable_class": true,
       "_origin": "ast",
       "community": 0,
-      "community_name": "admin.py",
+      "community_name": "models.py",
       "file_type": "code",
       "norm_label": "sitesettingsadmin",
       "source_file": "photos/admin.py",
@@ -112,7 +112,7 @@
       "_callable_class": true,
       "_origin": "ast",
       "community": 0,
-      "community_name": "admin.py",
+      "community_name": "models.py",
       "file_type": "code",
       "norm_label": "slideshowsettingsadmin",
       "source_file": "photos/admin.py",
@@ -125,11 +125,76 @@
       "_callable_class": true,
       "_origin": "ast",
       "community": 0,
-      "community_name": "admin.py",
+      "community_name": "models.py",
       "file_type": "code",
       "norm_label": "useridentityadmin",
       "source_file": "photos/admin.py",
       "source_location": "L16"
+    },
+    {
+      "id": "photos_migrations_0004_alter_photo_image_migration",
+      "label": "Migration",
+      "_callable": true,
+      "_callable_class": true,
+      "_origin": "ast",
+      "community": 0,
+      "community_name": "models.py",
+      "file_type": "code",
+      "norm_label": "migration",
+      "source_file": "photos/migrations/0004_alter_photo_image.py",
+      "source_location": "L7"
+    },
+    {
+      "id": "photos_migrations_0006_eventsettings_useridentity_drive_shared_and_more_migration",
+      "label": "Migration",
+      "_callable": true,
+      "_callable_class": true,
+      "_origin": "ast",
+      "community": 0,
+      "community_name": "models.py",
+      "file_type": "code",
+      "norm_label": "migration",
+      "source_file": "photos/migrations/0006_eventsettings_useridentity_drive_shared_and_more.py",
+      "source_location": "L7"
+    },
+    {
+      "id": "photos_migrations_0010_multi_event_migration",
+      "label": "Migration",
+      "_callable": true,
+      "_callable_class": true,
+      "_origin": "ast",
+      "community": 0,
+      "community_name": "models.py",
+      "file_type": "code",
+      "norm_label": "migration",
+      "source_file": "photos/migrations/0010_multi_event.py",
+      "source_location": "L8"
+    },
+    {
+      "id": "photos_migrations_0012_event_tv_layout_event_whiteboard_enabled_and_more_migration",
+      "label": "Migration",
+      "_callable": true,
+      "_callable_class": true,
+      "_origin": "ast",
+      "community": 0,
+      "community_name": "models.py",
+      "file_type": "code",
+      "norm_label": "migration",
+      "source_file": "photos/migrations/0012_event_tv_layout_event_whiteboard_enabled_and_more.py",
+      "source_location": "L8"
+    },
+    {
+      "id": "photos_models_slideshowsettings",
+      "label": "SlideshowSettings",
+      "_callable": true,
+      "_callable_class": true,
+      "_origin": "ast",
+      "community": 0,
+      "community_name": "models.py",
+      "file_type": "code",
+      "norm_label": "slideshowsettings",
+      "source_file": "photos/models.py",
+      "source_location": "L269"
     },
     {
       "id": "photos_forms_pseudoform",
@@ -156,58 +221,6 @@
       "norm_label": "styledpasswordchangeform",
       "source_file": "photos/forms.py",
       "source_location": "L48"
-    },
-    {
-      "id": "photos_migrations_0004_alter_photo_image_migration",
-      "label": "Migration",
-      "_callable": true,
-      "_callable_class": true,
-      "_origin": "ast",
-      "community": 1,
-      "community_name": "views.py",
-      "file_type": "code",
-      "norm_label": "migration",
-      "source_file": "photos/migrations/0004_alter_photo_image.py",
-      "source_location": "L7"
-    },
-    {
-      "id": "photos_migrations_0006_eventsettings_useridentity_drive_shared_and_more_migration",
-      "label": "Migration",
-      "_callable": true,
-      "_callable_class": true,
-      "_origin": "ast",
-      "community": 1,
-      "community_name": "views.py",
-      "file_type": "code",
-      "norm_label": "migration",
-      "source_file": "photos/migrations/0006_eventsettings_useridentity_drive_shared_and_more.py",
-      "source_location": "L7"
-    },
-    {
-      "id": "photos_migrations_0010_multi_event_migration",
-      "label": "Migration",
-      "_callable": true,
-      "_callable_class": true,
-      "_origin": "ast",
-      "community": 1,
-      "community_name": "views.py",
-      "file_type": "code",
-      "norm_label": "migration",
-      "source_file": "photos/migrations/0010_multi_event.py",
-      "source_location": "L8"
-    },
-    {
-      "id": "photos_migrations_0012_event_tv_layout_event_whiteboard_enabled_and_more_migration",
-      "label": "Migration",
-      "_callable": true,
-      "_callable_class": true,
-      "_origin": "ast",
-      "community": 1,
-      "community_name": "views.py",
-      "file_type": "code",
-      "norm_label": "migration",
-      "source_file": "photos/migrations/0012_event_tv_layout_event_whiteboard_enabled_and_more.py",
-      "source_location": "L8"
     },
     {
       "id": "photos_models_event",
@@ -260,19 +273,6 @@
       "norm_label": "photo",
       "source_file": "photos/models.py",
       "source_location": "L113"
-    },
-    {
-      "id": "photos_models_slideshowsettings",
-      "label": "SlideshowSettings",
-      "_callable": true,
-      "_callable_class": true,
-      "_origin": "ast",
-      "community": 1,
-      "community_name": "views.py",
-      "file_type": "code",
-      "norm_label": "slideshowsettings",
-      "source_file": "photos/models.py",
-      "source_location": "L269"
     },
     {
       "id": "photos_models_useridentity",
@@ -483,32 +483,6 @@
       "source_location": "L6"
     },
     {
-      "id": "photos_gmail_service_gmailapibackend",
-      "label": "GmailApiBackend",
-      "_callable": true,
-      "_callable_class": true,
-      "_origin": "ast",
-      "community": 26,
-      "community_name": "gmail_service.py",
-      "file_type": "code",
-      "norm_label": "gmailapibackend",
-      "source_file": "photos/gmail_service.py",
-      "source_location": "L123"
-    },
-    {
-      "id": "photos_gmail_service_gmailerror",
-      "label": "GmailError",
-      "_callable": true,
-      "_callable_class": true,
-      "_origin": "ast",
-      "community": 26,
-      "community_name": "gmail_service.py",
-      "file_type": "code",
-      "norm_label": "gmailerror",
-      "source_file": "photos/gmail_service.py",
-      "source_location": "L40"
-    },
-    {
       "id": "photos_migrations_0014_sitesettings_migration",
       "label": "Migration",
       "_callable": true,
@@ -611,6 +585,32 @@
       "norm_label": "styledsetpasswordform",
       "source_file": "photos/forms.py",
       "source_location": "L43"
+    },
+    {
+      "id": "photos_gmail_service_gmailapibackend",
+      "label": "GmailApiBackend",
+      "_callable": true,
+      "_callable_class": true,
+      "_origin": "ast",
+      "community": 4,
+      "community_name": "admin_views.py",
+      "file_type": "code",
+      "norm_label": "gmailapibackend",
+      "source_file": "photos/gmail_service.py",
+      "source_location": "L123"
+    },
+    {
+      "id": "photos_gmail_service_gmailerror",
+      "label": "GmailError",
+      "_callable": true,
+      "_callable_class": true,
+      "_origin": "ast",
+      "community": 4,
+      "community_name": "admin_views.py",
+      "file_type": "code",
+      "norm_label": "gmailerror",
+      "source_file": "photos/gmail_service.py",
+      "source_location": "L40"
     },
     {
       "id": "photos_models_admininvite",
@@ -787,7 +787,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 0,
-      "community_name": "admin.py",
+      "community_name": "models.py",
       "file_type": "code",
       "norm_label": ".save_model()",
       "source_file": "photos/admin.py",
@@ -799,7 +799,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 0,
-      "community_name": "admin.py",
+      "community_name": "models.py",
       "file_type": "code",
       "norm_label": ".has_add_permission()",
       "source_file": "photos/admin.py",
@@ -811,7 +811,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 0,
-      "community_name": "admin.py",
+      "community_name": "models.py",
       "file_type": "code",
       "norm_label": ".has_delete_permission()",
       "source_file": "photos/admin.py",
@@ -823,7 +823,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 0,
-      "community_name": "admin.py",
+      "community_name": "models.py",
       "file_type": "code",
       "norm_label": ".has_add_permission()",
       "source_file": "photos/admin.py",
@@ -835,23 +835,107 @@
       "_callable": true,
       "_origin": "ast",
       "community": 0,
-      "community_name": "admin.py",
+      "community_name": "models.py",
       "file_type": "code",
       "norm_label": ".has_delete_permission()",
       "source_file": "photos/admin.py",
       "source_location": "L29"
     },
     {
-      "id": "photos_drive_service_build_oauth_flow",
-      "label": "build_oauth_flow()",
+      "id": "photos_models_default_drive_folder_name",
+      "label": "default_drive_folder_name()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 0,
+      "community_name": "models.py",
+      "file_type": "code",
+      "norm_label": "default_drive_folder_name()",
+      "source_file": "photos/models.py",
+      "source_location": "L20"
+    },
+    {
+      "id": "photos_models_photo_upload_path",
+      "label": "photo_upload_path()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 0,
+      "community_name": "models.py",
+      "file_type": "code",
+      "norm_label": "photo_upload_path()",
+      "source_file": "photos/models.py",
+      "source_location": "L12"
+    },
+    {
+      "id": "photos_models_slideshowsettings_get_solo",
+      "label": ".get_solo()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 0,
+      "community_name": "models.py",
+      "file_type": "code",
+      "norm_label": ".get_solo()",
+      "source_file": "photos/models.py",
+      "source_location": "L284"
+    },
+    {
+      "id": "photos_models_slideshowsettings_str",
+      "label": ".__str__()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 0,
+      "community_name": "models.py",
+      "file_type": "code",
+      "norm_label": ".__str__()",
+      "source_file": "photos/models.py",
+      "source_location": "L280"
+    },
+    {
+      "id": "photos_models_whiteboard_board_path",
+      "label": "whiteboard_board_path()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 0,
+      "community_name": "models.py",
+      "file_type": "code",
+      "norm_label": "whiteboard_board_path()",
+      "source_file": "photos/models.py",
+      "source_location": "L31"
+    },
+    {
+      "id": "photos_models_whiteboard_upload_path",
+      "label": "whiteboard_upload_path()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 0,
+      "community_name": "models.py",
+      "file_type": "code",
+      "norm_label": "whiteboard_upload_path()",
+      "source_file": "photos/models.py",
+      "source_location": "L24"
+    },
+    {
+      "id": "photos_views_slideshow_settings_api",
+      "label": "slideshow_settings_api()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 0,
+      "community_name": "models.py",
+      "file_type": "code",
+      "norm_label": "slideshow_settings_api()",
+      "source_file": "photos/views.py",
+      "source_location": "L358"
+    },
+    {
+      "id": "photos_drive_service_folder_exists",
+      "label": "folder_exists()",
       "_callable": true,
       "_origin": "ast",
       "community": 1,
       "community_name": "views.py",
       "file_type": "code",
-      "norm_label": "build_oauth_flow()",
+      "norm_label": "folder_exists()",
       "source_file": "photos/drive_service.py",
-      "source_location": "L94"
+      "source_location": "L234"
     },
     {
       "id": "photos_event_service_backup_pending_photos",
@@ -962,18 +1046,6 @@
       "source_location": "L106"
     },
     {
-      "id": "photos_models_default_drive_folder_name",
-      "label": "default_drive_folder_name()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 1,
-      "community_name": "views.py",
-      "file_type": "code",
-      "norm_label": "default_drive_folder_name()",
-      "source_file": "photos/models.py",
-      "source_location": "L20"
-    },
-    {
       "id": "photos_models_event_get_active",
       "label": ".get_active()",
       "_callable": true,
@@ -1046,42 +1118,6 @@
       "source_location": "L123"
     },
     {
-      "id": "photos_models_photo_upload_path",
-      "label": "photo_upload_path()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 1,
-      "community_name": "views.py",
-      "file_type": "code",
-      "norm_label": "photo_upload_path()",
-      "source_file": "photos/models.py",
-      "source_location": "L12"
-    },
-    {
-      "id": "photos_models_slideshowsettings_get_solo",
-      "label": ".get_solo()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 1,
-      "community_name": "views.py",
-      "file_type": "code",
-      "norm_label": ".get_solo()",
-      "source_file": "photos/models.py",
-      "source_location": "L284"
-    },
-    {
-      "id": "photos_models_slideshowsettings_str",
-      "label": ".__str__()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 1,
-      "community_name": "views.py",
-      "file_type": "code",
-      "norm_label": ".__str__()",
-      "source_file": "photos/models.py",
-      "source_location": "L280"
-    },
-    {
       "id": "photos_models_useridentity_str",
       "label": ".__str__()",
       "_callable": true,
@@ -1092,30 +1128,6 @@
       "norm_label": ".__str__()",
       "source_file": "photos/models.py",
       "source_location": "L166"
-    },
-    {
-      "id": "photos_models_whiteboard_board_path",
-      "label": "whiteboard_board_path()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 1,
-      "community_name": "views.py",
-      "file_type": "code",
-      "norm_label": "whiteboard_board_path()",
-      "source_file": "photos/models.py",
-      "source_location": "L31"
-    },
-    {
-      "id": "photos_models_whiteboard_upload_path",
-      "label": "whiteboard_upload_path()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 1,
-      "community_name": "views.py",
-      "file_type": "code",
-      "norm_label": "whiteboard_upload_path()",
-      "source_file": "photos/models.py",
-      "source_location": "L24"
     },
     {
       "id": "photos_models_whiteboarddrawing_str",
@@ -1139,7 +1151,7 @@
       "file_type": "code",
       "norm_label": "account_view()",
       "source_file": "photos/views.py",
-      "source_location": "L67"
+      "source_location": "L68"
     },
     {
       "id": "photos_views_choose_pseudo",
@@ -1151,7 +1163,7 @@
       "file_type": "code",
       "norm_label": "choose_pseudo()",
       "source_file": "photos/views.py",
-      "source_location": "L95"
+      "source_location": "L96"
     },
     {
       "id": "photos_views_create_event_view",
@@ -1163,7 +1175,7 @@
       "file_type": "code",
       "norm_label": "create_event_view()",
       "source_file": "photos/views.py",
-      "source_location": "L718"
+      "source_location": "L719"
     },
     {
       "id": "photos_views_dashboard_delete_guest",
@@ -1175,7 +1187,7 @@
       "file_type": "code",
       "norm_label": "dashboard_delete_guest()",
       "source_file": "photos/views.py",
-      "source_location": "L678"
+      "source_location": "L679"
     },
     {
       "id": "photos_views_dashboard_delete_photo",
@@ -1187,7 +1199,7 @@
       "file_type": "code",
       "norm_label": "dashboard_delete_photo()",
       "source_file": "photos/views.py",
-      "source_location": "L669"
+      "source_location": "L670"
     },
     {
       "id": "photos_views_dashboard_delete_whiteboard_drawing",
@@ -1199,7 +1211,7 @@
       "file_type": "code",
       "norm_label": "dashboard_delete_whiteboard_drawing()",
       "source_file": "photos/views.py",
-      "source_location": "L702"
+      "source_location": "L703"
     },
     {
       "id": "photos_views_dashboard_redirect",
@@ -1211,7 +1223,7 @@
       "file_type": "code",
       "norm_label": "_dashboard_redirect()",
       "source_file": "photos/views.py",
-      "source_location": "L36"
+      "source_location": "L37"
     },
     {
       "id": "photos_views_dashboard_view",
@@ -1223,7 +1235,7 @@
       "file_type": "code",
       "norm_label": "dashboard_view()",
       "source_file": "photos/views.py",
-      "source_location": "L495"
+      "source_location": "L496"
     },
     {
       "id": "photos_views_delete_own_photo",
@@ -1235,7 +1247,7 @@
       "file_type": "code",
       "norm_label": "delete_own_photo()",
       "source_file": "photos/views.py",
-      "source_location": "L296"
+      "source_location": "L297"
     },
     {
       "id": "photos_views_drive_fix_summary",
@@ -1247,7 +1259,7 @@
       "file_type": "code",
       "norm_label": "_drive_fix_summary()",
       "source_file": "photos/views.py",
-      "source_location": "L27"
+      "source_location": "L28"
     },
     {
       "id": "photos_views_drive_reauth_callback",
@@ -1259,7 +1271,7 @@
       "file_type": "code",
       "norm_label": "drive_reauth_callback()",
       "source_file": "photos/views.py",
-      "source_location": "L448"
+      "source_location": "L449"
     },
     {
       "id": "photos_views_drive_reauth_start",
@@ -1271,7 +1283,7 @@
       "file_type": "code",
       "norm_label": "drive_reauth_start()",
       "source_file": "photos/views.py",
-      "source_location": "L425"
+      "source_location": "L426"
     },
     {
       "id": "photos_views_event_switch_view",
@@ -1283,7 +1295,7 @@
       "file_type": "code",
       "norm_label": "event_switch_view()",
       "source_file": "photos/views.py",
-      "source_location": "L742"
+      "source_location": "L743"
     },
     {
       "id": "photos_views_gallery_view",
@@ -1295,7 +1307,7 @@
       "file_type": "code",
       "norm_label": "gallery_view()",
       "source_file": "photos/views.py",
-      "source_location": "L343"
+      "source_location": "L344"
     },
     {
       "id": "photos_views_get_user_identity",
@@ -1307,7 +1319,7 @@
       "file_type": "code",
       "norm_label": "_get_user_identity()",
       "source_file": "photos/views.py",
-      "source_location": "L57"
+      "source_location": "L58"
     },
     {
       "id": "photos_views_like_toggle_api",
@@ -1319,7 +1331,7 @@
       "file_type": "code",
       "norm_label": "like_toggle_api()",
       "source_file": "photos/views.py",
-      "source_location": "L318"
+      "source_location": "L319"
     },
     {
       "id": "photos_views_my_photos_view",
@@ -1331,7 +1343,7 @@
       "file_type": "code",
       "norm_label": "my_photos_view()",
       "source_file": "photos/views.py",
-      "source_location": "L284"
+      "source_location": "L285"
     },
     {
       "id": "photos_views_photo_list_api",
@@ -1343,7 +1355,7 @@
       "file_type": "code",
       "norm_label": "photo_list_api()",
       "source_file": "photos/views.py",
-      "source_location": "L309"
+      "source_location": "L310"
     },
     {
       "id": "photos_views_photo_payload",
@@ -1355,19 +1367,7 @@
       "file_type": "code",
       "norm_label": "_photo_payload()",
       "source_file": "photos/views.py",
-      "source_location": "L43"
-    },
-    {
-      "id": "photos_views_slideshow_settings_api",
-      "label": "slideshow_settings_api()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 1,
-      "community_name": "views.py",
-      "file_type": "code",
-      "norm_label": "slideshow_settings_api()",
-      "source_file": "photos/views.py",
-      "source_location": "L357"
+      "source_location": "L44"
     },
     {
       "id": "photos_views_tv_view",
@@ -1379,7 +1379,7 @@
       "file_type": "code",
       "norm_label": "tv_view()",
       "source_file": "photos/views.py",
-      "source_location": "L206"
+      "source_location": "L207"
     },
     {
       "id": "photos_views_upload_view",
@@ -1391,7 +1391,7 @@
       "file_type": "code",
       "norm_label": "upload_view()",
       "source_file": "photos/views.py",
-      "source_location": "L167"
+      "source_location": "L168"
     },
     {
       "id": "photos_views_whiteboard_draw_view",
@@ -1403,7 +1403,7 @@
       "file_type": "code",
       "norm_label": "whiteboard_draw_view()",
       "source_file": "photos/views.py",
-      "source_location": "L212"
+      "source_location": "L213"
     },
     {
       "id": "photos_views_whiteboard_upload_view",
@@ -1415,7 +1415,7 @@
       "file_type": "code",
       "norm_label": "whiteboard_upload_view()",
       "source_file": "photos/views.py",
-      "source_location": "L246"
+      "source_location": "L247"
     },
     {
       "id": "photos_views_wifi_qr_code",
@@ -1427,7 +1427,7 @@
       "file_type": "code",
       "norm_label": "wifi_qr_code()",
       "source_file": "photos/views.py",
-      "source_location": "L405"
+      "source_location": "L406"
     },
     {
       "id": "photos_views_wifi_qr_escape",
@@ -1439,7 +1439,7 @@
       "file_type": "code",
       "norm_label": "_wifi_qr_escape()",
       "source_file": "photos/views.py",
-      "source_location": "L397"
+      "source_location": "L398"
     },
     {
       "id": "photos_middleware_firstrunredirectmiddleware_call",
@@ -1562,16 +1562,28 @@
       "source_location": "L6"
     },
     {
-      "id": "photos_drive_service_client_secret_file",
-      "label": "client_secret_file()",
+      "id": "photos_drive_service_build_oauth_flow",
+      "label": "build_oauth_flow()",
       "_callable": true,
       "_origin": "ast",
       "community": 2,
       "community_name": "drive_service.py",
       "file_type": "code",
-      "norm_label": "client_secret_file()",
+      "norm_label": "build_oauth_flow()",
       "source_file": "photos/drive_service.py",
-      "source_location": "L43"
+      "source_location": "L87"
+    },
+    {
+      "id": "photos_drive_service_client_secret_file",
+      "label": "_client_secret_file()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 2,
+      "community_name": "drive_service.py",
+      "file_type": "code",
+      "norm_label": "_client_secret_file()",
+      "source_file": "photos/drive_service.py",
+      "source_location": "L40"
     },
     {
       "id": "photos_drive_service_configured_root_folder_id",
@@ -1583,7 +1595,7 @@
       "file_type": "code",
       "norm_label": "_configured_root_folder_id()",
       "source_file": "photos/drive_service.py",
-      "source_location": "L51"
+      "source_location": "L44"
     },
     {
       "id": "photos_drive_service_connect_existing_folder",
@@ -1595,7 +1607,7 @@
       "file_type": "code",
       "norm_label": "connect_existing_folder()",
       "source_file": "photos/drive_service.py",
-      "source_location": "L296"
+      "source_location": "L289"
     },
     {
       "id": "photos_drive_service_connected_email_address",
@@ -1607,7 +1619,7 @@
       "file_type": "code",
       "norm_label": "connected_email_address()",
       "source_file": "photos/drive_service.py",
-      "source_location": "L147"
+      "source_location": "L140"
     },
     {
       "id": "photos_drive_service_create_root_folder",
@@ -1619,7 +1631,7 @@
       "file_type": "code",
       "norm_label": "create_root_folder()",
       "source_file": "photos/drive_service.py",
-      "source_location": "L176"
+      "source_location": "L169"
     },
     {
       "id": "photos_drive_service_download_file",
@@ -1631,7 +1643,7 @@
       "file_type": "code",
       "norm_label": "download_file()",
       "source_file": "photos/drive_service.py",
-      "source_location": "L271"
+      "source_location": "L264"
     },
     {
       "id": "photos_drive_service_extract_folder_id",
@@ -1643,19 +1655,7 @@
       "file_type": "code",
       "norm_label": "extract_folder_id()",
       "source_file": "photos/drive_service.py",
-      "source_location": "L289"
-    },
-    {
-      "id": "photos_drive_service_folder_exists",
-      "label": "folder_exists()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 2,
-      "community_name": "drive_service.py",
-      "file_type": "code",
-      "norm_label": "folder_exists()",
-      "source_file": "photos/drive_service.py",
-      "source_location": "L241"
+      "source_location": "L282"
     },
     {
       "id": "photos_drive_service_get_credentials",
@@ -1667,7 +1667,7 @@
       "file_type": "code",
       "norm_label": "_get_credentials()",
       "source_file": "photos/drive_service.py",
-      "source_location": "L107"
+      "source_location": "L100"
     },
     {
       "id": "photos_drive_service_get_or_create_event_folder",
@@ -1679,7 +1679,7 @@
       "file_type": "code",
       "norm_label": "get_or_create_event_folder()",
       "source_file": "photos/drive_service.py",
-      "source_location": "L189"
+      "source_location": "L182"
     },
     {
       "id": "photos_drive_service_get_service",
@@ -1691,7 +1691,7 @@
       "file_type": "code",
       "norm_label": "_get_service()",
       "source_file": "photos/drive_service.py",
-      "source_location": "L139"
+      "source_location": "L132"
     },
     {
       "id": "photos_drive_service_is_configured",
@@ -1703,7 +1703,7 @@
       "file_type": "code",
       "norm_label": "is_configured()",
       "source_file": "photos/drive_service.py",
-      "source_location": "L64"
+      "source_location": "L57"
     },
     {
       "id": "photos_drive_service_list_folder_files",
@@ -1715,7 +1715,7 @@
       "file_type": "code",
       "norm_label": "list_folder_files()",
       "source_file": "photos/drive_service.py",
-      "source_location": "L256"
+      "source_location": "L249"
     },
     {
       "id": "photos_drive_service_list_root_folders",
@@ -1727,7 +1727,7 @@
       "file_type": "code",
       "norm_label": "list_root_folders()",
       "source_file": "photos/drive_service.py",
-      "source_location": "L159"
+      "source_location": "L152"
     },
     {
       "id": "photos_drive_service_revoke_folder_permission",
@@ -1739,7 +1739,7 @@
       "file_type": "code",
       "norm_label": "revoke_folder_permission()",
       "source_file": "photos/drive_service.py",
-      "source_location": "L339"
+      "source_location": "L332"
     },
     {
       "id": "photos_drive_service_root_folder_id",
@@ -1751,7 +1751,7 @@
       "file_type": "code",
       "norm_label": "_root_folder_id()",
       "source_file": "photos/drive_service.py",
-      "source_location": "L72"
+      "source_location": "L65"
     },
     {
       "id": "photos_drive_service_save_credentials",
@@ -1763,7 +1763,7 @@
       "file_type": "code",
       "norm_label": "save_credentials()",
       "source_file": "photos/drive_service.py",
-      "source_location": "L82"
+      "source_location": "L75"
     },
     {
       "id": "photos_drive_service_share_folder_with_email",
@@ -1775,7 +1775,7 @@
       "file_type": "code",
       "norm_label": "share_folder_with_email()",
       "source_file": "photos/drive_service.py",
-      "source_location": "L323"
+      "source_location": "L316"
     },
     {
       "id": "photos_drive_service_test_share",
@@ -1787,17 +1787,17 @@
       "file_type": "code",
       "norm_label": "test_share()",
       "source_file": "photos/drive_service.py",
-      "source_location": "L347"
+      "source_location": "L340"
     },
     {
       "id": "photos_drive_service_token_file",
-      "label": "token_file()",
+      "label": "_token_file()",
       "_callable": true,
       "_origin": "ast",
       "community": 2,
       "community_name": "drive_service.py",
       "file_type": "code",
-      "norm_label": "token_file()",
+      "norm_label": "_token_file()",
       "source_file": "photos/drive_service.py",
       "source_location": "L36"
     },
@@ -1811,7 +1811,7 @@
       "file_type": "code",
       "norm_label": "trash_file()",
       "source_file": "photos/drive_service.py",
-      "source_location": "L232"
+      "source_location": "L225"
     },
     {
       "id": "photos_drive_service_upload_photo",
@@ -1823,7 +1823,7 @@
       "file_type": "code",
       "norm_label": "upload_photo()",
       "source_file": "photos/drive_service.py",
-      "source_location": "L216"
+      "source_location": "L209"
     },
     {
       "id": "photos_event_service_guess_username",
@@ -1871,127 +1871,7 @@
       "file_type": "code",
       "norm_label": "share_drive_view()",
       "source_file": "photos/views.py",
-      "source_location": "L128"
-    },
-    {
-      "id": "photos_admin_views_drive_google_callback_view",
-      "label": "drive_google_callback_view()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 26,
-      "community_name": "gmail_service.py",
-      "file_type": "code",
-      "norm_label": "drive_google_callback_view()",
-      "source_file": "photos/admin_views.py",
-      "source_location": "L209"
-    },
-    {
-      "id": "photos_gmail_service_connected_email_address",
-      "label": "connected_email_address()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 26,
-      "community_name": "gmail_service.py",
-      "file_type": "code",
-      "norm_label": "connected_email_address()",
-      "source_file": "photos/gmail_service.py",
-      "source_location": "L92"
-    },
-    {
-      "id": "photos_gmail_service_disconnect",
-      "label": "disconnect()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 26,
-      "community_name": "gmail_service.py",
-      "file_type": "code",
-      "norm_label": "disconnect()",
-      "source_file": "photos/gmail_service.py",
-      "source_location": "L62"
-    },
-    {
-      "id": "photos_gmail_service_get_credentials",
-      "label": "_get_credentials()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 26,
-      "community_name": "gmail_service.py",
-      "file_type": "code",
-      "norm_label": "_get_credentials()",
-      "source_file": "photos/gmail_service.py",
-      "source_location": "L68"
-    },
-    {
-      "id": "photos_gmail_service_get_service",
-      "label": "_get_service()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 26,
-      "community_name": "gmail_service.py",
-      "file_type": "code",
-      "norm_label": "_get_service()",
-      "source_file": "photos/gmail_service.py",
-      "source_location": "L87"
-    },
-    {
-      "id": "photos_gmail_service_gmailapibackend_send_messages",
-      "label": ".send_messages()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 26,
-      "community_name": "gmail_service.py",
-      "file_type": "code",
-      "norm_label": ".send_messages()",
-      "source_file": "photos/gmail_service.py",
-      "source_location": "L128"
-    },
-    {
-      "id": "photos_gmail_service_is_configured",
-      "label": "is_configured()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 26,
-      "community_name": "gmail_service.py",
-      "file_type": "code",
-      "norm_label": "is_configured()",
-      "source_file": "photos/gmail_service.py",
-      "source_location": "L48"
-    },
-    {
-      "id": "photos_gmail_service_save_credentials",
-      "label": "save_credentials()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 26,
-      "community_name": "gmail_service.py",
-      "file_type": "code",
-      "norm_label": "save_credentials()",
-      "source_file": "photos/gmail_service.py",
-      "source_location": "L53"
-    },
-    {
-      "id": "photos_gmail_service_send_raw",
-      "label": "_send_raw()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 26,
-      "community_name": "gmail_service.py",
-      "file_type": "code",
-      "norm_label": "_send_raw()",
-      "source_file": "photos/gmail_service.py",
-      "source_location": "L111"
-    },
-    {
-      "id": "photos_gmail_service_token_file",
-      "label": "_token_file()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 26,
-      "community_name": "gmail_service.py",
-      "file_type": "code",
-      "norm_label": "_token_file()",
-      "source_file": "photos/gmail_service.py",
-      "source_location": "L44"
+      "source_location": "L129"
     },
     {
       "id": "photos_admin_views_admin_creation_open",
@@ -2015,7 +1895,19 @@
       "file_type": "code",
       "norm_label": "admin_management_view()",
       "source_file": "photos/admin_views.py",
-      "source_location": "L234"
+      "source_location": "L239"
+    },
+    {
+      "id": "photos_admin_views_client_secret_path",
+      "label": "_client_secret_path()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 4,
+      "community_name": "admin_views.py",
+      "file_type": "code",
+      "norm_label": "_client_secret_path()",
+      "source_file": "photos/admin_views.py",
+      "source_location": "L157"
     },
     {
       "id": "photos_admin_views_create_admin_view",
@@ -2039,7 +1931,19 @@
       "file_type": "code",
       "norm_label": "delete_invite_view()",
       "source_file": "photos/admin_views.py",
-      "source_location": "L475"
+      "source_location": "L476"
+    },
+    {
+      "id": "photos_admin_views_drive_google_callback_view",
+      "label": "drive_google_callback_view()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 4,
+      "community_name": "admin_views.py",
+      "file_type": "code",
+      "norm_label": "drive_google_callback_view()",
+      "source_file": "photos/admin_views.py",
+      "source_location": "L214"
     },
     {
       "id": "photos_admin_views_drive_google_connect_view",
@@ -2051,7 +1955,7 @@
       "file_type": "code",
       "norm_label": "drive_google_connect_view()",
       "source_file": "photos/admin_views.py",
-      "source_location": "L188"
+      "source_location": "L193"
     },
     {
       "id": "photos_admin_views_google_flow",
@@ -2063,7 +1967,7 @@
       "file_type": "code",
       "norm_label": "_google_flow()",
       "source_file": "photos/admin_views.py",
-      "source_location": "L176"
+      "source_location": "L181"
     },
     {
       "id": "photos_admin_views_is_localhost",
@@ -2075,7 +1979,7 @@
       "file_type": "code",
       "norm_label": "_is_localhost()",
       "source_file": "photos/admin_views.py",
-      "source_location": "L157"
+      "source_location": "L165"
     },
     {
       "id": "photos_admin_views_localhost_redirect_uri",
@@ -2087,19 +1991,7 @@
       "file_type": "code",
       "norm_label": "_localhost_redirect_uri()",
       "source_file": "photos/admin_views.py",
-      "source_location": "L166"
-    },
-    {
-      "id": "photos_admin_views_request_port",
-      "label": "_request_port()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 4,
-      "community_name": "admin_views.py",
-      "file_type": "code",
-      "norm_label": "_request_port()",
-      "source_file": "photos/admin_views.py",
-      "source_location": "L161"
+      "source_location": "L169"
     },
     {
       "id": "photos_admin_views_revoke_invite_view",
@@ -2111,7 +2003,7 @@
       "file_type": "code",
       "norm_label": "revoke_invite_view()",
       "source_file": "photos/admin_views.py",
-      "source_location": "L461"
+      "source_location": "L462"
     },
     {
       "id": "photos_admin_views_run_ip_check",
@@ -2135,7 +2027,7 @@
       "file_type": "code",
       "norm_label": "subadmin_invite_view()",
       "source_file": "photos/admin_views.py",
-      "source_location": "L484"
+      "source_location": "L485"
     },
     {
       "id": "photos_admin_views_supportemailpasswordresetview_form_valid",
@@ -2148,6 +2040,18 @@
       "norm_label": ".form_valid()",
       "source_file": "photos/admin_views.py",
       "source_location": "L137"
+    },
+    {
+      "id": "photos_admin_views_token_path",
+      "label": "_token_path()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 4,
+      "community_name": "admin_views.py",
+      "file_type": "code",
+      "norm_label": "_token_path()",
+      "source_file": "photos/admin_views.py",
+      "source_location": "L161"
     },
     {
       "id": "photos_admin_views_verify_failed_key",
@@ -2171,7 +2075,7 @@
       "file_type": "code",
       "norm_label": "verify_ip_page_view()",
       "source_file": "photos/admin_views.py",
-      "source_location": "L446"
+      "source_location": "L447"
     },
     {
       "id": "photos_admin_views_verify_ip_status_view",
@@ -2183,7 +2087,7 @@
       "file_type": "code",
       "norm_label": "verify_ip_status_view()",
       "source_file": "photos/admin_views.py",
-      "source_location": "L439"
+      "source_location": "L440"
     },
     {
       "id": "photos_admin_views_verify_pending_key",
@@ -2256,6 +2160,114 @@
       "norm_label": ".send_mail()",
       "source_file": "photos/forms.py",
       "source_location": "L22"
+    },
+    {
+      "id": "photos_gmail_service_connected_email_address",
+      "label": "connected_email_address()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 4,
+      "community_name": "admin_views.py",
+      "file_type": "code",
+      "norm_label": "connected_email_address()",
+      "source_file": "photos/gmail_service.py",
+      "source_location": "L92"
+    },
+    {
+      "id": "photos_gmail_service_disconnect",
+      "label": "disconnect()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 4,
+      "community_name": "admin_views.py",
+      "file_type": "code",
+      "norm_label": "disconnect()",
+      "source_file": "photos/gmail_service.py",
+      "source_location": "L62"
+    },
+    {
+      "id": "photos_gmail_service_get_credentials",
+      "label": "_get_credentials()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 4,
+      "community_name": "admin_views.py",
+      "file_type": "code",
+      "norm_label": "_get_credentials()",
+      "source_file": "photos/gmail_service.py",
+      "source_location": "L68"
+    },
+    {
+      "id": "photos_gmail_service_get_service",
+      "label": "_get_service()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 4,
+      "community_name": "admin_views.py",
+      "file_type": "code",
+      "norm_label": "_get_service()",
+      "source_file": "photos/gmail_service.py",
+      "source_location": "L87"
+    },
+    {
+      "id": "photos_gmail_service_gmailapibackend_send_messages",
+      "label": ".send_messages()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 4,
+      "community_name": "admin_views.py",
+      "file_type": "code",
+      "norm_label": ".send_messages()",
+      "source_file": "photos/gmail_service.py",
+      "source_location": "L128"
+    },
+    {
+      "id": "photos_gmail_service_is_configured",
+      "label": "is_configured()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 4,
+      "community_name": "admin_views.py",
+      "file_type": "code",
+      "norm_label": "is_configured()",
+      "source_file": "photos/gmail_service.py",
+      "source_location": "L48"
+    },
+    {
+      "id": "photos_gmail_service_save_credentials",
+      "label": "save_credentials()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 4,
+      "community_name": "admin_views.py",
+      "file_type": "code",
+      "norm_label": "save_credentials()",
+      "source_file": "photos/gmail_service.py",
+      "source_location": "L53"
+    },
+    {
+      "id": "photos_gmail_service_send_raw",
+      "label": "_send_raw()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 4,
+      "community_name": "admin_views.py",
+      "file_type": "code",
+      "norm_label": "_send_raw()",
+      "source_file": "photos/gmail_service.py",
+      "source_location": "L111"
+    },
+    {
+      "id": "photos_gmail_service_token_file",
+      "label": "_token_file()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 4,
+      "community_name": "admin_views.py",
+      "file_type": "code",
+      "norm_label": "_token_file()",
+      "source_file": "photos/gmail_service.py",
+      "source_location": "L44"
     },
     {
       "id": "photos_models_admininvite_is_expired",
@@ -2339,7 +2351,7 @@
       "file_type": "code",
       "norm_label": "_post_login_redirect()",
       "source_file": "photos/views.py",
-      "source_location": "L469"
+      "source_location": "L470"
     },
     {
       "id": "photos_views_staff_login_view",
@@ -2351,7 +2363,7 @@
       "file_type": "code",
       "norm_label": "staff_login_view()",
       "source_file": "photos/views.py",
-      "source_location": "L473"
+      "source_location": "L474"
     },
     {
       "id": "photos_views_upload_qr_code",
@@ -2363,7 +2375,7 @@
       "file_type": "code",
       "norm_label": "upload_qr_code()",
       "source_file": "photos/views.py",
-      "source_location": "L377"
+      "source_location": "L378"
     },
     {
       "id": "packaging_launcher_main",
@@ -2706,10 +2718,65 @@
       "label": "admin.py",
       "_origin": "ast",
       "community": 0,
-      "community_name": "admin.py",
+      "community_name": "models.py",
       "file_type": "code",
       "norm_label": "admin.py",
       "source_file": "photos/admin.py",
+      "source_location": "L1"
+    },
+    {
+      "id": "photos_migrations_0004_alter_photo_image",
+      "label": "0004_alter_photo_image.py",
+      "_origin": "ast",
+      "community": 0,
+      "community_name": "models.py",
+      "file_type": "code",
+      "norm_label": "0004_alter_photo_image.py",
+      "source_file": "photos/migrations/0004_alter_photo_image.py",
+      "source_location": "L1"
+    },
+    {
+      "id": "photos_migrations_0006_eventsettings_useridentity_drive_shared_and_more",
+      "label": "0006_eventsettings_useridentity_drive_shared_and_more.py",
+      "_origin": "ast",
+      "community": 0,
+      "community_name": "models.py",
+      "file_type": "code",
+      "norm_label": "0006_eventsettings_useridentity_drive_shared_and_more.py",
+      "source_file": "photos/migrations/0006_eventsettings_useridentity_drive_shared_and_more.py",
+      "source_location": "L1"
+    },
+    {
+      "id": "photos_migrations_0010_multi_event",
+      "label": "0010_multi_event.py",
+      "_origin": "ast",
+      "community": 0,
+      "community_name": "models.py",
+      "file_type": "code",
+      "norm_label": "0010_multi_event.py",
+      "source_file": "photos/migrations/0010_multi_event.py",
+      "source_location": "L1"
+    },
+    {
+      "id": "photos_migrations_0012_event_tv_layout_event_whiteboard_enabled_and_more",
+      "label": "0012_event_tv_layout_event_whiteboard_enabled_and_more.py",
+      "_origin": "ast",
+      "community": 0,
+      "community_name": "models.py",
+      "file_type": "code",
+      "norm_label": "0012_event_tv_layout_event_whiteboard_enabled_and_more.py",
+      "source_file": "photos/migrations/0012_event_tv_layout_event_whiteboard_enabled_and_more.py",
+      "source_location": "L1"
+    },
+    {
+      "id": "photos_models",
+      "label": "models.py",
+      "_origin": "ast",
+      "community": 0,
+      "community_name": "models.py",
+      "file_type": "code",
+      "norm_label": "models.py",
+      "source_file": "photos/models.py",
       "source_location": "L1"
     },
     {
@@ -2717,7 +2784,7 @@
       "label": "register",
       "_origin": "ast",
       "community": 0,
-      "community_name": "admin.py",
+      "community_name": "models.py",
       "file_type": "code",
       "norm_label": "register",
       "source_file": "",
@@ -2746,61 +2813,6 @@
       "source_location": "L1"
     },
     {
-      "id": "photos_migrations_0004_alter_photo_image",
-      "label": "0004_alter_photo_image.py",
-      "_origin": "ast",
-      "community": 1,
-      "community_name": "views.py",
-      "file_type": "code",
-      "norm_label": "0004_alter_photo_image.py",
-      "source_file": "photos/migrations/0004_alter_photo_image.py",
-      "source_location": "L1"
-    },
-    {
-      "id": "photos_migrations_0006_eventsettings_useridentity_drive_shared_and_more",
-      "label": "0006_eventsettings_useridentity_drive_shared_and_more.py",
-      "_origin": "ast",
-      "community": 1,
-      "community_name": "views.py",
-      "file_type": "code",
-      "norm_label": "0006_eventsettings_useridentity_drive_shared_and_more.py",
-      "source_file": "photos/migrations/0006_eventsettings_useridentity_drive_shared_and_more.py",
-      "source_location": "L1"
-    },
-    {
-      "id": "photos_migrations_0010_multi_event",
-      "label": "0010_multi_event.py",
-      "_origin": "ast",
-      "community": 1,
-      "community_name": "views.py",
-      "file_type": "code",
-      "norm_label": "0010_multi_event.py",
-      "source_file": "photos/migrations/0010_multi_event.py",
-      "source_location": "L1"
-    },
-    {
-      "id": "photos_migrations_0012_event_tv_layout_event_whiteboard_enabled_and_more",
-      "label": "0012_event_tv_layout_event_whiteboard_enabled_and_more.py",
-      "_origin": "ast",
-      "community": 1,
-      "community_name": "views.py",
-      "file_type": "code",
-      "norm_label": "0012_event_tv_layout_event_whiteboard_enabled_and_more.py",
-      "source_file": "photos/migrations/0012_event_tv_layout_event_whiteboard_enabled_and_more.py",
-      "source_location": "L1"
-    },
-    {
-      "id": "photos_models",
-      "label": "models.py",
-      "_origin": "ast",
-      "community": 1,
-      "community_name": "views.py",
-      "file_type": "code",
-      "norm_label": "models.py",
-      "source_file": "photos/models.py",
-      "source_location": "L1"
-    },
-    {
       "id": "photos_views",
       "label": "views.py",
       "_origin": "ast",
@@ -2823,15 +2835,15 @@
       "source_location": ""
     },
     {
-      "id": "photos_drive_service_rationale_95",
-      "label": "Flow for the web-based (dashboard button) re-auth path \u2014 distinct from the\u2026",
+      "id": "photos_drive_service_rationale_235",
+      "label": "Live check (never cached) that folder_id still exists, isn't trashed, and is\u2026",
       "_origin": "ast",
       "community": 1,
       "community_name": "views.py",
       "file_type": "rationale",
-      "norm_label": "flow for the web-based (dashboard button) re-auth path \u2014 distinct from the...",
+      "norm_label": "live check (never cached) that folder_id still exists, isn't trashed, and is...",
       "source_file": "photos/drive_service.py",
-      "source_location": "L95"
+      "source_location": "L235"
     },
     {
       "id": "photos_event_service_rationale_1",
@@ -2955,7 +2967,7 @@
       "source_location": "L36"
     },
     {
-      "id": "photos_views_rationale_426",
+      "id": "photos_views_rationale_427",
       "label": "Kicks off the web-based OAuth flow: redirect the admin's own browser to\u2026",
       "_origin": "ast",
       "community": 1,
@@ -2963,7 +2975,7 @@
       "file_type": "rationale",
       "norm_label": "kicks off the web-based oauth flow: redirect the admin's own browser to...",
       "source_file": "photos/views.py",
-      "source_location": "L426"
+      "source_location": "L427"
     },
     {
       "id": "photos_middleware",
@@ -3205,7 +3217,7 @@
       "source_location": "L1"
     },
     {
-      "id": "photos_drive_service_rationale_148",
+      "id": "photos_drive_service_rationale_141",
       "label": "The Google account currently authorized for Drive access, straight from Google\u2026",
       "_origin": "ast",
       "community": 2,
@@ -3213,10 +3225,10 @@
       "file_type": "rationale",
       "norm_label": "the google account currently authorized for drive access, straight from google...",
       "source_file": "photos/drive_service.py",
-      "source_location": "L148"
+      "source_location": "L141"
     },
     {
-      "id": "photos_drive_service_rationale_160",
+      "id": "photos_drive_service_rationale_153",
       "label": "Folders directly under \"My Drive\" (not trashed) \u2014 used by the setup wizard's\u2026",
       "_origin": "ast",
       "community": 2,
@@ -3224,10 +3236,10 @@
       "file_type": "rationale",
       "norm_label": "folders directly under \"my drive\" (not trashed) \u2014 used by the setup wizard's...",
       "source_file": "photos/drive_service.py",
-      "source_location": "L160"
+      "source_location": "L153"
     },
     {
-      "id": "photos_drive_service_rationale_177",
+      "id": "photos_drive_service_rationale_170",
       "label": "Create a new folder directly under \"My Drive\". Returns its id.",
       "_origin": "ast",
       "community": 2,
@@ -3235,10 +3247,10 @@
       "file_type": "rationale",
       "norm_label": "create a new folder directly under \"my drive\". returns its id.",
       "source_file": "photos/drive_service.py",
-      "source_location": "L177"
+      "source_location": "L170"
     },
     {
-      "id": "photos_drive_service_rationale_190",
+      "id": "photos_drive_service_rationale_183",
       "label": "Return (folder_id, web_view_link) for a folder named `name` directly under the\u2026",
       "_origin": "ast",
       "community": 2,
@@ -3246,10 +3258,10 @@
       "file_type": "rationale",
       "norm_label": "return (folder_id, web_view_link) for a folder named `name` directly under the...",
       "source_file": "photos/drive_service.py",
-      "source_location": "L190"
+      "source_location": "L183"
     },
     {
-      "id": "photos_drive_service_rationale_217",
+      "id": "photos_drive_service_rationale_210",
       "label": "Upload the file already saved on disk at file_path into folder_id. Returns the\u2026",
       "_origin": "ast",
       "community": 2,
@@ -3257,10 +3269,10 @@
       "file_type": "rationale",
       "norm_label": "upload the file already saved on disk at file_path into folder_id. returns the...",
       "source_file": "photos/drive_service.py",
-      "source_location": "L217"
+      "source_location": "L210"
     },
     {
-      "id": "photos_drive_service_rationale_233",
+      "id": "photos_drive_service_rationale_226",
       "label": "Move a Drive file to trash (soft delete, recoverable from Drive's Trash).",
       "_origin": "ast",
       "community": 2,
@@ -3268,21 +3280,10 @@
       "file_type": "rationale",
       "norm_label": "move a drive file to trash (soft delete, recoverable from drive's trash).",
       "source_file": "photos/drive_service.py",
-      "source_location": "L233"
+      "source_location": "L226"
     },
     {
-      "id": "photos_drive_service_rationale_242",
-      "label": "Live check (never cached) that folder_id still exists, isn't trashed, and is\u2026",
-      "_origin": "ast",
-      "community": 2,
-      "community_name": "drive_service.py",
-      "file_type": "rationale",
-      "norm_label": "live check (never cached) that folder_id still exists, isn't trashed, and is...",
-      "source_file": "photos/drive_service.py",
-      "source_location": "L242"
-    },
-    {
-      "id": "photos_drive_service_rationale_257",
+      "id": "photos_drive_service_rationale_250",
       "label": "List non-trashed, non-folder files directly inside folder_id.",
       "_origin": "ast",
       "community": 2,
@@ -3290,10 +3291,10 @@
       "file_type": "rationale",
       "norm_label": "list non-trashed, non-folder files directly inside folder_id.",
       "source_file": "photos/drive_service.py",
-      "source_location": "L257"
+      "source_location": "L250"
     },
     {
-      "id": "photos_drive_service_rationale_272",
+      "id": "photos_drive_service_rationale_265",
       "label": "Return the raw bytes of a Drive file.",
       "_origin": "ast",
       "community": 2,
@@ -3301,10 +3302,10 @@
       "file_type": "rationale",
       "norm_label": "return the raw bytes of a drive file.",
       "source_file": "photos/drive_service.py",
-      "source_location": "L272"
+      "source_location": "L265"
     },
     {
-      "id": "photos_drive_service_rationale_290",
+      "id": "photos_drive_service_rationale_283",
       "label": "Accept either a bare Drive folder ID or a full folder URL and return the ID.",
       "_origin": "ast",
       "community": 2,
@@ -3312,10 +3313,10 @@
       "file_type": "rationale",
       "norm_label": "accept either a bare drive folder id or a full folder url and return the id.",
       "source_file": "photos/drive_service.py",
-      "source_location": "L290"
+      "source_location": "L283"
     },
     {
-      "id": "photos_drive_service_rationale_297",
+      "id": "photos_drive_service_rationale_290",
       "label": "Point `event` at an existing Drive folder, identified by the (possibly pasted-\u2026",
       "_origin": "ast",
       "community": 2,
@@ -3323,10 +3324,10 @@
       "file_type": "rationale",
       "norm_label": "point `event` at an existing drive folder, identified by the (possibly pasted-...",
       "source_file": "photos/drive_service.py",
-      "source_location": "L297"
+      "source_location": "L290"
     },
     {
-      "id": "photos_drive_service_rationale_324",
+      "id": "photos_drive_service_rationale_317",
       "label": "Grant reader access on folder_id to email. Returns the new permission's id,\u2026",
       "_origin": "ast",
       "community": 2,
@@ -3334,7 +3335,7 @@
       "file_type": "rationale",
       "norm_label": "grant reader access on folder_id to email. returns the new permission's id,...",
       "source_file": "photos/drive_service.py",
-      "source_location": "L324"
+      "source_location": "L317"
     },
     {
       "id": "photos_drive_service_rationale_33",
@@ -3348,7 +3349,7 @@
       "source_location": "L33"
     },
     {
-      "id": "photos_drive_service_rationale_348",
+      "id": "photos_drive_service_rationale_341",
       "label": "Verify sharing folder_id with email would succeed, without leaving real access\u2026",
       "_origin": "ast",
       "community": 2,
@@ -3356,32 +3357,10 @@
       "file_type": "rationale",
       "norm_label": "verify sharing folder_id with email would succeed, without leaving real access...",
       "source_file": "photos/drive_service.py",
-      "source_location": "L348"
+      "source_location": "L341"
     },
     {
-      "id": "photos_drive_service_rationale_37",
-      "label": "Path to the Drive OAuth token file (GOOGLE_OAUTH_TOKEN_FILE) \u2014 the one place\u2026",
-      "_origin": "ast",
-      "community": 2,
-      "community_name": "drive_service.py",
-      "file_type": "rationale",
-      "norm_label": "path to the drive oauth token file (google_oauth_token_file) \u2014 the one place...",
-      "source_file": "photos/drive_service.py",
-      "source_location": "L37"
-    },
-    {
-      "id": "photos_drive_service_rationale_44",
-      "label": "Path to the shared OAuth client credentials file\u2026",
-      "_origin": "ast",
-      "community": 2,
-      "community_name": "drive_service.py",
-      "file_type": "rationale",
-      "norm_label": "path to the shared oauth client credentials file...",
-      "source_file": "photos/drive_service.py",
-      "source_location": "L44"
-    },
-    {
-      "id": "photos_drive_service_rationale_52",
+      "id": "photos_drive_service_rationale_45",
       "label": "The env var wins if set (back-compat with existing installs); otherwise the DB-\u2026",
       "_origin": "ast",
       "community": 2,
@@ -3389,10 +3368,10 @@
       "file_type": "rationale",
       "norm_label": "the env var wins if set (back-compat with existing installs); otherwise the db-...",
       "source_file": "photos/drive_service.py",
-      "source_location": "L52"
+      "source_location": "L45"
     },
     {
-      "id": "photos_drive_service_rationale_65",
+      "id": "photos_drive_service_rationale_58",
       "label": "Cheap, no-network check for whether Drive backup is usable at all \u2014 Drive is\u2026",
       "_origin": "ast",
       "community": 2,
@@ -3400,10 +3379,10 @@
       "file_type": "rationale",
       "norm_label": "cheap, no-network check for whether drive backup is usable at all \u2014 drive is...",
       "source_file": "photos/drive_service.py",
-      "source_location": "L65"
+      "source_location": "L58"
     },
     {
-      "id": "photos_drive_service_rationale_83",
+      "id": "photos_drive_service_rationale_76",
       "label": "Persist credentials (from the initial consent flow or a refresh) to\u2026",
       "_origin": "ast",
       "community": 2,
@@ -3411,7 +3390,18 @@
       "file_type": "rationale",
       "norm_label": "persist credentials (from the initial consent flow or a refresh) to...",
       "source_file": "photos/drive_service.py",
-      "source_location": "L83"
+      "source_location": "L76"
+    },
+    {
+      "id": "photos_drive_service_rationale_88",
+      "label": "Flow for the web-based (dashboard button) re-auth path \u2014 distinct from the\u2026",
+      "_origin": "ast",
+      "community": 2,
+      "community_name": "drive_service.py",
+      "file_type": "rationale",
+      "norm_label": "flow for the web-based (dashboard button) re-auth path \u2014 distinct from the...",
+      "source_file": "photos/drive_service.py",
+      "source_location": "L88"
     },
     {
       "id": "photos_event_service_rationale_130",
@@ -3513,81 +3503,34 @@
       "source_location": "L1"
     },
     {
-      "id": "baseemailbackend",
-      "label": "BaseEmailBackend",
+      "id": "scripts_start_sh__entry",
+      "label": "start.sh script",
       "_origin": "ast",
       "community": 26,
-      "community_name": "gmail_service.py",
+      "community_name": "start.sh script",
       "file_type": "code",
-      "norm_label": "baseemailbackend",
-      "source_file": "",
-      "source_location": ""
-    },
-    {
-      "id": "photos_gmail_service",
-      "label": "gmail_service.py",
-      "_origin": "ast",
-      "community": 26,
-      "community_name": "gmail_service.py",
-      "file_type": "code",
-      "norm_label": "gmail_service.py",
-      "source_file": "photos/gmail_service.py",
+      "metadata": {
+        "language": "bash",
+        "kind": "bash_entrypoint"
+      },
+      "norm_label": "start.sh script",
+      "source_file": "scripts/start.sh",
       "source_location": "L1"
     },
     {
-      "id": "photos_gmail_service_py_exception",
-      "label": "Exception",
+      "id": "scripts_start_sh_scripts_start",
+      "label": "start.sh",
       "_origin": "ast",
       "community": 26,
-      "community_name": "gmail_service.py",
+      "community_name": "start.sh script",
       "file_type": "code",
-      "norm_label": "exception",
-      "source_file": "",
-      "source_location": ""
-    },
-    {
-      "id": "photos_gmail_service_rationale_1",
-      "label": "Sends the admin/subadmin password-reset email via the Gmail API under a real\u2026",
-      "_origin": "ast",
-      "community": 26,
-      "community_name": "gmail_service.py",
-      "file_type": "rationale",
-      "norm_label": "sends the admin/subadmin password-reset email via the gmail api under a real...",
-      "source_file": "photos/gmail_service.py",
+      "metadata": {
+        "language": "bash",
+        "kind": "file"
+      },
+      "norm_label": "start.sh",
+      "source_file": "scripts/start.sh",
       "source_location": "L1"
-    },
-    {
-      "id": "photos_gmail_service_rationale_124",
-      "label": "Django email backend that sends through the Gmail API instead of SMTP \u2014 swapped\u2026",
-      "_origin": "ast",
-      "community": 26,
-      "community_name": "gmail_service.py",
-      "file_type": "rationale",
-      "norm_label": "django email backend that sends through the gmail api instead of smtp \u2014 swapped...",
-      "source_file": "photos/gmail_service.py",
-      "source_location": "L124"
-    },
-    {
-      "id": "photos_gmail_service_rationale_41",
-      "label": "Raised for any Gmail-send setup/API failure; callers decide how to surface it.",
-      "_origin": "ast",
-      "community": 26,
-      "community_name": "gmail_service.py",
-      "file_type": "rationale",
-      "norm_label": "raised for any gmail-send setup/api failure; callers decide how to surface it.",
-      "source_file": "photos/gmail_service.py",
-      "source_location": "L41"
-    },
-    {
-      "id": "photos_gmail_service_rationale_93",
-      "label": "The Google account currently authorized, straight from Google (never trust a\u2026",
-      "_origin": "ast",
-      "community": 26,
-      "community_name": "gmail_service.py",
-      "file_type": "rationale",
-      "norm_label": "the google account currently authorized, straight from google (never trust a...",
-      "source_file": "photos/gmail_service.py",
-      "source_location": "L93"
     },
     {
       "id": "config_init",
@@ -3689,6 +3632,17 @@
       "source_location": ""
     },
     {
+      "id": "baseemailbackend",
+      "label": "BaseEmailBackend",
+      "_origin": "ast",
+      "community": 4,
+      "community_name": "admin_views.py",
+      "file_type": "code",
+      "norm_label": "baseemailbackend",
+      "source_file": "",
+      "source_location": ""
+    },
+    {
       "id": "passwordresetform",
       "label": "PasswordResetForm",
       "_origin": "ast",
@@ -3731,6 +3685,28 @@
       "norm_label": "forms.py",
       "source_file": "photos/forms.py",
       "source_location": "L1"
+    },
+    {
+      "id": "photos_gmail_service",
+      "label": "gmail_service.py",
+      "_origin": "ast",
+      "community": 4,
+      "community_name": "admin_views.py",
+      "file_type": "code",
+      "norm_label": "gmail_service.py",
+      "source_file": "photos/gmail_service.py",
+      "source_location": "L1"
+    },
+    {
+      "id": "photos_gmail_service_py_exception",
+      "label": "Exception",
+      "_origin": "ast",
+      "community": 4,
+      "community_name": "admin_views.py",
+      "file_type": "code",
+      "norm_label": "exception",
+      "source_file": "",
+      "source_location": ""
     },
     {
       "id": "photos_init",
@@ -3799,7 +3775,7 @@
       "source_location": "L126"
     },
     {
-      "id": "photos_admin_views_rationale_167",
+      "id": "photos_admin_views_rationale_170",
       "label": "Google's OAuth policy requires HTTPS for any redirect URI host except\u2026",
       "_origin": "ast",
       "community": 4,
@@ -3807,7 +3783,7 @@
       "file_type": "rationale",
       "norm_label": "google's oauth policy requires https for any redirect uri host except...",
       "source_file": "photos/admin_views.py",
-      "source_location": "L167"
+      "source_location": "L170"
     },
     {
       "id": "photos_admin_views_rationale_80",
@@ -3832,6 +3808,50 @@
       "source_location": "L1"
     },
     {
+      "id": "photos_gmail_service_rationale_1",
+      "label": "Sends the admin/subadmin password-reset email via the Gmail API under a real\u2026",
+      "_origin": "ast",
+      "community": 4,
+      "community_name": "admin_views.py",
+      "file_type": "rationale",
+      "norm_label": "sends the admin/subadmin password-reset email via the gmail api under a real...",
+      "source_file": "photos/gmail_service.py",
+      "source_location": "L1"
+    },
+    {
+      "id": "photos_gmail_service_rationale_124",
+      "label": "Django email backend that sends through the Gmail API instead of SMTP \u2014 swapped\u2026",
+      "_origin": "ast",
+      "community": 4,
+      "community_name": "admin_views.py",
+      "file_type": "rationale",
+      "norm_label": "django email backend that sends through the gmail api instead of smtp \u2014 swapped...",
+      "source_file": "photos/gmail_service.py",
+      "source_location": "L124"
+    },
+    {
+      "id": "photos_gmail_service_rationale_41",
+      "label": "Raised for any Gmail-send setup/API failure; callers decide how to surface it.",
+      "_origin": "ast",
+      "community": 4,
+      "community_name": "admin_views.py",
+      "file_type": "rationale",
+      "norm_label": "raised for any gmail-send setup/api failure; callers decide how to surface it.",
+      "source_file": "photos/gmail_service.py",
+      "source_location": "L41"
+    },
+    {
+      "id": "photos_gmail_service_rationale_93",
+      "label": "The Google account currently authorized, straight from Google (never trust a\u2026",
+      "_origin": "ast",
+      "community": 4,
+      "community_name": "admin_views.py",
+      "file_type": "rationale",
+      "norm_label": "the google account currently authorized, straight from google (never trust a...",
+      "source_file": "photos/gmail_service.py",
+      "source_location": "L93"
+    },
+    {
       "id": "photos_models_rationale_219",
       "label": "A single-use link the admin can hand out so someone else can create their own\u2026",
       "_origin": "ast",
@@ -3843,136 +3863,15 @@
       "source_location": "L219"
     },
     {
-      "id": "docs_developer_guide",
-      "label": "developer-guide.md",
+      "id": "scripts_start_ps1_scripts_start",
+      "label": "start.ps1",
       "_origin": "ast",
       "community": 44,
-      "community_name": "Developer guide",
-      "file_type": "document",
-      "node_kind": "page",
-      "norm_label": "developer-guide.md",
-      "source_file": "docs/developer-guide.md",
+      "community_name": "start.ps1",
+      "file_type": "code",
+      "norm_label": "start.ps1",
+      "source_file": "scripts/start.ps1",
       "source_location": "L1"
-    },
-    {
-      "id": "docs_developer_guide_developer_guide",
-      "label": "Developer guide",
-      "_origin": "ast",
-      "community": 44,
-      "community_name": "Developer guide",
-      "file_type": "document",
-      "node_kind": "heading",
-      "norm_label": "developer guide",
-      "source_file": "docs/developer-guide.md",
-      "source_location": "L1"
-    },
-    {
-      "id": "docs_developer_guide_git_conventions_observed_in_this_repo",
-      "label": "Git conventions observed in this repo",
-      "_origin": "ast",
-      "community": 44,
-      "community_name": "Developer guide",
-      "file_type": "document",
-      "node_kind": "heading",
-      "norm_label": "git conventions observed in this repo",
-      "source_file": "docs/developer-guide.md",
-      "source_location": "L165"
-    },
-    {
-      "id": "docs_developer_guide_google_oauth2_integration_pattern",
-      "label": "Google OAuth2 integration pattern",
-      "_origin": "ast",
-      "community": 44,
-      "community_name": "Developer guide",
-      "file_type": "document",
-      "node_kind": "heading",
-      "norm_label": "google oauth2 integration pattern",
-      "source_file": "docs/developer-guide.md",
-      "source_location": "L91"
-    },
-    {
-      "id": "docs_developer_guide_icons",
-      "label": "Icons",
-      "_origin": "ast",
-      "community": 44,
-      "community_name": "Developer guide",
-      "file_type": "document",
-      "node_kind": "heading",
-      "norm_label": "icons",
-      "source_file": "docs/developer-guide.md",
-      "source_location": "L73"
-    },
-    {
-      "id": "docs_developer_guide_keeping_the_code_graph_current",
-      "label": "Keeping the code graph current",
-      "_origin": "ast",
-      "community": 44,
-      "community_name": "Developer guide",
-      "file_type": "document",
-      "node_kind": "heading",
-      "norm_label": "keeping the code graph current",
-      "source_file": "docs/developer-guide.md",
-      "source_location": "L150"
-    },
-    {
-      "id": "docs_developer_guide_no_automated_tests",
-      "label": "No automated tests",
-      "_origin": "ast",
-      "community": 44,
-      "community_name": "Developer guide",
-      "file_type": "document",
-      "node_kind": "heading",
-      "norm_label": "no automated tests",
-      "source_file": "docs/developer-guide.md",
-      "source_location": "L124"
-    },
-    {
-      "id": "docs_developer_guide_the_design_system_frontend_conventions",
-      "label": "The design system (frontend conventions)",
-      "_origin": "ast",
-      "community": 44,
-      "community_name": "Developer guide",
-      "file_type": "document",
-      "node_kind": "heading",
-      "norm_label": "the design system (frontend conventions)",
-      "source_file": "docs/developer-guide.md",
-      "source_location": "L52"
-    },
-    {
-      "id": "docs_developer_guide_the_live_check_don_t_trust_a_cached_flag_principle",
-      "label": "The \"live-check, don't trust a cached flag\" principle",
-      "_origin": "ast",
-      "community": 44,
-      "community_name": "Developer guide",
-      "file_type": "document",
-      "node_kind": "heading",
-      "norm_label": "the \"live-check, don't trust a cached flag\" principle",
-      "source_file": "docs/developer-guide.md",
-      "source_location": "L116"
-    },
-    {
-      "id": "docs_developer_guide_what_this_app_is",
-      "label": "What this app is",
-      "_origin": "ast",
-      "community": 44,
-      "community_name": "Developer guide",
-      "file_type": "document",
-      "node_kind": "heading",
-      "norm_label": "what this app is",
-      "source_file": "docs/developer-guide.md",
-      "source_location": "L8"
-    },
-    {
-      "id": "docs_developer_guide_where_things_live",
-      "label": "Where things live",
-      "_origin": "ast",
-      "community": 44,
-      "community_name": "Developer guide",
-      "file_type": "document",
-      "node_kind": "heading",
-      "norm_label": "where things live",
-      "source_file": "docs/developer-guide.md",
-      "source_location": "L23"
     },
     {
       "id": "photos_migrations_0015_alter_sitesettings_server_host",
@@ -4145,114 +4044,6 @@
       "source_location": "L1"
     },
     {
-      "id": "docs_code_quality_report",
-      "label": "code-quality-report.md",
-      "_origin": "ast",
-      "community": 66,
-      "community_name": "Code quality report",
-      "file_type": "document",
-      "node_kind": "page",
-      "norm_label": "code-quality-report.md",
-      "source_file": "docs/code-quality-report.md",
-      "source_location": "L1"
-    },
-    {
-      "id": "docs_code_quality_report_code_quality_report",
-      "label": "Code quality report",
-      "_origin": "ast",
-      "community": 66,
-      "community_name": "Code quality report",
-      "file_type": "document",
-      "node_kind": "heading",
-      "norm_label": "code quality report",
-      "source_file": "docs/code-quality-report.md",
-      "source_location": "L1"
-    },
-    {
-      "id": "docs_code_quality_report_documentation_gaps_the_biggest_finding_in_this_report",
-      "label": "Documentation gaps (the biggest finding in this report)",
-      "_origin": "ast",
-      "community": 66,
-      "community_name": "Code quality report",
-      "file_type": "document",
-      "node_kind": "heading",
-      "norm_label": "documentation gaps (the biggest finding in this report)",
-      "source_file": "docs/code-quality-report.md",
-      "source_location": "L107"
-    },
-    {
-      "id": "docs_code_quality_report_duplication_worth_refactoring",
-      "label": "Duplication worth refactoring",
-      "_origin": "ast",
-      "community": 66,
-      "community_name": "Code quality report",
-      "file_type": "document",
-      "node_kind": "heading",
-      "norm_label": "duplication worth refactoring",
-      "source_file": "docs/code-quality-report.md",
-      "source_location": "L64"
-    },
-    {
-      "id": "docs_code_quality_report_error_handling",
-      "label": "Error handling",
-      "_origin": "ast",
-      "community": 66,
-      "community_name": "Code quality report",
-      "file_type": "document",
-      "node_kind": "heading",
-      "norm_label": "error handling",
-      "source_file": "docs/code-quality-report.md",
-      "source_location": "L87"
-    },
-    {
-      "id": "docs_code_quality_report_migration_history_informational_not_action_items",
-      "label": "Migration history (informational, not action items)",
-      "_origin": "ast",
-      "community": 66,
-      "community_name": "Code quality report",
-      "file_type": "document",
-      "node_kind": "heading",
-      "norm_label": "migration history (informational, not action items)",
-      "source_file": "docs/code-quality-report.md",
-      "source_location": "L48"
-    },
-    {
-      "id": "docs_code_quality_report_obsolete_code_chunks",
-      "label": "Obsolete code chunks",
-      "_origin": "ast",
-      "community": 66,
-      "community_name": "Code quality report",
-      "file_type": "document",
-      "node_kind": "heading",
-      "norm_label": "obsolete code chunks",
-      "source_file": "docs/code-quality-report.md",
-      "source_location": "L35"
-    },
-    {
-      "id": "docs_code_quality_report_obsolete_files",
-      "label": "Obsolete files",
-      "_origin": "ast",
-      "community": 66,
-      "community_name": "Code quality report",
-      "file_type": "document",
-      "node_kind": "heading",
-      "norm_label": "obsolete files",
-      "source_file": "docs/code-quality-report.md",
-      "source_location": "L20"
-    },
-    {
-      "id": "docs_code_quality_report_what_this_report_deliberately_does_not_cover",
-      "label": "What this report deliberately does not cover",
-      "_origin": "ast",
-      "community": 66,
-      "community_name": "Code quality report",
-      "file_type": "document",
-      "node_kind": "heading",
-      "norm_label": "what this report deliberately does not cover",
-      "source_file": "docs/code-quality-report.md",
-      "source_location": "L137"
-    },
-    {
       "id": "config_asgi",
       "label": "asgi.py",
       "_origin": "ast",
@@ -4415,13 +4206,28 @@
       "source_url": null
     },
     {
+      "id": "static_photos_icons_heart",
+      "label": "Heart Icon (outline)",
+      "_origin": "semantic",
+      "author": null,
+      "captured_at": null,
+      "community": 27,
+      "community_name": "Heart Icon (outline)",
+      "contributor": null,
+      "file_type": "image",
+      "norm_label": "heart icon (outline)",
+      "source_file": "static/photos/icons/heart.svg",
+      "source_location": null,
+      "source_url": null
+    },
+    {
       "id": "static_photos_icons_heart_filled",
       "label": "Heart Filled Icon (heart-filled.svg)",
       "_origin": "semantic",
       "author": null,
       "captured_at": null,
       "community": 27,
-      "community_name": "Heart Filled Icon (heart-filled.svg)",
+      "community_name": "Heart Icon (outline)",
       "contributor": null,
       "file_type": "image",
       "norm_label": "heart filled icon (heart-filled.svg)",
@@ -5775,43 +5581,31 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "photos/admin_views.py",
-      "source_location": "L251",
-      "weight": 1.0
-    },
-    {
-      "source": "photos_admin_views_admin_management_view",
-      "target": "photos_admin_views_request_port",
-      "relation": "calls",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "context": "call",
-      "source_file": "photos/admin_views.py",
-      "source_location": "L252",
-      "weight": 1.0
-    },
-    {
-      "source": "photos_admin_views_admin_management_view",
-      "target": "photos_drive_service_client_secret_file",
-      "relation": "calls",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "context": "call",
-      "source_file": "photos/admin_views.py",
       "source_location": "L256",
       "weight": 1.0
     },
     {
       "source": "photos_admin_views_admin_management_view",
-      "target": "photos_drive_service_token_file",
+      "target": "photos_admin_views_client_secret_path",
       "relation": "calls",
       "_origin": "ast",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "photos/admin_views.py",
-      "source_location": "L257",
+      "source_location": "L262",
+      "weight": 1.0
+    },
+    {
+      "source": "photos_admin_views_admin_management_view",
+      "target": "photos_admin_views_token_path",
+      "relation": "calls",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "call",
+      "source_file": "photos/admin_views.py",
+      "source_location": "L263",
       "weight": 1.0
     },
     {
@@ -5823,7 +5617,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "photos/admin_views.py",
-      "source_location": "L258",
+      "source_location": "L264",
       "weight": 1.0
     },
     {
@@ -5835,7 +5629,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "photos/admin_views.py",
-      "source_location": "L267",
+      "source_location": "L273",
       "weight": 1.0
     },
     {
@@ -5847,7 +5641,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "photos/admin_views.py",
-      "source_location": "L281",
+      "source_location": "L287",
       "weight": 1.0
     },
     {
@@ -5859,7 +5653,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "photos/admin_views.py",
-      "source_location": "L318",
+      "source_location": "L323",
       "weight": 1.0
     },
     {
@@ -5871,7 +5665,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "photos/admin_views.py",
-      "source_location": "L319",
+      "source_location": "L324",
       "weight": 1.0
     },
     {
@@ -5943,7 +5737,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "photos/admin_views.py",
-      "source_location": "L428",
+      "source_location": "L429",
       "weight": 1.0
     },
     {
@@ -5955,7 +5749,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "photos/admin_views.py",
-      "source_location": "L429",
+      "source_location": "L430",
       "weight": 1.0
     },
     {
@@ -5991,19 +5785,19 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "photos/admin_views.py",
-      "source_location": "L210",
+      "source_location": "L215",
       "weight": 1.0
     },
     {
       "source": "photos_admin_views_drive_google_callback_view",
-      "target": "photos_drive_service_token_file",
+      "target": "photos_admin_views_token_path",
       "relation": "calls",
       "_origin": "ast",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "photos/admin_views.py",
-      "source_location": "L217",
+      "source_location": "L222",
       "weight": 1.0
     },
     {
@@ -6015,7 +5809,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "photos/admin_views.py",
-      "source_location": "L221",
+      "source_location": "L226",
       "weight": 1.0
     },
     {
@@ -6027,7 +5821,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "photos/admin_views.py",
-      "source_location": "L223",
+      "source_location": "L228",
       "weight": 1.0
     },
     {
@@ -6039,7 +5833,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "photos/admin_views.py",
-      "source_location": "L225",
+      "source_location": "L230",
       "weight": 1.0
     },
     {
@@ -6051,7 +5845,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "photos/admin_views.py",
-      "source_location": "L189",
+      "source_location": "L194",
       "weight": 1.0
     },
     {
@@ -6063,19 +5857,19 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "photos/admin_views.py",
-      "source_location": "L194",
+      "source_location": "L199",
       "weight": 1.0
     },
     {
       "source": "photos_admin_views_google_flow",
-      "target": "photos_drive_service_client_secret_file",
+      "target": "photos_admin_views_client_secret_path",
       "relation": "calls",
       "_origin": "ast",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "photos/admin_views.py",
-      "source_location": "L182",
+      "source_location": "L187",
       "weight": 1.0
     },
     {
@@ -6087,19 +5881,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "photos/admin_views.py",
-      "source_location": "L183",
-      "weight": 1.0
-    },
-    {
-      "source": "photos_admin_views_localhost_redirect_uri",
-      "target": "photos_admin_views_request_port",
-      "relation": "calls",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "context": "call",
-      "source_file": "photos/admin_views.py",
-      "source_location": "L173",
+      "source_location": "L188",
       "weight": 1.0
     },
     {
@@ -6123,7 +5905,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "photos/admin_views.py",
-      "source_location": "L490",
+      "source_location": "L491",
       "weight": 1.0
     },
     {
@@ -6147,7 +5929,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "photos/admin_views.py",
-      "source_location": "L447",
+      "source_location": "L448",
       "weight": 1.0
     },
     {
@@ -6159,7 +5941,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "photos/admin_views.py",
-      "source_location": "L453",
+      "source_location": "L454",
       "weight": 1.0
     },
     {
@@ -6171,7 +5953,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "photos/admin_views.py",
-      "source_location": "L454",
+      "source_location": "L455",
       "weight": 1.0
     },
     {
@@ -6183,7 +5965,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "photos/admin_views.py",
-      "source_location": "L440",
+      "source_location": "L441",
       "weight": 1.0
     },
     {
@@ -6195,19 +5977,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "photos/admin_views.py",
-      "source_location": "L442",
-      "weight": 1.0
-    },
-    {
-      "source": "photos_drive_service_build_oauth_flow",
-      "target": "photos_drive_service_driveerror",
-      "relation": "calls",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "context": "call",
-      "source_file": "photos/drive_service.py",
-      "source_location": "L101",
+      "source_location": "L443",
       "weight": 1.0
     },
     {
@@ -6219,7 +5989,19 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "photos/drive_service.py",
-      "source_location": "L99",
+      "source_location": "L92",
+      "weight": 1.0
+    },
+    {
+      "source": "photos_drive_service_build_oauth_flow",
+      "target": "photos_drive_service_driveerror",
+      "relation": "calls",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "call",
+      "source_file": "photos/drive_service.py",
+      "source_location": "L94",
       "weight": 1.0
     },
     {
@@ -6231,7 +6013,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "photos/drive_service.py",
-      "source_location": "L61",
+      "source_location": "L54",
       "weight": 1.0
     },
     {
@@ -6243,7 +6025,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "photos/drive_service.py",
-      "source_location": "L301",
+      "source_location": "L294",
       "weight": 1.0
     },
     {
@@ -6255,7 +6037,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "photos/drive_service.py",
-      "source_location": "L302",
+      "source_location": "L295",
       "weight": 1.0
     },
     {
@@ -6267,7 +6049,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "photos/drive_service.py",
-      "source_location": "L151",
+      "source_location": "L144",
       "weight": 1.0
     },
     {
@@ -6279,7 +6061,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "photos/drive_service.py",
-      "source_location": "L155",
+      "source_location": "L148",
       "weight": 1.0
     },
     {
@@ -6291,7 +6073,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "photos/drive_service.py",
-      "source_location": "L178",
+      "source_location": "L171",
       "weight": 1.0
     },
     {
@@ -6303,7 +6085,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "photos/drive_service.py",
-      "source_location": "L186",
+      "source_location": "L179",
       "weight": 1.0
     },
     {
@@ -6315,7 +6097,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "photos/drive_service.py",
-      "source_location": "L273",
+      "source_location": "L266",
       "weight": 1.0
     },
     {
@@ -6327,7 +6109,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "photos/drive_service.py",
-      "source_location": "L283",
+      "source_location": "L276",
       "weight": 1.0
     },
     {
@@ -6339,7 +6121,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "photos/drive_service.py",
-      "source_location": "L249",
+      "source_location": "L242",
       "weight": 1.0
     },
     {
@@ -6351,7 +6133,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "photos/drive_service.py",
-      "source_location": "L108",
+      "source_location": "L101",
       "weight": 1.0
     },
     {
@@ -6363,7 +6145,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "photos/drive_service.py",
-      "source_location": "L110",
+      "source_location": "L103",
       "weight": 1.0
     },
     {
@@ -6375,7 +6157,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "photos/drive_service.py",
-      "source_location": "L131",
+      "source_location": "L124",
       "weight": 1.0
     },
     {
@@ -6387,7 +6169,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "photos/drive_service.py",
-      "source_location": "L192",
+      "source_location": "L185",
       "weight": 1.0
     },
     {
@@ -6399,7 +6181,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "photos/drive_service.py",
-      "source_location": "L193",
+      "source_location": "L186",
       "weight": 1.0
     },
     {
@@ -6411,7 +6193,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "photos/drive_service.py",
-      "source_location": "L213",
+      "source_location": "L206",
       "weight": 1.0
     },
     {
@@ -6423,7 +6205,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "photos/drive_service.py",
-      "source_location": "L141",
+      "source_location": "L134",
       "weight": 1.0
     },
     {
@@ -6435,12 +6217,120 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "photos/drive_service.py",
-      "source_location": "L144",
+      "source_location": "L137",
       "weight": 1.0
     },
     {
       "source": "photos_drive_service_is_configured",
       "target": "photos_drive_service_token_file",
+      "relation": "calls",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "call",
+      "source_file": "photos/drive_service.py",
+      "source_location": "L61",
+      "weight": 1.0
+    },
+    {
+      "source": "photos_drive_service_is_configured",
+      "target": "photos_drive_service_configured_root_folder_id",
+      "relation": "calls",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "call",
+      "source_file": "photos/drive_service.py",
+      "source_location": "L62",
+      "weight": 1.0
+    },
+    {
+      "source": "photos_drive_service_list_folder_files",
+      "target": "photos_drive_service_get_service",
+      "relation": "calls",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "call",
+      "source_file": "photos/drive_service.py",
+      "source_location": "L251",
+      "weight": 1.0
+    },
+    {
+      "source": "photos_drive_service_list_folder_files",
+      "target": "photos_drive_service_driveerror",
+      "relation": "calls",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "call",
+      "source_file": "photos/drive_service.py",
+      "source_location": "L261",
+      "weight": 1.0
+    },
+    {
+      "source": "photos_drive_service_list_root_folders",
+      "target": "photos_drive_service_get_service",
+      "relation": "calls",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "call",
+      "source_file": "photos/drive_service.py",
+      "source_location": "L156",
+      "weight": 1.0
+    },
+    {
+      "source": "photos_drive_service_list_root_folders",
+      "target": "photos_drive_service_driveerror",
+      "relation": "calls",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "call",
+      "source_file": "photos/drive_service.py",
+      "source_location": "L166",
+      "weight": 1.0
+    },
+    {
+      "source": "photos_drive_service_revoke_folder_permission",
+      "target": "photos_drive_service_get_service",
+      "relation": "calls",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "call",
+      "source_file": "photos/drive_service.py",
+      "source_location": "L333",
+      "weight": 1.0
+    },
+    {
+      "source": "photos_drive_service_revoke_folder_permission",
+      "target": "photos_drive_service_driveerror",
+      "relation": "calls",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "call",
+      "source_file": "photos/drive_service.py",
+      "source_location": "L337",
+      "weight": 1.0
+    },
+    {
+      "source": "photos_drive_service_root_folder_id",
+      "target": "photos_drive_service_configured_root_folder_id",
+      "relation": "calls",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "call",
+      "source_file": "photos/drive_service.py",
+      "source_location": "L66",
+      "weight": 1.0
+    },
+    {
+      "source": "photos_drive_service_root_folder_id",
+      "target": "photos_drive_service_driveerror",
       "relation": "calls",
       "_origin": "ast",
       "confidence": "EXTRACTED",
@@ -6451,114 +6341,6 @@
       "weight": 1.0
     },
     {
-      "source": "photos_drive_service_is_configured",
-      "target": "photos_drive_service_configured_root_folder_id",
-      "relation": "calls",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "context": "call",
-      "source_file": "photos/drive_service.py",
-      "source_location": "L69",
-      "weight": 1.0
-    },
-    {
-      "source": "photos_drive_service_list_folder_files",
-      "target": "photos_drive_service_get_service",
-      "relation": "calls",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "context": "call",
-      "source_file": "photos/drive_service.py",
-      "source_location": "L258",
-      "weight": 1.0
-    },
-    {
-      "source": "photos_drive_service_list_folder_files",
-      "target": "photos_drive_service_driveerror",
-      "relation": "calls",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "context": "call",
-      "source_file": "photos/drive_service.py",
-      "source_location": "L268",
-      "weight": 1.0
-    },
-    {
-      "source": "photos_drive_service_list_root_folders",
-      "target": "photos_drive_service_get_service",
-      "relation": "calls",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "context": "call",
-      "source_file": "photos/drive_service.py",
-      "source_location": "L163",
-      "weight": 1.0
-    },
-    {
-      "source": "photos_drive_service_list_root_folders",
-      "target": "photos_drive_service_driveerror",
-      "relation": "calls",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "context": "call",
-      "source_file": "photos/drive_service.py",
-      "source_location": "L173",
-      "weight": 1.0
-    },
-    {
-      "source": "photos_drive_service_revoke_folder_permission",
-      "target": "photos_drive_service_get_service",
-      "relation": "calls",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "context": "call",
-      "source_file": "photos/drive_service.py",
-      "source_location": "L340",
-      "weight": 1.0
-    },
-    {
-      "source": "photos_drive_service_revoke_folder_permission",
-      "target": "photos_drive_service_driveerror",
-      "relation": "calls",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "context": "call",
-      "source_file": "photos/drive_service.py",
-      "source_location": "L344",
-      "weight": 1.0
-    },
-    {
-      "source": "photos_drive_service_root_folder_id",
-      "target": "photos_drive_service_configured_root_folder_id",
-      "relation": "calls",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "context": "call",
-      "source_file": "photos/drive_service.py",
-      "source_location": "L73",
-      "weight": 1.0
-    },
-    {
-      "source": "photos_drive_service_root_folder_id",
-      "target": "photos_drive_service_driveerror",
-      "relation": "calls",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "context": "call",
-      "source_file": "photos/drive_service.py",
-      "source_location": "L75",
-      "weight": 1.0
-    },
-    {
       "source": "photos_drive_service_save_credentials",
       "target": "photos_drive_service_token_file",
       "relation": "calls",
@@ -6567,7 +6349,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "photos/drive_service.py",
-      "source_location": "L86",
+      "source_location": "L79",
       "weight": 1.0
     },
     {
@@ -6579,7 +6361,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "photos/drive_service.py",
-      "source_location": "L88",
+      "source_location": "L81",
       "weight": 1.0
     },
     {
@@ -6591,7 +6373,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "photos/drive_service.py",
-      "source_location": "L326",
+      "source_location": "L319",
       "weight": 1.0
     },
     {
@@ -6603,7 +6385,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "photos/drive_service.py",
-      "source_location": "L336",
+      "source_location": "L329",
       "weight": 1.0
     },
     {
@@ -6615,7 +6397,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "photos/drive_service.py",
-      "source_location": "L352",
+      "source_location": "L345",
       "weight": 1.0
     },
     {
@@ -6627,7 +6409,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "photos/drive_service.py",
-      "source_location": "L353",
+      "source_location": "L346",
       "weight": 1.0
     },
     {
@@ -6639,7 +6421,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "photos/drive_service.py",
-      "source_location": "L234",
+      "source_location": "L227",
       "weight": 1.0
     },
     {
@@ -6651,7 +6433,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "photos/drive_service.py",
-      "source_location": "L238",
+      "source_location": "L231",
       "weight": 1.0
     },
     {
@@ -6663,7 +6445,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "photos/drive_service.py",
-      "source_location": "L219",
+      "source_location": "L212",
       "weight": 1.0
     },
     {
@@ -6675,7 +6457,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "photos/drive_service.py",
-      "source_location": "L229",
+      "source_location": "L222",
       "weight": 1.0
     },
     {
@@ -7052,30 +6834,6 @@
     },
     {
       "source": "photos_management_commands_google_drive_auth_command_handle",
-      "target": "photos_drive_service_client_secret_file",
-      "relation": "calls",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "context": "call",
-      "source_file": "photos/management/commands/google_drive_auth.py",
-      "source_location": "L22",
-      "weight": 1.0
-    },
-    {
-      "source": "photos_management_commands_google_drive_auth_command_handle",
-      "target": "photos_drive_service_token_file",
-      "relation": "calls",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "context": "call",
-      "source_file": "photos/management/commands/google_drive_auth.py",
-      "source_location": "L23",
-      "weight": 1.0
-    },
-    {
-      "source": "photos_management_commands_google_drive_auth_command_handle",
       "target": "photos_drive_service_save_credentials",
       "relation": "calls",
       "_origin": "ast",
@@ -7119,7 +6877,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "photos/views.py",
-      "source_location": "L68",
+      "source_location": "L69",
       "weight": 1.0
     },
     {
@@ -7131,7 +6889,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "photos/views.py",
-      "source_location": "L81",
+      "source_location": "L82",
       "weight": 1.0
     },
     {
@@ -7143,7 +6901,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "photos/views.py",
-      "source_location": "L100",
+      "source_location": "L101",
       "weight": 1.0
     },
     {
@@ -7155,7 +6913,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "photos/views.py",
-      "source_location": "L106",
+      "source_location": "L107",
       "weight": 1.0
     },
     {
@@ -7167,7 +6925,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "photos/views.py",
-      "source_location": "L96",
+      "source_location": "L97",
       "weight": 1.0
     },
     {
@@ -7179,7 +6937,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "photos/views.py",
-      "source_location": "L729",
+      "source_location": "L730",
       "weight": 1.0
     },
     {
@@ -7191,7 +6949,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "photos/views.py",
-      "source_location": "L730",
+      "source_location": "L731",
       "weight": 1.0
     },
     {
@@ -7203,7 +6961,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "photos/views.py",
-      "source_location": "L685",
+      "source_location": "L686",
       "weight": 1.0
     },
     {
@@ -7215,7 +6973,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "photos/views.py",
-      "source_location": "L698",
+      "source_location": "L699",
       "weight": 1.0
     },
     {
@@ -7227,7 +6985,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "photos/views.py",
-      "source_location": "L674",
+      "source_location": "L675",
       "weight": 1.0
     },
     {
@@ -7239,7 +6997,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "photos/views.py",
-      "source_location": "L707",
+      "source_location": "L708",
       "weight": 1.0
     },
     {
@@ -7251,7 +7009,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "photos/views.py",
-      "source_location": "L714",
+      "source_location": "L715",
       "weight": 1.0
     },
     {
@@ -7263,7 +7021,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "photos/views.py",
-      "source_location": "L496",
+      "source_location": "L497",
       "weight": 1.0
     },
     {
@@ -7275,7 +7033,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "photos/views.py",
-      "source_location": "L501",
+      "source_location": "L502",
       "weight": 1.0
     },
     {
@@ -7287,7 +7045,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "photos/views.py",
-      "source_location": "L504",
+      "source_location": "L505",
       "weight": 1.0
     },
     {
@@ -7299,7 +7057,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "photos/views.py",
-      "source_location": "L508",
+      "source_location": "L509",
       "weight": 1.0
     },
     {
@@ -7311,7 +7069,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "photos/views.py",
-      "source_location": "L525",
+      "source_location": "L526",
       "weight": 1.0
     },
     {
@@ -7323,7 +7081,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "photos/views.py",
-      "source_location": "L545",
+      "source_location": "L546",
       "weight": 1.0
     },
     {
@@ -7335,7 +7093,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "photos/views.py",
-      "source_location": "L634",
+      "source_location": "L635",
       "weight": 1.0
     },
     {
@@ -7347,7 +7105,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "photos/views.py",
-      "source_location": "L636",
+      "source_location": "L637",
       "weight": 1.0
     },
     {
@@ -7359,7 +7117,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "photos/views.py",
-      "source_location": "L297",
+      "source_location": "L298",
       "weight": 1.0
     },
     {
@@ -7371,7 +7129,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "photos/views.py",
-      "source_location": "L452",
+      "source_location": "L453",
       "weight": 1.0
     },
     {
@@ -7383,7 +7141,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "photos/views.py",
-      "source_location": "L458",
+      "source_location": "L459",
       "weight": 1.0
     },
     {
@@ -7395,7 +7153,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "photos/views.py",
-      "source_location": "L460",
+      "source_location": "L461",
       "weight": 1.0
     },
     {
@@ -7407,7 +7165,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "photos/views.py",
-      "source_location": "L433",
+      "source_location": "L434",
       "weight": 1.0
     },
     {
@@ -7419,7 +7177,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "photos/views.py",
-      "source_location": "L436",
+      "source_location": "L437",
       "weight": 1.0
     },
     {
@@ -7431,7 +7189,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "photos/views.py",
-      "source_location": "L744",
+      "source_location": "L745",
       "weight": 1.0
     },
     {
@@ -7443,7 +7201,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "photos/views.py",
-      "source_location": "L755",
+      "source_location": "L756",
       "weight": 1.0
     },
     {
@@ -7455,7 +7213,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "photos/views.py",
-      "source_location": "L765",
+      "source_location": "L766",
       "weight": 1.0
     },
     {
@@ -7467,7 +7225,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "photos/views.py",
-      "source_location": "L769",
+      "source_location": "L770",
       "weight": 1.0
     },
     {
@@ -7479,7 +7237,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "photos/views.py",
-      "source_location": "L781",
+      "source_location": "L782",
       "weight": 1.0
     },
     {
@@ -7491,7 +7249,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "photos/views.py",
-      "source_location": "L792",
+      "source_location": "L793",
       "weight": 1.0
     },
     {
@@ -7503,7 +7261,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "photos/views.py",
-      "source_location": "L806",
+      "source_location": "L807",
       "weight": 1.0
     },
     {
@@ -7515,24 +7273,12 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "photos/views.py",
-      "source_location": "L818",
+      "source_location": "L819",
       "weight": 1.0
     },
     {
       "source": "photos_views_gallery_view",
       "target": "photos_views_get_user_identity",
-      "relation": "calls",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "context": "call",
-      "source_file": "photos/views.py",
-      "source_location": "L344",
-      "weight": 1.0
-    },
-    {
-      "source": "photos_views_gallery_view",
-      "target": "photos_models_event_get_active",
       "relation": "calls",
       "_origin": "ast",
       "confidence": "EXTRACTED",
@@ -7544,6 +7290,18 @@
     },
     {
       "source": "photos_views_gallery_view",
+      "target": "photos_models_event_get_active",
+      "relation": "calls",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "call",
+      "source_file": "photos/views.py",
+      "source_location": "L346",
+      "weight": 1.0
+    },
+    {
+      "source": "photos_views_gallery_view",
       "target": "photos_views_photo_payload",
       "relation": "calls",
       "_origin": "ast",
@@ -7551,7 +7309,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "photos/views.py",
-      "source_location": "L347",
+      "source_location": "L348",
       "weight": 1.0
     },
     {
@@ -7563,7 +7321,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "photos/views.py",
-      "source_location": "L61",
+      "source_location": "L62",
       "weight": 1.0
     },
     {
@@ -7575,7 +7333,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "photos/views.py",
-      "source_location": "L321",
+      "source_location": "L322",
       "weight": 1.0
     },
     {
@@ -7587,7 +7345,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "photos/views.py",
-      "source_location": "L324",
+      "source_location": "L325",
       "weight": 1.0
     },
     {
@@ -7599,24 +7357,12 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "photos/views.py",
-      "source_location": "L285",
+      "source_location": "L286",
       "weight": 1.0
     },
     {
       "source": "photos_views_photo_list_api",
       "target": "photos_views_get_user_identity",
-      "relation": "calls",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "context": "call",
-      "source_file": "photos/views.py",
-      "source_location": "L310",
-      "weight": 1.0
-    },
-    {
-      "source": "photos_views_photo_list_api",
-      "target": "photos_models_event_get_active",
       "relation": "calls",
       "_origin": "ast",
       "confidence": "EXTRACTED",
@@ -7628,6 +7374,18 @@
     },
     {
       "source": "photos_views_photo_list_api",
+      "target": "photos_models_event_get_active",
+      "relation": "calls",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "call",
+      "source_file": "photos/views.py",
+      "source_location": "L312",
+      "weight": 1.0
+    },
+    {
+      "source": "photos_views_photo_list_api",
       "target": "photos_views_photo_payload",
       "relation": "calls",
       "_origin": "ast",
@@ -7635,7 +7393,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "photos/views.py",
-      "source_location": "L315",
+      "source_location": "L316",
       "weight": 1.0
     },
     {
@@ -7647,7 +7405,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "photos/views.py",
-      "source_location": "L129",
+      "source_location": "L130",
       "weight": 1.0
     },
     {
@@ -7659,7 +7417,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "photos/views.py",
-      "source_location": "L138",
+      "source_location": "L139",
       "weight": 1.0
     },
     {
@@ -7671,7 +7429,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "photos/views.py",
-      "source_location": "L144",
+      "source_location": "L145",
       "weight": 1.0
     },
     {
@@ -7683,7 +7441,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "photos/views.py",
-      "source_location": "L150",
+      "source_location": "L151",
       "weight": 1.0
     },
     {
@@ -7695,7 +7453,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "photos/views.py",
-      "source_location": "L358",
+      "source_location": "L359",
       "weight": 1.0
     },
     {
@@ -7707,7 +7465,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "photos/views.py",
-      "source_location": "L359",
+      "source_location": "L360",
       "weight": 1.0
     },
     {
@@ -7719,7 +7477,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "photos/views.py",
-      "source_location": "L475",
+      "source_location": "L476",
       "weight": 1.0
     },
     {
@@ -7731,7 +7489,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "photos/views.py",
-      "source_location": "L478",
+      "source_location": "L479",
       "weight": 1.0
     },
     {
@@ -7743,7 +7501,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "photos/views.py",
-      "source_location": "L488",
+      "source_location": "L489",
       "weight": 1.0
     },
     {
@@ -7755,7 +7513,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "photos/views.py",
-      "source_location": "L207",
+      "source_location": "L208",
       "weight": 1.0
     },
     {
@@ -7767,7 +7525,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "photos/views.py",
-      "source_location": "L382",
+      "source_location": "L383",
       "weight": 1.0
     },
     {
@@ -7779,7 +7537,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "photos/views.py",
-      "source_location": "L168",
+      "source_location": "L169",
       "weight": 1.0
     },
     {
@@ -7791,7 +7549,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "photos/views.py",
-      "source_location": "L171",
+      "source_location": "L172",
       "weight": 1.0
     },
     {
@@ -7803,7 +7561,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "photos/views.py",
-      "source_location": "L184",
+      "source_location": "L185",
       "weight": 1.0
     },
     {
@@ -7815,7 +7573,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "photos/views.py",
-      "source_location": "L188",
+      "source_location": "L189",
       "weight": 1.0
     },
     {
@@ -7827,7 +7585,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "photos/views.py",
-      "source_location": "L213",
+      "source_location": "L214",
       "weight": 1.0
     },
     {
@@ -7839,7 +7597,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "photos/views.py",
-      "source_location": "L216",
+      "source_location": "L217",
       "weight": 1.0
     },
     {
@@ -7851,7 +7609,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "photos/views.py",
-      "source_location": "L249",
+      "source_location": "L250",
       "weight": 1.0
     },
     {
@@ -7863,7 +7621,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "photos/views.py",
-      "source_location": "L252",
+      "source_location": "L253",
       "weight": 1.0
     },
     {
@@ -7875,7 +7633,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "photos/views.py",
-      "source_location": "L274",
+      "source_location": "L275",
       "weight": 1.0
     },
     {
@@ -7887,7 +7645,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "photos/views.py",
-      "source_location": "L406",
+      "source_location": "L407",
       "weight": 1.0
     },
     {
@@ -7899,7 +7657,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "photos/views.py",
-      "source_location": "L411",
+      "source_location": "L412",
       "weight": 1.0
     },
     {
@@ -8223,7 +7981,7 @@
       "confidence_score": 1.0,
       "context": "decorator",
       "source_file": "photos/admin_views.py",
-      "source_location": "L233",
+      "source_location": "L238",
       "weight": 1.0
     },
     {
@@ -8235,7 +7993,7 @@
       "confidence_score": 1.0,
       "context": "decorator",
       "source_file": "photos/admin_views.py",
-      "source_location": "L474",
+      "source_location": "L475",
       "weight": 1.0
     },
     {
@@ -8247,7 +8005,7 @@
       "confidence_score": 1.0,
       "context": "decorator",
       "source_file": "photos/admin_views.py",
-      "source_location": "L208",
+      "source_location": "L213",
       "weight": 1.0
     },
     {
@@ -8259,7 +8017,7 @@
       "confidence_score": 1.0,
       "context": "decorator",
       "source_file": "photos/admin_views.py",
-      "source_location": "L187",
+      "source_location": "L192",
       "weight": 1.0
     },
     {
@@ -8271,7 +8029,7 @@
       "confidence_score": 1.0,
       "context": "decorator",
       "source_file": "photos/admin_views.py",
-      "source_location": "L460",
+      "source_location": "L461",
       "weight": 1.0
     },
     {
@@ -8283,7 +8041,7 @@
       "confidence_score": 1.0,
       "context": "decorator",
       "source_file": "photos/admin_views.py",
-      "source_location": "L438",
+      "source_location": "L439",
       "weight": 1.0
     },
     {
@@ -8355,7 +8113,7 @@
       "confidence_score": 1.0,
       "context": "decorator",
       "source_file": "photos/views.py",
-      "source_location": "L717",
+      "source_location": "L718",
       "weight": 1.0
     },
     {
@@ -8367,7 +8125,7 @@
       "confidence_score": 1.0,
       "context": "decorator",
       "source_file": "photos/views.py",
-      "source_location": "L677",
+      "source_location": "L678",
       "weight": 1.0
     },
     {
@@ -8379,7 +8137,7 @@
       "confidence_score": 1.0,
       "context": "decorator",
       "source_file": "photos/views.py",
-      "source_location": "L668",
+      "source_location": "L669",
       "weight": 1.0
     },
     {
@@ -8391,7 +8149,7 @@
       "confidence_score": 1.0,
       "context": "decorator",
       "source_file": "photos/views.py",
-      "source_location": "L701",
+      "source_location": "L702",
       "weight": 1.0
     },
     {
@@ -8403,7 +8161,7 @@
       "confidence_score": 1.0,
       "context": "decorator",
       "source_file": "photos/views.py",
-      "source_location": "L494",
+      "source_location": "L495",
       "weight": 1.0
     },
     {
@@ -8415,7 +8173,7 @@
       "confidence_score": 1.0,
       "context": "decorator",
       "source_file": "photos/views.py",
-      "source_location": "L447",
+      "source_location": "L448",
       "weight": 1.0
     },
     {
@@ -8427,7 +8185,7 @@
       "confidence_score": 1.0,
       "context": "decorator",
       "source_file": "photos/views.py",
-      "source_location": "L424",
+      "source_location": "L425",
       "weight": 1.0
     },
     {
@@ -8439,7 +8197,7 @@
       "confidence_score": 1.0,
       "context": "decorator",
       "source_file": "photos/views.py",
-      "source_location": "L741",
+      "source_location": "L742",
       "weight": 1.0
     },
     {
@@ -8619,7 +8377,7 @@
       "confidence_score": 1.0,
       "context": "import",
       "source_file": "photos/drive_service.py",
-      "source_location": "L313",
+      "source_location": "L306",
       "weight": 1.0
     },
     {
@@ -8631,7 +8389,7 @@
       "confidence_score": 1.0,
       "context": "import",
       "source_file": "photos/drive_service.py",
-      "source_location": "L59",
+      "source_location": "L52",
       "weight": 1.0
     },
     {
@@ -8660,31 +8418,7 @@
     },
     {
       "source": "photos_management_commands_google_drive_auth",
-      "target": "photos_drive_service_client_secret_file",
-      "relation": "imports",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "context": "import",
-      "source_file": "photos/management/commands/google_drive_auth.py",
-      "source_location": "L15",
-      "weight": 1.0
-    },
-    {
-      "source": "photos_management_commands_google_drive_auth",
       "target": "photos_drive_service_save_credentials",
-      "relation": "imports",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "context": "import",
-      "source_file": "photos/management/commands/google_drive_auth.py",
-      "source_location": "L15",
-      "weight": 1.0
-    },
-    {
-      "source": "photos_management_commands_google_drive_auth",
-      "target": "photos_drive_service_token_file",
       "relation": "imports",
       "_origin": "ast",
       "confidence": "EXTRACTED",
@@ -8811,7 +8545,7 @@
       "confidence_score": 1.0,
       "context": "import",
       "source_file": "photos/views.py",
-      "source_location": "L19",
+      "source_location": "L20",
       "weight": 1.0
     },
     {
@@ -8823,7 +8557,7 @@
       "confidence_score": 1.0,
       "context": "import",
       "source_file": "photos/views.py",
-      "source_location": "L19",
+      "source_location": "L20",
       "weight": 1.0
     },
     {
@@ -8835,7 +8569,7 @@
       "confidence_score": 1.0,
       "context": "import",
       "source_file": "photos/views.py",
-      "source_location": "L19",
+      "source_location": "L20",
       "weight": 1.0
     },
     {
@@ -8847,7 +8581,7 @@
       "confidence_score": 1.0,
       "context": "import",
       "source_file": "photos/views.py",
-      "source_location": "L19",
+      "source_location": "L20",
       "weight": 1.0
     },
     {
@@ -8859,7 +8593,7 @@
       "confidence_score": 1.0,
       "context": "import",
       "source_file": "photos/views.py",
-      "source_location": "L20",
+      "source_location": "L21",
       "weight": 1.0
     },
     {
@@ -8871,7 +8605,7 @@
       "confidence_score": 1.0,
       "context": "import",
       "source_file": "photos/views.py",
-      "source_location": "L20",
+      "source_location": "L21",
       "weight": 1.0
     },
     {
@@ -8883,7 +8617,7 @@
       "confidence_score": 1.0,
       "context": "import",
       "source_file": "photos/views.py",
-      "source_location": "L20",
+      "source_location": "L21",
       "weight": 1.0
     },
     {
@@ -8895,7 +8629,7 @@
       "confidence_score": 1.0,
       "context": "import",
       "source_file": "photos/views.py",
-      "source_location": "L20",
+      "source_location": "L21",
       "weight": 1.0
     },
     {
@@ -8907,7 +8641,7 @@
       "confidence_score": 1.0,
       "context": "import",
       "source_file": "photos/views.py",
-      "source_location": "L20",
+      "source_location": "L21",
       "weight": 1.0
     },
     {
@@ -8919,7 +8653,7 @@
       "confidence_score": 1.0,
       "context": "import",
       "source_file": "photos/views.py",
-      "source_location": "L20",
+      "source_location": "L21",
       "weight": 1.0
     },
     {
@@ -8931,7 +8665,7 @@
       "confidence_score": 1.0,
       "context": "import",
       "source_file": "photos/views.py",
-      "source_location": "L20",
+      "source_location": "L21",
       "weight": 1.0
     },
     {
@@ -9123,7 +8857,7 @@
       "confidence_score": 1.0,
       "context": "import",
       "source_file": "photos/views.py",
-      "source_location": "L18",
+      "source_location": "L19",
       "weight": 1.0
     },
     {
@@ -9135,7 +8869,7 @@
       "confidence_score": 1.0,
       "context": "import",
       "source_file": "photos/views.py",
-      "source_location": "L19",
+      "source_location": "L20",
       "weight": 1.0
     },
     {
@@ -9147,7 +8881,7 @@
       "confidence_score": 1.0,
       "context": "import",
       "source_file": "photos/views.py",
-      "source_location": "L20",
+      "source_location": "L21",
       "weight": 1.0
     },
     {
@@ -9315,7 +9049,7 @@
       "confidence_score": 1.0,
       "context": "submodule_import",
       "source_file": "photos/views.py",
-      "source_location": "L18",
+      "source_location": "L19",
       "weight": 1.0
     },
     {
@@ -9327,7 +9061,7 @@
       "confidence_score": 1.0,
       "context": "submodule_import",
       "source_file": "photos/views.py",
-      "source_location": "L18",
+      "source_location": "L19",
       "weight": 1.0
     },
     {
@@ -9339,205 +9073,7 @@
       "confidence_score": 1.0,
       "context": "submodule_import",
       "source_file": "photos/views.py",
-      "source_location": "L18",
-      "weight": 1.0
-    },
-    {
-      "source": "docs_code_quality_report",
-      "target": "docs_code_quality_report_code_quality_report",
-      "relation": "contains",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "docs/code-quality-report.md",
-      "source_location": "L1",
-      "weight": 1.0
-    },
-    {
-      "source": "docs_code_quality_report_code_quality_report",
-      "target": "docs_code_quality_report_documentation_gaps_the_biggest_finding_in_this_report",
-      "relation": "contains",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "docs/code-quality-report.md",
-      "source_location": "L107",
-      "weight": 1.0
-    },
-    {
-      "source": "docs_code_quality_report_code_quality_report",
-      "target": "docs_code_quality_report_what_this_report_deliberately_does_not_cover",
-      "relation": "contains",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "docs/code-quality-report.md",
-      "source_location": "L137",
-      "weight": 1.0
-    },
-    {
-      "source": "docs_code_quality_report_code_quality_report",
-      "target": "docs_code_quality_report_obsolete_files",
-      "relation": "contains",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "docs/code-quality-report.md",
-      "source_location": "L20",
-      "weight": 1.0
-    },
-    {
-      "source": "docs_code_quality_report_code_quality_report",
-      "target": "docs_code_quality_report_obsolete_code_chunks",
-      "relation": "contains",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "docs/code-quality-report.md",
-      "source_location": "L35",
-      "weight": 1.0
-    },
-    {
-      "source": "docs_code_quality_report_code_quality_report",
-      "target": "docs_code_quality_report_migration_history_informational_not_action_items",
-      "relation": "contains",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "docs/code-quality-report.md",
-      "source_location": "L48",
-      "weight": 1.0
-    },
-    {
-      "source": "docs_code_quality_report_code_quality_report",
-      "target": "docs_code_quality_report_duplication_worth_refactoring",
-      "relation": "contains",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "docs/code-quality-report.md",
-      "source_location": "L64",
-      "weight": 1.0
-    },
-    {
-      "source": "docs_code_quality_report_code_quality_report",
-      "target": "docs_code_quality_report_error_handling",
-      "relation": "contains",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "docs/code-quality-report.md",
-      "source_location": "L87",
-      "weight": 1.0
-    },
-    {
-      "source": "docs_developer_guide",
-      "target": "docs_developer_guide_developer_guide",
-      "relation": "contains",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "docs/developer-guide.md",
-      "source_location": "L1",
-      "weight": 1.0
-    },
-    {
-      "source": "docs_developer_guide_developer_guide",
-      "target": "docs_developer_guide_the_live_check_don_t_trust_a_cached_flag_principle",
-      "relation": "contains",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "docs/developer-guide.md",
-      "source_location": "L116",
-      "weight": 1.0
-    },
-    {
-      "source": "docs_developer_guide_developer_guide",
-      "target": "docs_developer_guide_no_automated_tests",
-      "relation": "contains",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "docs/developer-guide.md",
-      "source_location": "L124",
-      "weight": 1.0
-    },
-    {
-      "source": "docs_developer_guide_developer_guide",
-      "target": "docs_developer_guide_keeping_the_code_graph_current",
-      "relation": "contains",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "docs/developer-guide.md",
-      "source_location": "L150",
-      "weight": 1.0
-    },
-    {
-      "source": "docs_developer_guide_developer_guide",
-      "target": "docs_developer_guide_git_conventions_observed_in_this_repo",
-      "relation": "contains",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "docs/developer-guide.md",
-      "source_location": "L165",
-      "weight": 1.0
-    },
-    {
-      "source": "docs_developer_guide_developer_guide",
-      "target": "docs_developer_guide_where_things_live",
-      "relation": "contains",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "docs/developer-guide.md",
-      "source_location": "L23",
-      "weight": 1.0
-    },
-    {
-      "source": "docs_developer_guide_developer_guide",
-      "target": "docs_developer_guide_the_design_system_frontend_conventions",
-      "relation": "contains",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "docs/developer-guide.md",
-      "source_location": "L52",
-      "weight": 1.0
-    },
-    {
-      "source": "docs_developer_guide_developer_guide",
-      "target": "docs_developer_guide_icons",
-      "relation": "contains",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "docs/developer-guide.md",
-      "source_location": "L73",
-      "weight": 1.0
-    },
-    {
-      "source": "docs_developer_guide_developer_guide",
-      "target": "docs_developer_guide_what_this_app_is",
-      "relation": "contains",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "docs/developer-guide.md",
-      "source_location": "L8",
-      "weight": 1.0
-    },
-    {
-      "source": "docs_developer_guide_developer_guide",
-      "target": "docs_developer_guide_google_oauth2_integration_pattern",
-      "relation": "contains",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "docs/developer-guide.md",
-      "source_location": "L91",
+      "source_location": "L19",
       "weight": 1.0
     },
     {
@@ -9696,7 +9232,7 @@
     },
     {
       "source": "photos_admin_views",
-      "target": "photos_admin_views_is_localhost",
+      "target": "photos_admin_views_client_secret_path",
       "relation": "contains",
       "_origin": "ast",
       "confidence": "EXTRACTED",
@@ -9707,7 +9243,7 @@
     },
     {
       "source": "photos_admin_views",
-      "target": "photos_admin_views_request_port",
+      "target": "photos_admin_views_token_path",
       "relation": "contains",
       "_origin": "ast",
       "confidence": "EXTRACTED",
@@ -9718,13 +9254,24 @@
     },
     {
       "source": "photos_admin_views",
+      "target": "photos_admin_views_is_localhost",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "photos/admin_views.py",
+      "source_location": "L165",
+      "weight": 1.0
+    },
+    {
+      "source": "photos_admin_views",
       "target": "photos_admin_views_localhost_redirect_uri",
       "relation": "contains",
       "_origin": "ast",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "photos/admin_views.py",
-      "source_location": "L166",
+      "source_location": "L169",
       "weight": 1.0
     },
     {
@@ -9735,7 +9282,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "photos/admin_views.py",
-      "source_location": "L176",
+      "source_location": "L181",
       "weight": 1.0
     },
     {
@@ -9746,7 +9293,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "photos/admin_views.py",
-      "source_location": "L188",
+      "source_location": "L193",
       "weight": 1.0
     },
     {
@@ -9757,7 +9304,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "photos/admin_views.py",
-      "source_location": "L209",
+      "source_location": "L214",
       "weight": 1.0
     },
     {
@@ -9768,7 +9315,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "photos/admin_views.py",
-      "source_location": "L234",
+      "source_location": "L239",
       "weight": 1.0
     },
     {
@@ -9779,7 +9326,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "photos/admin_views.py",
-      "source_location": "L439",
+      "source_location": "L440",
       "weight": 1.0
     },
     {
@@ -9790,7 +9337,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "photos/admin_views.py",
-      "source_location": "L446",
+      "source_location": "L447",
       "weight": 1.0
     },
     {
@@ -9801,7 +9348,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "photos/admin_views.py",
-      "source_location": "L461",
+      "source_location": "L462",
       "weight": 1.0
     },
     {
@@ -9812,7 +9359,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "photos/admin_views.py",
-      "source_location": "L475",
+      "source_location": "L476",
       "weight": 1.0
     },
     {
@@ -9823,7 +9370,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "photos/admin_views.py",
-      "source_location": "L484",
+      "source_location": "L485",
       "weight": 1.0
     },
     {
@@ -9922,7 +9469,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "photos/drive_service.py",
-      "source_location": "L107",
+      "source_location": "L100",
       "weight": 1.0
     },
     {
@@ -9933,7 +9480,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "photos/drive_service.py",
-      "source_location": "L139",
+      "source_location": "L132",
       "weight": 1.0
     },
     {
@@ -9944,7 +9491,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "photos/drive_service.py",
-      "source_location": "L147",
+      "source_location": "L140",
       "weight": 1.0
     },
     {
@@ -9955,7 +9502,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "photos/drive_service.py",
-      "source_location": "L159",
+      "source_location": "L152",
       "weight": 1.0
     },
     {
@@ -9966,7 +9513,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "photos/drive_service.py",
-      "source_location": "L176",
+      "source_location": "L169",
       "weight": 1.0
     },
     {
@@ -9977,7 +9524,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "photos/drive_service.py",
-      "source_location": "L189",
+      "source_location": "L182",
       "weight": 1.0
     },
     {
@@ -9988,7 +9535,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "photos/drive_service.py",
-      "source_location": "L216",
+      "source_location": "L209",
       "weight": 1.0
     },
     {
@@ -9999,7 +9546,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "photos/drive_service.py",
-      "source_location": "L232",
+      "source_location": "L225",
       "weight": 1.0
     },
     {
@@ -10010,7 +9557,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "photos/drive_service.py",
-      "source_location": "L241",
+      "source_location": "L234",
       "weight": 1.0
     },
     {
@@ -10021,7 +9568,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "photos/drive_service.py",
-      "source_location": "L256",
+      "source_location": "L249",
       "weight": 1.0
     },
     {
@@ -10032,7 +9579,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "photos/drive_service.py",
-      "source_location": "L271",
+      "source_location": "L264",
       "weight": 1.0
     },
     {
@@ -10043,7 +9590,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "photos/drive_service.py",
-      "source_location": "L289",
+      "source_location": "L282",
       "weight": 1.0
     },
     {
@@ -10054,7 +9601,18 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "photos/drive_service.py",
-      "source_location": "L296",
+      "source_location": "L289",
+      "weight": 1.0
+    },
+    {
+      "source": "photos_drive_service",
+      "target": "photos_drive_service_share_folder_with_email",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "photos/drive_service.py",
+      "source_location": "L316",
       "weight": 1.0
     },
     {
@@ -10070,24 +9628,13 @@
     },
     {
       "source": "photos_drive_service",
-      "target": "photos_drive_service_share_folder_with_email",
-      "relation": "contains",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "photos/drive_service.py",
-      "source_location": "L323",
-      "weight": 1.0
-    },
-    {
-      "source": "photos_drive_service",
       "target": "photos_drive_service_revoke_folder_permission",
       "relation": "contains",
       "_origin": "ast",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "photos/drive_service.py",
-      "source_location": "L339",
+      "source_location": "L332",
       "weight": 1.0
     },
     {
@@ -10098,7 +9645,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "photos/drive_service.py",
-      "source_location": "L347",
+      "source_location": "L340",
       "weight": 1.0
     },
     {
@@ -10120,7 +9667,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "photos/drive_service.py",
-      "source_location": "L43",
+      "source_location": "L40",
       "weight": 1.0
     },
     {
@@ -10131,7 +9678,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "photos/drive_service.py",
-      "source_location": "L51",
+      "source_location": "L44",
       "weight": 1.0
     },
     {
@@ -10142,7 +9689,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "photos/drive_service.py",
-      "source_location": "L64",
+      "source_location": "L57",
       "weight": 1.0
     },
     {
@@ -10153,7 +9700,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "photos/drive_service.py",
-      "source_location": "L72",
+      "source_location": "L65",
       "weight": 1.0
     },
     {
@@ -10164,7 +9711,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "photos/drive_service.py",
-      "source_location": "L82",
+      "source_location": "L75",
       "weight": 1.0
     },
     {
@@ -10175,7 +9722,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "photos/drive_service.py",
-      "source_location": "L94",
+      "source_location": "L87",
       "weight": 1.0
     },
     {
@@ -11110,7 +10657,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "photos/views.py",
-      "source_location": "L128",
+      "source_location": "L129",
       "weight": 1.0
     },
     {
@@ -11121,7 +10668,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "photos/views.py",
-      "source_location": "L167",
+      "source_location": "L168",
       "weight": 1.0
     },
     {
@@ -11132,7 +10679,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "photos/views.py",
-      "source_location": "L206",
+      "source_location": "L207",
       "weight": 1.0
     },
     {
@@ -11143,7 +10690,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "photos/views.py",
-      "source_location": "L212",
+      "source_location": "L213",
       "weight": 1.0
     },
     {
@@ -11154,7 +10701,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "photos/views.py",
-      "source_location": "L246",
+      "source_location": "L247",
       "weight": 1.0
     },
     {
@@ -11165,7 +10712,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "photos/views.py",
-      "source_location": "L27",
+      "source_location": "L28",
       "weight": 1.0
     },
     {
@@ -11176,7 +10723,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "photos/views.py",
-      "source_location": "L284",
+      "source_location": "L285",
       "weight": 1.0
     },
     {
@@ -11187,7 +10734,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "photos/views.py",
-      "source_location": "L296",
+      "source_location": "L297",
       "weight": 1.0
     },
     {
@@ -11198,7 +10745,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "photos/views.py",
-      "source_location": "L309",
+      "source_location": "L310",
       "weight": 1.0
     },
     {
@@ -11209,7 +10756,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "photos/views.py",
-      "source_location": "L318",
+      "source_location": "L319",
       "weight": 1.0
     },
     {
@@ -11220,7 +10767,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "photos/views.py",
-      "source_location": "L343",
+      "source_location": "L344",
       "weight": 1.0
     },
     {
@@ -11231,7 +10778,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "photos/views.py",
-      "source_location": "L357",
+      "source_location": "L358",
       "weight": 1.0
     },
     {
@@ -11242,7 +10789,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "photos/views.py",
-      "source_location": "L36",
+      "source_location": "L37",
       "weight": 1.0
     },
     {
@@ -11253,7 +10800,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "photos/views.py",
-      "source_location": "L377",
+      "source_location": "L378",
       "weight": 1.0
     },
     {
@@ -11264,7 +10811,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "photos/views.py",
-      "source_location": "L397",
+      "source_location": "L398",
       "weight": 1.0
     },
     {
@@ -11275,7 +10822,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "photos/views.py",
-      "source_location": "L405",
+      "source_location": "L406",
       "weight": 1.0
     },
     {
@@ -11286,7 +10833,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "photos/views.py",
-      "source_location": "L425",
+      "source_location": "L426",
       "weight": 1.0
     },
     {
@@ -11297,7 +10844,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "photos/views.py",
-      "source_location": "L43",
+      "source_location": "L44",
       "weight": 1.0
     },
     {
@@ -11308,7 +10855,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "photos/views.py",
-      "source_location": "L448",
+      "source_location": "L449",
       "weight": 1.0
     },
     {
@@ -11319,7 +10866,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "photos/views.py",
-      "source_location": "L469",
+      "source_location": "L470",
       "weight": 1.0
     },
     {
@@ -11330,7 +10877,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "photos/views.py",
-      "source_location": "L473",
+      "source_location": "L474",
       "weight": 1.0
     },
     {
@@ -11341,7 +10888,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "photos/views.py",
-      "source_location": "L495",
+      "source_location": "L496",
       "weight": 1.0
     },
     {
@@ -11352,7 +10899,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "photos/views.py",
-      "source_location": "L57",
+      "source_location": "L58",
       "weight": 1.0
     },
     {
@@ -11363,18 +10910,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "photos/views.py",
-      "source_location": "L669",
-      "weight": 1.0
-    },
-    {
-      "source": "photos_views",
-      "target": "photos_views_account_view",
-      "relation": "contains",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "photos/views.py",
-      "source_location": "L67",
+      "source_location": "L670",
       "weight": 1.0
     },
     {
@@ -11385,7 +10921,18 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "photos/views.py",
-      "source_location": "L678",
+      "source_location": "L679",
+      "weight": 1.0
+    },
+    {
+      "source": "photos_views",
+      "target": "photos_views_account_view",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "photos/views.py",
+      "source_location": "L68",
       "weight": 1.0
     },
     {
@@ -11396,7 +10943,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "photos/views.py",
-      "source_location": "L702",
+      "source_location": "L703",
       "weight": 1.0
     },
     {
@@ -11407,7 +10954,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "photos/views.py",
-      "source_location": "L718",
+      "source_location": "L719",
       "weight": 1.0
     },
     {
@@ -11418,7 +10965,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "photos/views.py",
-      "source_location": "L742",
+      "source_location": "L743",
       "weight": 1.0
     },
     {
@@ -11429,7 +10976,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "photos/views.py",
-      "source_location": "L95",
+      "source_location": "L96",
       "weight": 1.0
     },
     {
@@ -11485,6 +11032,17 @@
       "confidence_score": 1.0,
       "source_file": "photos/whiteboard_service.py",
       "source_location": "L56",
+      "weight": 1.0
+    },
+    {
+      "source": "scripts_start_sh_scripts_start",
+      "target": "scripts_start_sh__entry",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "scripts/start.sh",
+      "source_location": "L1",
       "weight": 1.0
     },
     {
@@ -12192,14 +11750,14 @@
       "weight": 1.0
     },
     {
-      "source": "photos_admin_views_rationale_167",
+      "source": "photos_admin_views_rationale_170",
       "target": "photos_admin_views_localhost_redirect_uri",
       "relation": "rationale_for",
       "_origin": "ast",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "photos/admin_views.py",
-      "source_location": "L167",
+      "source_location": "L170",
       "weight": 1.0
     },
     {
@@ -12225,107 +11783,118 @@
       "weight": 1.0
     },
     {
-      "source": "photos_drive_service_rationale_148",
+      "source": "photos_drive_service_rationale_141",
       "target": "photos_drive_service_connected_email_address",
       "relation": "rationale_for",
       "_origin": "ast",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "photos/drive_service.py",
-      "source_location": "L148",
+      "source_location": "L141",
       "weight": 1.0
     },
     {
-      "source": "photos_drive_service_rationale_160",
+      "source": "photos_drive_service_rationale_153",
       "target": "photos_drive_service_list_root_folders",
       "relation": "rationale_for",
       "_origin": "ast",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "photos/drive_service.py",
-      "source_location": "L160",
+      "source_location": "L153",
       "weight": 1.0
     },
     {
-      "source": "photos_drive_service_rationale_177",
+      "source": "photos_drive_service_rationale_170",
       "target": "photos_drive_service_create_root_folder",
       "relation": "rationale_for",
       "_origin": "ast",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "photos/drive_service.py",
-      "source_location": "L177",
+      "source_location": "L170",
       "weight": 1.0
     },
     {
-      "source": "photos_drive_service_rationale_190",
+      "source": "photos_drive_service_rationale_183",
       "target": "photos_drive_service_get_or_create_event_folder",
       "relation": "rationale_for",
       "_origin": "ast",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "photos/drive_service.py",
-      "source_location": "L190",
+      "source_location": "L183",
       "weight": 1.0
     },
     {
-      "source": "photos_drive_service_rationale_217",
+      "source": "photos_drive_service_rationale_210",
       "target": "photos_drive_service_upload_photo",
       "relation": "rationale_for",
       "_origin": "ast",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "photos/drive_service.py",
-      "source_location": "L217",
+      "source_location": "L210",
       "weight": 1.0
     },
     {
-      "source": "photos_drive_service_rationale_233",
+      "source": "photos_drive_service_rationale_226",
       "target": "photos_drive_service_trash_file",
       "relation": "rationale_for",
       "_origin": "ast",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "photos/drive_service.py",
-      "source_location": "L233",
+      "source_location": "L226",
       "weight": 1.0
     },
     {
-      "source": "photos_drive_service_rationale_242",
+      "source": "photos_drive_service_rationale_235",
       "target": "photos_drive_service_folder_exists",
       "relation": "rationale_for",
       "_origin": "ast",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "photos/drive_service.py",
-      "source_location": "L242",
+      "source_location": "L235",
       "weight": 1.0
     },
     {
-      "source": "photos_drive_service_rationale_257",
+      "source": "photos_drive_service_rationale_250",
       "target": "photos_drive_service_list_folder_files",
       "relation": "rationale_for",
       "_origin": "ast",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "photos/drive_service.py",
-      "source_location": "L257",
+      "source_location": "L250",
       "weight": 1.0
     },
     {
-      "source": "photos_drive_service_rationale_272",
+      "source": "photos_drive_service_rationale_265",
       "target": "photos_drive_service_download_file",
       "relation": "rationale_for",
       "_origin": "ast",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "photos/drive_service.py",
-      "source_location": "L272",
+      "source_location": "L265",
+      "weight": 1.0
+    },
+    {
+      "source": "photos_drive_service_rationale_283",
+      "target": "photos_drive_service_extract_folder_id",
+      "relation": "rationale_for",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "photos/drive_service.py",
+      "source_location": "L283",
       "weight": 1.0
     },
     {
       "source": "photos_drive_service_rationale_290",
-      "target": "photos_drive_service_extract_folder_id",
+      "target": "photos_drive_service_connect_existing_folder",
       "relation": "rationale_for",
       "_origin": "ast",
       "confidence": "EXTRACTED",
@@ -12335,25 +11904,14 @@
       "weight": 1.0
     },
     {
-      "source": "photos_drive_service_rationale_297",
-      "target": "photos_drive_service_connect_existing_folder",
-      "relation": "rationale_for",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "photos/drive_service.py",
-      "source_location": "L297",
-      "weight": 1.0
-    },
-    {
-      "source": "photos_drive_service_rationale_324",
+      "source": "photos_drive_service_rationale_317",
       "target": "photos_drive_service_share_folder_with_email",
       "relation": "rationale_for",
       "_origin": "ast",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "photos/drive_service.py",
-      "source_location": "L324",
+      "source_location": "L317",
       "weight": 1.0
     },
     {
@@ -12368,80 +11926,58 @@
       "weight": 1.0
     },
     {
-      "source": "photos_drive_service_rationale_348",
+      "source": "photos_drive_service_rationale_341",
       "target": "photos_drive_service_test_share",
       "relation": "rationale_for",
       "_origin": "ast",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "photos/drive_service.py",
-      "source_location": "L348",
+      "source_location": "L341",
       "weight": 1.0
     },
     {
-      "source": "photos_drive_service_rationale_37",
-      "target": "photos_drive_service_token_file",
-      "relation": "rationale_for",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "photos/drive_service.py",
-      "source_location": "L37",
-      "weight": 1.0
-    },
-    {
-      "source": "photos_drive_service_rationale_44",
-      "target": "photos_drive_service_client_secret_file",
-      "relation": "rationale_for",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "photos/drive_service.py",
-      "source_location": "L44",
-      "weight": 1.0
-    },
-    {
-      "source": "photos_drive_service_rationale_52",
+      "source": "photos_drive_service_rationale_45",
       "target": "photos_drive_service_configured_root_folder_id",
       "relation": "rationale_for",
       "_origin": "ast",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "photos/drive_service.py",
-      "source_location": "L52",
+      "source_location": "L45",
       "weight": 1.0
     },
     {
-      "source": "photos_drive_service_rationale_65",
+      "source": "photos_drive_service_rationale_58",
       "target": "photos_drive_service_is_configured",
       "relation": "rationale_for",
       "_origin": "ast",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "photos/drive_service.py",
-      "source_location": "L65",
+      "source_location": "L58",
       "weight": 1.0
     },
     {
-      "source": "photos_drive_service_rationale_83",
+      "source": "photos_drive_service_rationale_76",
       "target": "photos_drive_service_save_credentials",
       "relation": "rationale_for",
       "_origin": "ast",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "photos/drive_service.py",
-      "source_location": "L83",
+      "source_location": "L76",
       "weight": 1.0
     },
     {
-      "source": "photos_drive_service_rationale_95",
+      "source": "photos_drive_service_rationale_88",
       "target": "photos_drive_service_build_oauth_flow",
       "relation": "rationale_for",
       "_origin": "ast",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "photos/drive_service.py",
-      "source_location": "L95",
+      "source_location": "L88",
       "weight": 1.0
     },
     {
@@ -12687,14 +12223,14 @@
       "weight": 1.0
     },
     {
-      "source": "photos_views_rationale_426",
+      "source": "photos_views_rationale_427",
       "target": "photos_views_drive_reauth_start",
       "relation": "rationale_for",
       "_origin": "ast",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "photos/views.py",
-      "source_location": "L426",
+      "source_location": "L427",
       "weight": 1.0
     },
     {
@@ -12739,7 +12275,7 @@
       "confidence_score": 0.85,
       "context": "argument",
       "source_file": "photos/admin_views.py",
-      "source_location": "L253",
+      "source_location": "L259",
       "weight": 1.0
     },
     {
@@ -12784,7 +12320,7 @@
       "confidence": "INFERRED",
       "confidence_score": 0.95,
       "source_file": "photos/admin_views.py",
-      "source_location": "L240",
+      "source_location": "L245",
       "weight": 0.8
     },
     {
@@ -12795,7 +12331,7 @@
       "confidence": "INFERRED",
       "confidence_score": 0.95,
       "source_file": "photos/admin_views.py",
-      "source_location": "L258",
+      "source_location": "L264",
       "weight": 0.8
     },
     {
@@ -12806,7 +12342,7 @@
       "confidence": "INFERRED",
       "confidence_score": 0.95,
       "source_file": "photos/admin_views.py",
-      "source_location": "L290",
+      "source_location": "L295",
       "weight": 0.8
     },
     {
@@ -12817,7 +12353,7 @@
       "confidence": "INFERRED",
       "confidence_score": 0.95,
       "source_file": "photos/admin_views.py",
-      "source_location": "L477",
+      "source_location": "L478",
       "weight": 0.8
     },
     {
@@ -12828,7 +12364,7 @@
       "confidence": "INFERRED",
       "confidence_score": 0.95,
       "source_file": "photos/admin_views.py",
-      "source_location": "L223",
+      "source_location": "L228",
       "weight": 0.8
     },
     {
@@ -12839,7 +12375,7 @@
       "confidence": "INFERRED",
       "confidence_score": 0.95,
       "source_file": "photos/admin_views.py",
-      "source_location": "L463",
+      "source_location": "L464",
       "weight": 0.8
     },
     {
@@ -12850,7 +12386,7 @@
       "confidence": "INFERRED",
       "confidence_score": 0.95,
       "source_file": "photos/admin_views.py",
-      "source_location": "L485",
+      "source_location": "L486",
       "weight": 0.8
     },
     {
@@ -12883,7 +12419,7 @@
       "confidence": "INFERRED",
       "confidence_score": 0.95,
       "source_file": "photos/admin_views.py",
-      "source_location": "L454",
+      "source_location": "L455",
       "weight": 0.8
     },
     {
@@ -12894,7 +12430,7 @@
       "confidence": "INFERRED",
       "confidence_score": 0.95,
       "source_file": "photos/drive_service.py",
-      "source_location": "L61",
+      "source_location": "L54",
       "weight": 0.8
     },
     {
@@ -12905,7 +12441,7 @@
       "confidence": "INFERRED",
       "confidence_score": 0.95,
       "source_file": "photos/drive_service.py",
-      "source_location": "L315",
+      "source_location": "L308",
       "weight": 0.8
     },
     {
@@ -12960,7 +12496,7 @@
       "confidence": "INFERRED",
       "confidence_score": 0.95,
       "source_file": "photos/views.py",
-      "source_location": "L109",
+      "source_location": "L110",
       "weight": 0.8
     },
     {
@@ -12971,7 +12507,7 @@
       "confidence": "INFERRED",
       "confidence_score": 0.95,
       "source_file": "photos/views.py",
-      "source_location": "L96",
+      "source_location": "L97",
       "weight": 0.8
     },
     {
@@ -12982,7 +12518,7 @@
       "confidence": "INFERRED",
       "confidence_score": 0.95,
       "source_file": "photos/views.py",
-      "source_location": "L726",
+      "source_location": "L727",
       "weight": 0.8
     },
     {
@@ -12993,7 +12529,7 @@
       "confidence": "INFERRED",
       "confidence_score": 0.95,
       "source_file": "photos/views.py",
-      "source_location": "L680",
+      "source_location": "L681",
       "weight": 0.8
     },
     {
@@ -13004,7 +12540,7 @@
       "confidence": "INFERRED",
       "confidence_score": 0.95,
       "source_file": "photos/views.py",
-      "source_location": "L671",
+      "source_location": "L672",
       "weight": 0.8
     },
     {
@@ -13015,7 +12551,7 @@
       "confidence": "INFERRED",
       "confidence_score": 0.95,
       "source_file": "photos/views.py",
-      "source_location": "L704",
+      "source_location": "L705",
       "weight": 0.8
     },
     {
@@ -13026,23 +12562,12 @@
       "confidence": "INFERRED",
       "confidence_score": 0.95,
       "source_file": "photos/views.py",
-      "source_location": "L496",
+      "source_location": "L497",
       "weight": 0.8
     },
     {
       "source": "photos_views_dashboard_view",
       "target": "photos_models_useridentity",
-      "relation": "uses",
-      "_origin": "ast",
-      "confidence": "INFERRED",
-      "confidence_score": 0.95,
-      "source_file": "photos/views.py",
-      "source_location": "L645",
-      "weight": 0.8
-    },
-    {
-      "source": "photos_views_dashboard_view",
-      "target": "photos_models_photo",
       "relation": "uses",
       "_origin": "ast",
       "confidence": "INFERRED",
@@ -13053,13 +12578,24 @@
     },
     {
       "source": "photos_views_dashboard_view",
-      "target": "photos_models_whiteboarddrawing",
+      "target": "photos_models_photo",
       "relation": "uses",
       "_origin": "ast",
       "confidence": "INFERRED",
       "confidence_score": 0.95,
       "source_file": "photos/views.py",
       "source_location": "L647",
+      "weight": 0.8
+    },
+    {
+      "source": "photos_views_dashboard_view",
+      "target": "photos_models_whiteboarddrawing",
+      "relation": "uses",
+      "_origin": "ast",
+      "confidence": "INFERRED",
+      "confidence_score": 0.95,
+      "source_file": "photos/views.py",
+      "source_location": "L648",
       "weight": 0.8
     },
     {
@@ -13070,7 +12606,7 @@
       "confidence": "INFERRED",
       "confidence_score": 0.95,
       "source_file": "photos/views.py",
-      "source_location": "L303",
+      "source_location": "L304",
       "weight": 0.8
     },
     {
@@ -13081,7 +12617,7 @@
       "confidence": "INFERRED",
       "confidence_score": 0.95,
       "source_file": "photos/views.py",
-      "source_location": "L743",
+      "source_location": "L744",
       "weight": 0.8
     },
     {
@@ -13092,7 +12628,7 @@
       "confidence": "INFERRED",
       "confidence_score": 0.95,
       "source_file": "photos/views.py",
-      "source_location": "L345",
+      "source_location": "L346",
       "weight": 0.8
     },
     {
@@ -13103,7 +12639,7 @@
       "confidence": "INFERRED",
       "confidence_score": 0.95,
       "source_file": "photos/views.py",
-      "source_location": "L346",
+      "source_location": "L347",
       "weight": 0.8
     },
     {
@@ -13114,7 +12650,7 @@
       "confidence": "INFERRED",
       "confidence_score": 0.95,
       "source_file": "photos/views.py",
-      "source_location": "L61",
+      "source_location": "L62",
       "weight": 0.8
     },
     {
@@ -13125,7 +12661,7 @@
       "confidence": "INFERRED",
       "confidence_score": 0.95,
       "source_file": "photos/views.py",
-      "source_location": "L64",
+      "source_location": "L65",
       "weight": 0.8
     },
     {
@@ -13136,7 +12672,7 @@
       "confidence": "INFERRED",
       "confidence_score": 0.95,
       "source_file": "photos/views.py",
-      "source_location": "L321",
+      "source_location": "L322",
       "weight": 0.8
     },
     {
@@ -13147,7 +12683,7 @@
       "confidence": "INFERRED",
       "confidence_score": 0.95,
       "source_file": "photos/views.py",
-      "source_location": "L327",
+      "source_location": "L328",
       "weight": 0.8
     },
     {
@@ -13158,7 +12694,7 @@
       "confidence": "INFERRED",
       "confidence_score": 0.95,
       "source_file": "photos/views.py",
-      "source_location": "L328",
+      "source_location": "L329",
       "weight": 0.8
     },
     {
@@ -13169,7 +12705,7 @@
       "confidence": "INFERRED",
       "confidence_score": 0.95,
       "source_file": "photos/views.py",
-      "source_location": "L288",
+      "source_location": "L289",
       "weight": 0.8
     },
     {
@@ -13180,7 +12716,7 @@
       "confidence": "INFERRED",
       "confidence_score": 0.95,
       "source_file": "photos/views.py",
-      "source_location": "L311",
+      "source_location": "L312",
       "weight": 0.8
     },
     {
@@ -13191,7 +12727,7 @@
       "confidence": "INFERRED",
       "confidence_score": 0.95,
       "source_file": "photos/views.py",
-      "source_location": "L314",
+      "source_location": "L315",
       "weight": 0.8
     },
     {
@@ -13202,7 +12738,7 @@
       "confidence": "INFERRED",
       "confidence_score": 0.95,
       "source_file": "photos/views.py",
-      "source_location": "L46",
+      "source_location": "L47",
       "weight": 0.8
     },
     {
@@ -13213,7 +12749,7 @@
       "confidence": "INFERRED",
       "confidence_score": 0.95,
       "source_file": "photos/views.py",
-      "source_location": "L358",
+      "source_location": "L359",
       "weight": 0.8
     },
     {
@@ -13224,7 +12760,7 @@
       "confidence": "INFERRED",
       "confidence_score": 0.95,
       "source_file": "photos/views.py",
-      "source_location": "L359",
+      "source_location": "L360",
       "weight": 0.8
     },
     {
@@ -13235,7 +12771,7 @@
       "confidence": "INFERRED",
       "confidence_score": 0.95,
       "source_file": "photos/views.py",
-      "source_location": "L488",
+      "source_location": "L489",
       "weight": 0.8
     },
     {
@@ -13246,7 +12782,7 @@
       "confidence": "INFERRED",
       "confidence_score": 0.95,
       "source_file": "photos/views.py",
-      "source_location": "L207",
+      "source_location": "L208",
       "weight": 0.8
     },
     {
@@ -13257,7 +12793,7 @@
       "confidence": "INFERRED",
       "confidence_score": 0.95,
       "source_file": "photos/views.py",
-      "source_location": "L382",
+      "source_location": "L383",
       "weight": 0.8
     },
     {
@@ -13268,7 +12804,7 @@
       "confidence": "INFERRED",
       "confidence_score": 0.95,
       "source_file": "photos/views.py",
-      "source_location": "L168",
+      "source_location": "L169",
       "weight": 0.8
     },
     {
@@ -13279,7 +12815,7 @@
       "confidence": "INFERRED",
       "confidence_score": 0.95,
       "source_file": "photos/views.py",
-      "source_location": "L181",
+      "source_location": "L182",
       "weight": 0.8
     },
     {
@@ -13290,7 +12826,7 @@
       "confidence": "INFERRED",
       "confidence_score": 0.95,
       "source_file": "photos/views.py",
-      "source_location": "L213",
+      "source_location": "L214",
       "weight": 0.8
     },
     {
@@ -13301,7 +12837,7 @@
       "confidence": "INFERRED",
       "confidence_score": 0.95,
       "source_file": "photos/views.py",
-      "source_location": "L221",
+      "source_location": "L222",
       "weight": 0.8
     },
     {
@@ -13312,7 +12848,7 @@
       "confidence": "INFERRED",
       "confidence_score": 0.95,
       "source_file": "photos/views.py",
-      "source_location": "L249",
+      "source_location": "L250",
       "weight": 0.8
     },
     {
@@ -13323,7 +12859,7 @@
       "confidence": "INFERRED",
       "confidence_score": 0.95,
       "source_file": "photos/views.py",
-      "source_location": "L257",
+      "source_location": "L258",
       "weight": 0.8
     },
     {
@@ -13334,7 +12870,7 @@
       "confidence": "INFERRED",
       "confidence_score": 0.95,
       "source_file": "photos/views.py",
-      "source_location": "L406",
+      "source_location": "L407",
       "weight": 0.8
     },
     {
@@ -14317,6 +13853,17 @@
       "weight": 1.0
     },
     {
+      "source": "static_photos_icons_heart",
+      "target": "static_photos_icons_heart_filled",
+      "relation": "semantically_similar_to",
+      "_origin": "semantic",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "static/photos/icons/heart.svg",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
       "source": "static_photos_icons_zoom_in",
       "target": "static_photos_icons_zoom_out",
       "relation": "semantically_similar_to",
@@ -14443,5 +13990,5 @@
       "source_file": "docker-compose.yml"
     }
   ],
-  "built_at_commit": "f191b7959532cd9ebca10483a935003d05739046"
+  "built_at_commit": "7c1f09f770723804b1d337b6e812274c1268f35e"
 }

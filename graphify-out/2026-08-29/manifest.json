@@ -60,9 +60,9 @@
     "semantic_hash": ""
   },
   "photos/drive_service.py": {
-    "mtime": 1788026317.1207807,
-    "seen": 1788039623.238925,
-    "ast_hash": "cdaaf5db3b1542f8dee3ff865cf588cd",
+    "mtime": 1788024190.7017114,
+    "seen": 1788025508.5214934,
+    "ast_hash": "2e887bfa79ac53d792970792668ec897",
     "semantic_hash": ""
   },
   "photos/event_service.py": {
@@ -90,9 +90,9 @@
     "semantic_hash": "d41d8cd98f00b204e9800998ecf8427e"
   },
   "photos/management/commands/google_drive_auth.py": {
-    "mtime": 1788026407.7634895,
-    "seen": 1788039623.2389388,
-    "ast_hash": "c156b13ef8d1cd5493578eb6a0c114b5",
+    "mtime": 1787992781.0085158,
+    "seen": 1788025508.5215044,
+    "ast_hash": "aeb51d6e8a14e17a0233d50e94eb717c",
     "semantic_hash": ""
   },
   "photos/migrations/0001_initial.py": {
@@ -186,9 +186,9 @@
     "semantic_hash": "d41d8cd98f00b204e9800998ecf8427e"
   },
   "photos/models.py": {
-    "mtime": 1788026207.65057,
-    "seen": 1788039623.2389932,
-    "ast_hash": "20fe87434ac8deb003db27ce2167adfb",
+    "mtime": 1788024190.7070334,
+    "seen": 1788025508.5215466,
+    "ast_hash": "b2746fcbe7f4828888592f19d0a61791",
     "semantic_hash": ""
   },
   "photos/routing.py": {
@@ -222,9 +222,9 @@
     "semantic_hash": ""
   },
   "photos/views.py": {
-    "mtime": 1788026214.7881901,
-    "seen": 1788039623.2390041,
-    "ast_hash": "75e330d70f549092acb20fa6bdc3ff57",
+    "mtime": 1788024190.7225063,
+    "seen": 1788025508.5215547,
+    "ast_hash": "7b86791d1f923ba8189bbe2d3ad21988",
     "semantic_hash": ""
   },
   "photos/whiteboard_service.py": {
@@ -233,6 +233,18 @@
     "ast_hash": "d99812d88152a471852f148b6a0b27be",
     "semantic_hash": "d99812d88152a471852f148b6a0b27be"
   },
+  "scripts/start.ps1": {
+    "mtime": 1787992791.8509216,
+    "seen": 1788025508.5215578,
+    "ast_hash": "285bda5e542acf94b28332d2cee89551",
+    "semantic_hash": ""
+  },
+  "scripts/start.sh": {
+    "mtime": 1787992791.8552754,
+    "seen": 1788025508.521559,
+    "ast_hash": "2774897c0b5eb69de1e91f6b9f819103",
+    "semantic_hash": ""
+  },
   "static/photos/tv.js": {
     "mtime": 1787992781.0259151,
     "seen": 1788025508.5215604,
@@ -240,9 +252,9 @@
     "semantic_hash": ""
   },
   "README.md": {
-    "mtime": 1788026612.475589,
-    "seen": 1788039623.2390113,
-    "ast_hash": "6558ce00db13d77137e3cb0e38681d2b",
+    "mtime": 1787992791.825391,
+    "seen": 1788025508.5215633,
+    "ast_hash": "b1049b7598994ea7499f17fa9b690147",
     "semantic_hash": ""
   },
   "docker-compose.yml": {
@@ -252,9 +264,9 @@
     "semantic_hash": ""
   },
   "docs/ui-guidelines/README.md": {
-    "mtime": 1788026765.0573997,
-    "seen": 1788039623.2390192,
-    "ast_hash": "4703c151726063cd836fcdd0772d8707",
+    "mtime": 1787441060.755165,
+    "seen": 1788025508.5215662,
+    "ast_hash": "05a6f6981428bbeb58ac6d71f24c16b3",
     "semantic_hash": ""
   },
   "photos/templates/photos/_footer_nav.html": {
@@ -395,6 +407,12 @@
     "ast_hash": "9eed6ac5c29e7a8485c70d53aec0a4b8",
     "semantic_hash": "9eed6ac5c29e7a8485c70d53aec0a4b8"
   },
+  "static/photos/icons/heart.svg": {
+    "mtime": 1786833810.0270722,
+    "seen": 1788025508.5216274,
+    "ast_hash": "b5ddb21439d1384feb01be5fbe3a5dc4",
+    "semantic_hash": "b5ddb21439d1384feb01be5fbe3a5dc4"
+  },
   "static/photos/icons/maximize.svg": {
     "mtime": 1786833810.2878823,
     "seen": 1788025508.5216286,
@@ -450,9 +468,9 @@
     "semantic_hash": ""
   },
   "photos/admin_views.py": {
-    "mtime": 1788026440.0652044,
-    "seen": 1788039623.2389174,
-    "ast_hash": "22405e7f2c836d7f9429eda6d293c1b8",
+    "mtime": 1788024190.69998,
+    "seen": 1788025508.521489,
+    "ast_hash": "42180aa10d20a91af44aa0d9eb98032a",
     "semantic_hash": ""
   },
   "photos/email_service.py": {
@@ -663,18 +681,6 @@
     "mtime": 1788024190.722891,
     "seen": 1788025508.5216372,
     "ast_hash": "8679d0a27d287bfd08bd8d30e7589dd3",
-    "semantic_hash": ""
-  },
-  "docs/code-quality-report.md": {
-    "mtime": 1788026900.3820453,
-    "seen": 1788039623.2390156,
-    "ast_hash": "8c5c700ebd898a04ef5ead6cd551307a",
-    "semantic_hash": ""
-  },
-  "docs/developer-guide.md": {
-    "mtime": 1788026817.0156505,
-    "seen": 1788039623.2390172,
-    "ast_hash": "94eda91db26e20572987643050112795",
     "semantic_hash": ""
   }
 }

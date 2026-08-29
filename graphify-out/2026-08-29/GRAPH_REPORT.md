@@ -1,21 +1,21 @@
 # Graph Report - Platefrom_coloc  (2026-08-29)
 
 ## Corpus Check
-- 63 files · ~38,026 words
+- 63 files · ~33,322 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 458 nodes · 757 edges · 67 communities (23 shown, 44 thin omitted)
-- Extraction: 90% EXTRACTED · 10% INFERRED · 0% AMBIGUOUS · INFERRED: 76 edges (avg confidence: 0.92)
+- 441 nodes · 734 edges · 66 communities (21 shown, 45 thin omitted)
+- Extraction: 89% EXTRACTED · 10% INFERRED · 0% AMBIGUOUS · INFERRED: 77 edges (avg confidence: 0.92)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `f191b795`
+- Built from commit: `7c1f09f7`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
 ## Community Hubs (Navigation)
-- admin.py
+- models.py
 - views.py
 - drive_service.py
 - whiteboard_draw.html page (/whiteboard/)
@@ -40,8 +40,8 @@
 - 0011_alter_event_drive_folder_id_alter_event_is_active.py
 - 0013_event_wifi_password_event_wifi_qr_enabled_and_more.py
 - 0014_event_tv_bottom_right.py
-- gmail_service.py
-- Heart Filled Icon (heart-filled.svg)
+- start.sh script
+- Heart Icon (outline)
 - Zoom In Icon
 - 0014_sitesettings.py
 - .card content wrapper guideline
@@ -51,7 +51,6 @@
 - Écran TV (passive display actor)
 - Invité (Guest actor)
 - Pillow
-- Developer guide
 - 0015_alter_sitesettings_server_host.py
 - Adjustments Horizontal Icon
 - Alert Triangle Icon
@@ -73,11 +72,10 @@
 - 0022_sitesettings_support_email_and_more.py
 - 0023_sitesettings_support_email_verified.py
 - 0024_remove_sitesettings_support_email_app_password_and_more.py
-- Code quality report
 
 ## God Nodes (most connected - your core abstractions)
 1. `Event` - 29 edges
-2. `admin_management_view()` - 22 edges
+2. `admin_management_view()` - 21 edges
 3. `whiteboard_draw.html page (/whiteboard/)` - 21 edges
 4. `DriveError` - 19 edges
 5. `Photo` - 18 edges
@@ -92,42 +90,42 @@
   README.md → photos/templates/photos/dashboard.html
 - `dashboard.html page (/dashboard/)` --conceptually_related_to--> `Colors/spacing/typography CSS custom properties`  [AMBIGUOUS]
   photos/templates/photos/dashboard.html → docs/ui-guidelines/README.md
-- `_footer_nav.html partial` --implements--> `.footer-nav component`  [INFERRED]
-  photos/templates/photos/_footer_nav.html → docs/ui-guidelines/README.md
+- `Stack technique (Django+Channels+Daphne+PostgreSQL+qrcode)` --conceptually_related_to--> `psycopg2-binary`  [INFERRED]
+  README.md → requirements.txt
 - `_page_header.html partial` --implements--> `.page-header component guideline`  [INFERRED]
   photos/templates/photos/_page_header.html → docs/ui-guidelines/README.md
-- `dashboard.html page (/dashboard/)` --conceptually_related_to--> `.photo-card tile (deliberately distinct from .card, past collision bug)`  [AMBIGUOUS]
-  photos/templates/photos/dashboard.html → docs/ui-guidelines/README.md
+- `_footer_nav.html partial` --implements--> `.footer-nav component`  [INFERRED]
+  photos/templates/photos/_footer_nav.html → docs/ui-guidelines/README.md
 
 ## Import Cycles
 - None detected.
 
 ## Hyperedges (group relationships)
-- **Pages participating in the /ws/tv/ realtime update flow (uploaded/deleted/settings/liked/whiteboard_updated/tv_layout_changed/event_switched)** — readme_websocket_channel, photos_templates_photos_tv_tv_page, photos_templates_photos_whiteboard_draw_whiteboard_page, photos_templates_photos_dashboard_dashboard_page, photos_templates_photos_upload_upload_page [INFERRED 0.80]
 - **Guest page shell (header + card + footer-nav) used across guest-facing pages** — photos_templates_photos__page_header_page_header, photos_templates_photos__footer_nav_footer_nav, docs_ui_guidelines_readme_page_shell, photos_templates_photos_upload_upload_page, photos_templates_photos_gallery_gallery_page, photos_templates_photos_my_photos_my_photos_page, photos_templates_photos_whiteboard_draw_whiteboard_page [INFERRED 0.85]
 - **Google Drive OAuth2 integration: env vars, config, and Python client libraries** — readme_google_drive_integration, docker_compose_web_service, requirements_google_api_python_client, requirements_google_auth_httplib2, requirements_google_auth_oauthlib [INFERRED 0.90]
+- **Pages participating in the /ws/tv/ realtime update flow (uploaded/deleted/settings/liked/whiteboard_updated/tv_layout_changed/event_switched)** — readme_websocket_channel, photos_templates_photos_tv_tv_page, photos_templates_photos_whiteboard_draw_whiteboard_page, photos_templates_photos_dashboard_dashboard_page, photos_templates_photos_upload_upload_page [INFERRED 0.80]
 
-## Communities (67 total, 44 thin omitted)
+## Communities (66 total, 45 thin omitted)
 
-### Community 0 - "admin.py"
-Cohesion: 0.22
-Nodes (7): EventAdmin, LikeAdmin, PhotoAdmin, SiteSettingsAdmin, SlideshowSettingsAdmin, UserIdentityAdmin, register
+### Community 0 - "models.py"
+Cohesion: 0.09
+Nodes (13): EventAdmin, LikeAdmin, PhotoAdmin, SiteSettingsAdmin, SlideshowSettingsAdmin, UserIdentityAdmin, Migration, Migration (+5 more)
 
 ### Community 1 - "views.py"
-Cohesion: 0.05
-Nodes (64): PasswordChangeForm, build_oauth_flow(), Flow for the web-based (dashboard button) re-auth path — distinct from the…, backup_pending_photos(), _clear_local_photos(), drive_photo_count(), ensure_drive_folder(), invalidate_drive_backups() (+56 more)
+Cohesion: 0.07
+Nodes (58): PasswordChangeForm, folder_exists(), Live check (never cached) that folder_id still exists, isn't trashed, and is…, backup_pending_photos(), _clear_local_photos(), drive_photo_count(), ensure_drive_folder(), invalidate_drive_backups() (+50 more)
 
 ### Community 2 - "drive_service.py"
 Cohesion: 0.07
-Nodes (52): BaseCommand, client_secret_file(), _configured_root_folder_id(), connect_existing_folder(), connected_email_address(), create_root_folder(), download_file(), DriveError (+44 more)
+Nodes (50): BaseCommand, build_oauth_flow(), _client_secret_file(), _configured_root_folder_id(), connect_existing_folder(), connected_email_address(), create_root_folder(), download_file() (+42 more)
 
 ### Community 3 - "whiteboard_draw.html page (/whiteboard/)"
 Cohesion: 0.06
 Nodes (43): Bottom sheet pattern (Whiteboard tools panel reference impl), Button variants guideline (.btn.primary/.secondary/.neutral/.delete), Colors/spacing/typography CSS custom properties, Fixed positioning, not flow (Android viewport-height bug rationale), .footer-nav component, Self-hosted Tabler icons + {% icon %} tag guideline, .page-header component guideline, Page shell pattern (header/card/footer-nav) (+35 more)
 
 ### Community 4 - "admin_views.py"
-Cohesion: 0.07
-Nodes (41): AuthenticationForm, PasswordResetForm, _admin_creation_open(), admin_management_view(), create_admin_view(), delete_invite_view(), drive_google_connect_view(), _google_flow() (+33 more)
+Cohesion: 0.05
+Nodes (59): AuthenticationForm, BaseEmailBackend, PasswordResetForm, _admin_creation_open(), admin_management_view(), _client_secret_path(), create_admin_view(), delete_invite_view() (+51 more)
 
 ### Community 5 - "User types"
 Cohesion: 0.40
@@ -157,40 +155,28 @@ Nodes (7): AppConfig, PhotosConfig, notify_tv_of_interval_change(), notify_tv_of
 Cohesion: 0.50
 Nodes (4): icon(), _load(), Inline SVG icons (Tabler Icons, MIT-licensed, self-hosted in…, simple_tag
 
-### Community 26 - "gmail_service.py"
-Cohesion: 0.19
-Nodes (17): BaseEmailBackend, drive_google_callback_view(), connected_email_address(), disconnect(), _get_credentials(), _get_service(), GmailApiBackend, GmailError (+9 more)
-
-### Community 44 - "Developer guide"
-Cohesion: 0.18
-Nodes (10): Developer guide, Git conventions observed in this repo, Google OAuth2 integration pattern, Icons, Keeping the code graph current, No automated tests, The design system (frontend conventions), The "live-check, don't trust a cached flag" principle (+2 more)
-
-### Community 66 - "Code quality report"
-Cohesion: 0.22
-Nodes (8): Code quality report, Documentation gaps (the biggest finding in this report), Duplication worth refactoring, Error handling, Migration history (informational, not action items), Obsolete code chunks, Obsolete files, What this report deliberately does not cover
-
 ## Ambiguous Edges - Review These
-- `dashboard.html page (/dashboard/)` → `Colors/spacing/typography CSS custom properties`  [AMBIGUOUS]
+- `Colors/spacing/typography CSS custom properties` → `dashboard.html page (/dashboard/)`  [AMBIGUOUS]
   photos/templates/photos/dashboard.html · relation: conceptually_related_to
-- `dashboard.html page (/dashboard/)` → `.photo-card tile (deliberately distinct from .card, past collision bug)`  [AMBIGUOUS]
+- `.photo-card tile (deliberately distinct from .card, past collision bug)` → `dashboard.html page (/dashboard/)`  [AMBIGUOUS]
   photos/templates/photos/dashboard.html · relation: conceptually_related_to
 
 ## Knowledge Gaps
-- **78 isolated node(s):** `Migration`, `Migration`, `Migration`, `Migration`, `Migration` (+73 more)
+- **64 isolated node(s):** `Migration`, `Migration`, `Migration`, `Migration`, `Migration` (+59 more)
   These have ≤1 connection - possible missing edges or undocumented components.
-- **44 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **45 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **What is the exact relationship between `dashboard.html page (/dashboard/)` and `Colors/spacing/typography CSS custom properties`?**
+- **What is the exact relationship between `Colors/spacing/typography CSS custom properties` and `dashboard.html page (/dashboard/)`?**
   _Edge tagged AMBIGUOUS (relation: conceptually_related_to) - confidence is low._
-- **What is the exact relationship between `dashboard.html page (/dashboard/)` and `.photo-card tile (deliberately distinct from .card, past collision bug)`?**
+- **What is the exact relationship between `.photo-card tile (deliberately distinct from .card, past collision bug)` and `dashboard.html page (/dashboard/)`?**
   _Edge tagged AMBIGUOUS (relation: conceptually_related_to) - confidence is low._
-- **Why does `SiteSettings` connect `admin_views.py` to `admin.py`, `views.py`, `gmail_service.py`, `drive_service.py`?**
-  _High betweenness centrality (0.026) - this node is a cross-community bridge._
-- **Why does `Event` connect `views.py` to `admin.py`, `drive_service.py`, `signals.py`?**
-  _High betweenness centrality (0.025) - this node is a cross-community bridge._
+- **Why does `SiteSettings` connect `admin_views.py` to `models.py`, `views.py`, `drive_service.py`?**
+  _High betweenness centrality (0.028) - this node is a cross-community bridge._
+- **Why does `Event` connect `views.py` to `models.py`, `drive_service.py`, `signals.py`?**
+  _High betweenness centrality (0.027) - this node is a cross-community bridge._
 - **Are the 19 inferred relationships involving `Event` (e.g. with `connect_existing_folder()` and `ensure_drive_folder()`) actually correct?**
   _`Event` has 19 INFERRED edges - model-reasoned connections that need verification._
 - **Are the 4 inferred relationships involving `admin_management_view()` (e.g. with `_run_ip_check()` and `DriveClientSecretForm`) actually correct?**
