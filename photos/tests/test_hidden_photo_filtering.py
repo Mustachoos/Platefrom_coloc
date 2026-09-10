@@ -67,9 +67,13 @@ class HiddenPhotoFilteringTests(TestCase):
 
     def _join_as_guest(self, pseudo):
         """Create a real guest identity tied to the test client's session,
-        the same way a guest would via the pseudo-picker flow."""
+        the same way a guest would via the pseudo-picker flow. This fixture
+        event has no Drive folder, so US-F1's redirect goes straight to
+        upload rather than share-drive — irrelevant to what these tests
+        actually check (hidden-photo filtering), just the correct post-F1
+        behavior for a no-Drive event."""
         response = self.client.post(reverse("choose-pseudo"), {"pseudo": pseudo})
-        self.assertRedirects(response, reverse("share-drive"))
+        self.assertRedirects(response, reverse("upload"))
         return UserIdentity.objects.get(event=self.event, pseudo=pseudo)
 
     # -- gallery_view -------------------------------------------------------

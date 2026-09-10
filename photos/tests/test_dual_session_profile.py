@@ -61,9 +61,12 @@ class DualSessionProfileTests(TestCase):
 
         # Acquire a guest identity on top of the staff session, the way
         # US-B1's dashboard entry point does: POST to choose-pseudo while
-        # already staff-authenticated.
+        # already staff-authenticated. This fixture event has no Drive
+        # folder, so US-F1's redirect goes straight to upload — irrelevant
+        # to this test's actual point (session coexistence), just the
+        # correct post-F1 behavior for a no-Drive event.
         post_response = self.client.post(reverse("choose-pseudo"), {"pseudo": "PartyGuest"})
-        self.assertRedirects(post_response, reverse("share-drive"))
+        self.assertRedirects(post_response, reverse("upload"))
 
         response = self.client.get(reverse("account"))
 
