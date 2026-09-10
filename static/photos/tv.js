@@ -185,6 +185,23 @@
         }
         index = index % photos.length;
         if (wasCurrent) showCurrent();
+      } else if (data.event === "hidden") {
+        // Same as "deleted": pull the photo out of the live rotation. Its
+        // DB row and file are untouched — unhiding re-adds it via a normal
+        // "uploaded" event.
+        const removedIndex = photos.findIndex((p) => p.url === data.url);
+        if (removedIndex === -1) return;
+        const wasCurrent = removedIndex === index;
+        photos.splice(removedIndex, 1);
+        if (photos.length === 0) {
+          showCurrent();
+          return;
+        }
+        if (removedIndex < index) {
+          index -= 1;
+        }
+        index = index % photos.length;
+        if (wasCurrent) showCurrent();
       } else if (data.event === "settings") {
         intervalMs = data.interval_seconds * 1000;
         restartTimer();
