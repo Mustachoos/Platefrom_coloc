@@ -18,7 +18,7 @@ existing test suite for the PI still passes (regression), not just the new test.
 | US-F1 | done | 29/29 pass | ddeffc3 | Fixed one pre-existing test in `test_guest_session_entry_point.py` whose assertion encoded the exact old behavior this story changes (redirect target) — real intent of that test (session survives/shares key) was untouched |
 
 | US-E2 | not started | — | — | wave 4 — depends on US-E1 (merged) |
-| US-E3 | not started | — | — | wave 4 — no dependency |
+| US-E3 | done | 89/89 pass | 5796188 | Fast-forward merge, no conflicts (E2 not yet landed) — validation helper lives on `SiteSettings.wifi_credentials_check()` |
 
 **Wave 3 integration check** (after merging US-B2, US-D2, US-E1, US-F1 in sequence on top of
 wave 1): full suite `python manage.py test photos` → **67/67 pass**, `makemigrations --check
