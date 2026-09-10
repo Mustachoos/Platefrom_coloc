@@ -180,46 +180,45 @@ class AdminManagementTemplateWifiIndicatorTests(TestCase):
         site_settings.wifi_security = security
         site_settings.save()
 
-    def test_blank_ssid_shows_no_badge_and_no_error(self):
+    def test_blank_ssid_shows_no_green_dot_and_no_error(self):
         response = self.client.get(self.admin_url)
         content = response.content.decode()
-        self.assertNotIn("Credentials look valid", content)
+        self.assertNotIn("status-circle verified", content)
         self.assertNotIn("WPA/WPA2/WPA3 passwords must be", content)
         self.assertNotIn("WEP passwords must be", content)
         self.assertNotIn("can't have a password", content)
 
-    def test_wpa_with_12_char_password_shows_green_badge(self):
+    def test_wpa_with_12_char_password_shows_green_dot(self):
         self._set_wifi(ssid="Chez Axel", password="a" * 12, security=SiteSettings.WIFI_SECURITY_WPA)
         response = self.client.get(self.admin_url)
         content = response.content.decode()
-        self.assertIn("Credentials look valid", content)
-        self.assertIn("badge--success", content)
+        self.assertIn("status-circle verified", content)
 
-    def test_wpa_with_4_char_password_shows_no_badge_but_shows_length_error(self):
+    def test_wpa_with_4_char_password_shows_no_green_dot_but_shows_length_error(self):
         self._set_wifi(ssid="Chez Axel", password="abcd", security=SiteSettings.WIFI_SECURITY_WPA)
         response = self.client.get(self.admin_url)
         content = response.content.decode()
-        self.assertNotIn("Credentials look valid", content)
+        self.assertNotIn("status-circle verified", content)
         self.assertIn("WPA/WPA2/WPA3 passwords must be 8-63 characters.", content)
 
-    def test_nopass_with_password_shows_no_badge_but_shows_open_network_error(self):
+    def test_nopass_with_password_shows_no_green_dot_but_shows_open_network_error(self):
         self._set_wifi(ssid="Chez Axel", password="hunter2", security=SiteSettings.WIFI_SECURITY_NOPASS)
         response = self.client.get(self.admin_url)
         content = response.content.decode()
-        self.assertNotIn("Credentials look valid", content)
+        self.assertNotIn("status-circle verified", content)
         self.assertIn("Open networks can&#x27;t have a password", content)
 
-    def test_wep_with_wrong_length_password_shows_no_badge_but_shows_wep_error(self):
+    def test_wep_with_wrong_length_password_shows_no_green_dot_but_shows_wep_error(self):
         # Neither 5 nor 13 characters — the two valid WEP ASCII key lengths.
         self._set_wifi(ssid="Chez Axel", password="wrongsize", security=SiteSettings.WIFI_SECURITY_WEP)
         response = self.client.get(self.admin_url)
         content = response.content.decode()
-        self.assertNotIn("Credentials look valid", content)
+        self.assertNotIn("status-circle verified", content)
         self.assertIn("WEP passwords must be exactly 5 or 13 characters", content)
 
-    def test_indicator_label_reads_as_a_format_check_not_a_connectivity_claim(self):
+    def test_status_dot_tooltip_reads_as_a_format_check_not_a_connectivity_claim(self):
         self._set_wifi(ssid="Chez Axel", password="a" * 12, security=SiteSettings.WIFI_SECURITY_WPA)
         response = self.client.get(self.admin_url)
         content = response.content.decode()
-        self.assertIn("Credentials look valid", content)
+        self.assertIn("Format check only", content)
         self.assertNotIn("Wi-Fi confirmed working", content)
