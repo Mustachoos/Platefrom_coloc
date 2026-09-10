@@ -9,6 +9,12 @@ existing test suite for the PI still passes (regression), not just the new test.
 | US-A1 | done | 3/3 pass | e2bc766 | Delete button also gated on `user.is_superuser` in the template (beyond literal contract text) so a non-admin never sees a no-op button |
 | US-B1 | not started | — | — | |
 | US-C1 | done | 4/4 pass | 2bb6672 | Placed next to "Switch to this event" (Delete didn't exist yet in that worktree); merged fine into the same action-row wrapper |
-| US-D1 | not started | — | — | |
-| US-B2 | not started | — | — | waits on US-B1 |
-| US-D2 | not started | — | — | waits on US-D1 |
+| US-D1 | done | 12/12 pass | 9bd448e | Added a `photo_hidden` consumer handler (not in story's file list) — required for Channels to route the new `"photo.hidden"` group_send to a method, same as existing `photo_uploaded`/`photo_deleted` |
+| US-B1 | done | 5/5 pass | edd0179 | Added one line to `dashboard_view`'s context (`guest_identity = _get_user_identity(request)`) — story predicted template-only, but the template had no way to know if this session already holds an identity |
+| US-B2 | not started | — | — | unblocked — US-B1 merged |
+| US-D2 | not started | — | — | unblocked — US-D1 merged |
+
+**Wave 1 integration check** (after merging all four branches into `pi-1-admin-tools`, one manual
+conflict resolution needed in `dashboard.html`/`urls.py`/`views.py` where A1/C1 both touched the
+events-tab action row — additive, not contradictory): full suite `python manage.py test photos`
+→ **24/24 pass**, `makemigrations --check --dry-run` → no drift.
