@@ -18,3 +18,11 @@ existing test suite for the PI still passes (regression), not just the new test.
 conflict resolution needed in `dashboard.html`/`urls.py`/`views.py` where A1/C1 both touched the
 events-tab action row — additive, not contradictory): full suite `python manage.py test photos`
 → **24/24 pass**, `makemigrations --check --dry-run` → no drift.
+
+**Gotcha for local dev after merging US-D1** (or any future migration-adding story): the `web`
+service's `docker-compose.yml` command only runs `migrate` once, at container startup
+(`sh -c "python manage.py migrate && python manage.py runserver ..."`). Django's autoreload
+picks up new code live but never reruns that outer command, so a new migration merged into a
+running dev environment needs a manual `docker compose exec web python manage.py migrate` (or a
+container restart) before the affected page works — otherwise it 500s with
+`column ... does not exist` even though the code and migration file are both correct.
