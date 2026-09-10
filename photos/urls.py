@@ -76,6 +76,7 @@ urlpatterns = [
     ),
     path("dashboard/events/create/", views.create_event_view, name="create-event"),
     path("dashboard/events/<int:event_id>/switch/", views.event_switch_view, name="event-switch"),
+    path("dashboard/events/<int:event_id>/delete/", views.event_delete_view, name="event-delete"),
     path("dashboard/drive/reauth/", views.drive_reauth_start, name="drive-reauth-start"),
     path("dashboard/drive/reauth/callback/", views.drive_reauth_callback, name="drive-reauth-callback"),
 ]

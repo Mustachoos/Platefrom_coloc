@@ -66,7 +66,15 @@
             </div>
           </div>
           {% if not event.is_active %}
-          <a class="btn btn--light btn--sm" href="{% url 'event-switch' event.id %}">Switch to this event</a>
+          <div class="flex gap-2xs items-center">
+            <a class="btn btn--light btn--sm" href="{% url 'event-switch' event.id %}">Switch to this event</a>
+            {% if user.is_superuser %}
+            <form method="post" action="{% url 'event-delete' event.id %}">
+              {% csrf_token %}
+              <button type="submit" class="btn btn--danger btn--sm">Delete</button>
+            </form>
+            {% endif %}
+          </div>
           {% endif %}
         </div>
         {% empty %}
