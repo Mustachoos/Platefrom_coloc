@@ -17,12 +17,16 @@ existing test suite for the PI still passes (regression), not just the new test.
 | US-E1 | done | 50/50 pass (agent) → 67/67 pass (integrated) | 067f235 | Two migrations (data copy, then schema drop); wifi moved Event→SiteSettings, admin-only via existing `admin_management_view` decorator; merged with zero conflicts |
 | US-F1 | done | 29/29 pass | ddeffc3 | Fixed one pre-existing test in `test_guest_session_entry_point.py` whose assertion encoded the exact old behavior this story changes (redirect target) — real intent of that test (session survives/shares key) was untouched |
 
-| US-E2 | not started | — | — | wave 4 — depends on US-E1 (merged) |
+| US-E2 | done | 69/69 pass (agent) → 91/91 pass (integrated) | a814be8 | One merge conflict (admin_management.html Wi-Fi heading, both E2 and E3 touched it) — resolved additively: kept E2's corrected `status-circle` condition (`site_settings.wifi_ssid` alone, since `wifi_qr_enabled` moved to `Event`) plus E3's validity badge. Also removed one obsolete test class from US-E1's suite that tested a migration step against a since-altered schema. |
 | US-E3 | done | 89/89 pass | 5796188 | Fast-forward merge, no conflicts (E2 not yet landed) — validation helper lives on `SiteSettings.wifi_credentials_check()` |
 
 **Wave 3 integration check** (after merging US-B2, US-D2, US-E1, US-F1 in sequence on top of
 wave 1): full suite `python manage.py test photos` → **67/67 pass**, `makemigrations --check
---dry-run` → no drift. PI-1 (features A-F, all 8 stories) is now fully merged and integrated on
+--dry-run` → no drift.
+
+**Wave 4 integration check** (US-E2/US-E3, both amending US-E1's Wi-Fi design after manual
+testing — see `00-features.md`'s amendment note): full suite → **91/91 pass**, no migration
+drift. PI-1 (features A-F, all 10 stories) is now fully merged and integrated on
 `pi-1-admin-tools`.
 
 **Wave 1 integration check** (after merging all four branches into `pi-1-admin-tools`, one manual
