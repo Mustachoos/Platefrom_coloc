@@ -16,6 +16,7 @@ from django.urls import reverse
 from django.utils import timezone
 
 from . import drive_service, event_service, whiteboard_service
+from .admin_views import superuser_required
 from .forms import PseudoForm, ShareDriveForm, StaffLoginForm, StyledPasswordChangeForm
 from .models import Event, Like, Photo, SiteSettings, SlideshowSettings, UserIdentity, WhiteboardDrawing
 
@@ -847,3 +848,24 @@ def event_switch_view(request, event_id):
             "broken": broken,
         },
     )
+
+
+@superuser_required
+def event_delete_view(request, event_id):
+    event = get_object_or_404(Event, id=event_id)
+
+    if request.method != "POST":
+        return _dashboard_redirect(tab="events")
+
+    if event.is_active:
+        messages.error(request, "Switch to another event before deleting this one.")
+        return _dashboard_redirect(tab="events")
+
+    name = event.name
+    for photo in event.photos.all():
+        photo.image.delete(save=False)
+    for drawing in event.whiteboard_drawings.all():
+        drawing.image.delete(save=False)
+    event.delete()
+    messages.success(request, f"'{name}' deleted.")
+    return _dashboard_redirect(tab="events")
