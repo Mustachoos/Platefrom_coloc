@@ -14,7 +14,7 @@ existing test suite for the PI still passes (regression), not just the new test.
 | US-B2 | done | 27/27 pass | b4060a6 | Fast-forward merge, no conflicts |
 | US-D2 | not started | — | — | unblocked — US-D1 merged |
 | US-E1 | not started | — | — | wave 3 — no dependency, can run independently of B2/D2 |
-| US-F1 | not started | — | — | wave 3 — no dependency, can run independently of B2/D2 |
+| US-F1 | done | 29/29 pass | ddeffc3 | Fixed one pre-existing test in `test_guest_session_entry_point.py` whose assertion encoded the exact old behavior this story changes (redirect target) — real intent of that test (session survives/shares key) was untouched |
 
 **Wave 1 integration check** (after merging all four branches into `pi-1-admin-tools`, one manual
 conflict resolution needed in `dashboard.html`/`urls.py`/`views.py` where A1/C1 both touched the
