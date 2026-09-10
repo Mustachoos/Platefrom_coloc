@@ -33,6 +33,9 @@
             <div>
               <div class="media-item__name">{{ photo.filename }}</div>
               <div class="text-xs text-muted">{{ photo.uploaded_at }}</div>
+              {% if photo.hidden %}
+              <span class="badge badge--warning">Hidden by staff</span>
+              {% endif %}
             </div>
             <form method="post" action="{% url 'delete-own-photo' photo.id %}">
               {% csrf_token %}
