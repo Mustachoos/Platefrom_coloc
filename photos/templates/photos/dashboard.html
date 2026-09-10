@@ -181,7 +181,16 @@
             <span class="text-xs text-muted" style="text-transform:uppercase;letter-spacing:0.03em;font-weight:700;">Top right — QR codes</span>
             <div class="flex gap-2xs flex-wrap">
               <span class="btn btn--sm btn--placeholder">Upload QR</span>
+              <form method="post">
+                {% csrf_token %}
+                <button
+                  type="submit" name="toggle_wifi_qr"
+                  class="btn btn--sm {% if active_event.wifi_qr_enabled %}btn--dark{% else %}btn--outline{% endif %}"
+                  {% if not wifi_configured %}disabled{% endif %}
+                >Wi-Fi QR</button>
+              </form>
             </div>
+            {% if not wifi_configured %}<p class="text-xs text-muted">Requires admin to set up Wi-Fi credentials.</p>{% endif %}
           </div>
 
           <div class="card card--solid card--tight flex-col gap-sm" style="display:flex;background:var(--app-bg);">

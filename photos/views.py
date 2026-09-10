@@ -213,7 +213,8 @@ def upload_view(request):
 
 def tv_view(request):
     site_settings = SiteSettings.get_solo()
-    wifi_qr_shown = bool(site_settings.wifi_qr_enabled and site_settings.wifi_ssid)
+    active_event = Event.get_active()
+    wifi_qr_shown = bool(active_event and active_event.wifi_qr_enabled and site_settings.wifi_ssid)
     return render(request, "photos/tv.html", {"wifi_qr_shown": wifi_qr_shown})
 
 
@@ -376,7 +377,7 @@ def slideshow_settings_api(request):
     tv_bottom_right = active_event.tv_bottom_right if active_event else Event.TV_BOTTOM_RIGHT_NONE
     whiteboard_image_url = active_event.whiteboard_image.url if active_event and active_event.whiteboard_image else ""
     site_settings = SiteSettings.get_solo()
-    wifi_qr_shown = bool(site_settings.wifi_qr_enabled and site_settings.wifi_ssid)
+    wifi_qr_shown = bool(active_event and active_event.wifi_qr_enabled and site_settings.wifi_ssid)
     return JsonResponse(
         {
             "interval_seconds": slideshow.interval_seconds,
@@ -419,7 +420,8 @@ def _wifi_qr_escape(value):
 
 def wifi_qr_code(request):
     site_settings = SiteSettings.get_solo()
-    if not site_settings.wifi_qr_enabled or not site_settings.wifi_ssid:
+    active_event = Event.get_active()
+    if not active_event or not active_event.wifi_qr_enabled or not site_settings.wifi_ssid:
         return HttpResponse(status=404)
     ssid = site_settings.wifi_ssid
     if site_settings.wifi_security == SiteSettings.WIFI_SECURITY_NOPASS:
@@ -593,6 +595,15 @@ def dashboard_view(request):
             active_event.save(update_fields=update_fields)
             messages.success(request, "Whiteboard " + ("enabled." if active_event.whiteboard_enabled else "disabled."))
             return _dashboard_redirect(tab="tv-layout")
+        if "toggle_wifi_qr" in request.POST:
+            site_settings = SiteSettings.get_solo()
+            if not active_event.wifi_qr_enabled and not site_settings.wifi_ssid:
+                messages.error(request, "Ask an admin to set up Wi-Fi credentials first.")
+            else:
+                active_event.wifi_qr_enabled = not active_event.wifi_qr_enabled
+                active_event.save(update_fields=["wifi_qr_enabled"])
+                messages.success(request, "Wi-Fi QR code " + ("enabled." if active_event.wifi_qr_enabled else "disabled."))
+            return _dashboard_redirect(tab="tv-layout")
         if "set_tv_layout" in request.POST:
             layout = request.POST.get("set_tv_layout")
             valid_layouts = dict(Event.TV_LAYOUT_CHOICES)
@@ -659,6 +670,7 @@ def dashboard_view(request):
             # "Continue as guest" instead — no change to the identity
             # mechanism itself, just reusing it (see US-B1).
             "guest_identity": _get_user_identity(request),
+            "wifi_configured": bool(SiteSettings.get_solo().wifi_ssid),
         },
     )
 
