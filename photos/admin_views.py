@@ -265,7 +265,7 @@ def admin_management_view(request):
         valid_security = dict(SiteSettings.WIFI_SECURITY_CHOICES)
         site_settings.wifi_security = security if security in valid_security else SiteSettings.WIFI_SECURITY_WPA
         site_settings.save(update_fields=["wifi_ssid", "wifi_password", "wifi_security"])
-        messages.success(request, "Wi-Fi details saved.", extra_tags="network")
+        messages.success(request, "Wi-Fi details saved.", extra_tags="wifi")
         return redirect("admin-management")
 
     if request.method == "POST" and "disconnect_gmail" in request.POST:

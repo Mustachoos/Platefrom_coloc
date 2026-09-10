@@ -246,7 +246,12 @@
 
             </div>
           </details>
+        </div>
 
+        <div class="card card--solid">
+          {% for message in messages %}{% if "wifi" in message.tags %}
+          <div class="alert alert--boxed{% if "success" in message.tags %} alert--success{% endif %}" style="margin-bottom:var(--space-sm);">{{ message }}</div>
+          {% endif %}{% endfor %}
           <details id="wifi-details" class="hub-details">
             <summary>
               <h2><span
