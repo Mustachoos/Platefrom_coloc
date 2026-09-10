@@ -65,6 +65,10 @@ class Event(models.Model):
         default=False,
         help_text="When on, guests get a button on the home page to draw on the collective whiteboard.",
     )
+    wifi_qr_enabled = models.BooleanField(
+        default=False,
+        help_text="When on, a second QR code to join the Wi-Fi is shown next to the upload QR code on the TV screen.",
+    )
     TV_LAYOUT_SLIDESHOW = "slideshow"
     TV_LAYOUT_WHITEBOARD = "whiteboard"
     TV_LAYOUT_CHOICES = [
@@ -174,10 +178,6 @@ class SiteSettings(models.Model):
         (WIFI_SECURITY_WEP, "WEP"),
         (WIFI_SECURITY_NOPASS, "Open (no password)"),
     ]
-    wifi_qr_enabled = models.BooleanField(
-        default=False,
-        help_text="When on, a second QR code to join the Wi-Fi is shown next to the upload QR code on the TV screen.",
-    )
     wifi_ssid = models.CharField(max_length=100, blank=True, verbose_name="Wi-Fi network name (SSID)")
     wifi_password = models.CharField(max_length=200, blank=True, verbose_name="Wi-Fi password")
     wifi_security = models.CharField(max_length=10, choices=WIFI_SECURITY_CHOICES, default=WIFI_SECURITY_WPA)

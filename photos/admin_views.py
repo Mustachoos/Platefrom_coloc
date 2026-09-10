@@ -264,24 +264,8 @@ def admin_management_view(request):
         security = request.POST.get("wifi_security", SiteSettings.WIFI_SECURITY_WPA)
         valid_security = dict(SiteSettings.WIFI_SECURITY_CHOICES)
         site_settings.wifi_security = security if security in valid_security else SiteSettings.WIFI_SECURITY_WPA
-        if not site_settings.wifi_ssid and site_settings.wifi_qr_enabled:
-            # Nothing left to encode — turn the QR code back off rather
-            # than leave it on pointing at an empty network name.
-            site_settings.wifi_qr_enabled = False
-        site_settings.save(update_fields=["wifi_ssid", "wifi_password", "wifi_security", "wifi_qr_enabled"])
+        site_settings.save(update_fields=["wifi_ssid", "wifi_password", "wifi_security"])
         messages.success(request, "Wi-Fi details saved.", extra_tags="network")
-        return redirect("admin-management")
-
-    if request.method == "POST" and "toggle_wifi_qr" in request.POST:
-        if not site_settings.wifi_qr_enabled and not site_settings.wifi_ssid:
-            messages.error(request, "Enter a Wi-Fi network name first.", extra_tags="network")
-        else:
-            site_settings.wifi_qr_enabled = not site_settings.wifi_qr_enabled
-            site_settings.save(update_fields=["wifi_qr_enabled"])
-            messages.success(
-                request, "Wi-Fi QR code " + ("enabled." if site_settings.wifi_qr_enabled else "disabled."),
-                extra_tags="network",
-            )
         return redirect("admin-management")
 
     if request.method == "POST" and "disconnect_gmail" in request.POST:
