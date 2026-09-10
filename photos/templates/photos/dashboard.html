@@ -19,6 +19,11 @@
         <p class="text-muted text-sm" style="margin-top:var(--space-2xs);">Signed in as staff.</p>
       </div>
       <div class="flex gap-2xs items-center">
+        {% if guest_identity %}
+        <a href="{% url 'upload' %}" class="btn btn--outline btn--sm">Continue as guest</a>
+        {% else %}
+        <a href="{% url 'choose-pseudo' %}" class="btn btn--outline btn--sm">Start a guest session</a>
+        {% endif %}
         {% if user.is_superuser %}
         <a href="{% url 'admin-management' %}" class="btn btn--outline btn--sm">Admin dashboard</a>
         {% endif %}

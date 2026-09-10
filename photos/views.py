@@ -664,6 +664,11 @@ def dashboard_view(request):
             "guests_shared": guests_shared,
             "active_tab": active_tab,
             "wifi_security_choices": Event.WIFI_SECURITY_CHOICES,
+            # Surfaces whether *this* staff session already holds a guest
+            # identity, so the "Start a guest session" entry point can read
+            # "Continue as guest" instead — no change to the identity
+            # mechanism itself, just reusing it (see US-B1).
+            "guest_identity": _get_user_identity(request),
         },
     )
 
