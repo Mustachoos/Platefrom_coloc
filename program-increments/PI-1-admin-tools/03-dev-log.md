@@ -11,7 +11,7 @@ existing test suite for the PI still passes (regression), not just the new test.
 | US-C1 | done | 4/4 pass | 2bb6672 | Placed next to "Switch to this event" (Delete didn't exist yet in that worktree); merged fine into the same action-row wrapper |
 | US-D1 | done | 12/12 pass | 9bd448e | Added a `photo_hidden` consumer handler (not in story's file list) — required for Channels to route the new `"photo.hidden"` group_send to a method, same as existing `photo_uploaded`/`photo_deleted` |
 | US-B1 | done | 5/5 pass | edd0179 | Added one line to `dashboard_view`'s context (`guest_identity = _get_user_identity(request)`) — story predicted template-only, but the template had no way to know if this session already holds an identity |
-| US-B2 | not started | — | — | unblocked — US-B1 merged |
+| US-B2 | done | 27/27 pass | b4060a6 | Fast-forward merge, no conflicts |
 | US-D2 | not started | — | — | unblocked — US-D1 merged |
 | US-E1 | not started | — | — | wave 3 — no dependency, can run independently of B2/D2 |
 | US-F1 | not started | — | — | wave 3 — no dependency, can run independently of B2/D2 |
