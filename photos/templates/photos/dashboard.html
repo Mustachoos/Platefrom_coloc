@@ -65,9 +65,12 @@
               {% endif %}
             </div>
           </div>
-          {% if not event.is_active %}
-          <a class="btn btn--light btn--sm" href="{% url 'event-switch' event.id %}">Switch to this event</a>
-          {% endif %}
+          <div class="flex gap-2xs items-center">
+            {% if not event.is_active %}
+            <a class="btn btn--light btn--sm" href="{% url 'event-switch' event.id %}">Switch to this event</a>
+            {% endif %}
+            <a class="btn btn--outline btn--sm" href="{% url 'event-export' event.id %}">Download photos</a>
+          </div>
         </div>
         {% empty %}
         <p class="text-muted" style="font-style:italic;">No event created yet.</p>
