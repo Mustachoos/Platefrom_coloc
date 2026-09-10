@@ -17,6 +17,9 @@ existing test suite for the PI still passes (regression), not just the new test.
 | US-E1 | done | 50/50 pass (agent) → 67/67 pass (integrated) | 067f235 | Two migrations (data copy, then schema drop); wifi moved Event→SiteSettings, admin-only via existing `admin_management_view` decorator; merged with zero conflicts |
 | US-F1 | done | 29/29 pass | ddeffc3 | Fixed one pre-existing test in `test_guest_session_entry_point.py` whose assertion encoded the exact old behavior this story changes (redirect target) — real intent of that test (session survives/shares key) was untouched |
 
+| US-E2 | not started | — | — | wave 4 — depends on US-E1 (merged) |
+| US-E3 | not started | — | — | wave 4 — no dependency |
+
 **Wave 3 integration check** (after merging US-B2, US-D2, US-E1, US-F1 in sequence on top of
 wave 1): full suite `python manage.py test photos` → **67/67 pass**, `makemigrations --check
 --dry-run` → no drift. PI-1 (features A-F, all 8 stories) is now fully merged and integrated on

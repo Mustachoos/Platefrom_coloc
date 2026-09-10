@@ -103,6 +103,14 @@ install, full stop. No change to how the Wi-Fi QR code itself is generated/encod
 
 **Actors.** Admin (superuser) only — same tier as every other `admin_management_view` action.
 
+**Amendment after manual testing** (split into US-E2, US-E3): E1 centralized *everything*
+Wi-Fi-related onto `SiteSettings`, including whether the QR code shows on TV. Testing surfaced
+that the on/off choice should be per-event again (credentials stay site-wide, the toggle doesn't)
+— see US-E2. A green "credentials look valid" indicator was also requested, modeled loosely on
+the IP-address verification's live/green dynamic, but a real network-join test would risk
+dropping the server's own connection at a live event — resolved as a format/policy check only,
+not a live test (see US-E3, and the "Decisions locked" entry below).
+
 ---
 
 ## Feature F — Skip the Drive-share email step when Drive isn't configured
@@ -137,3 +145,7 @@ Resolved with the user before story-splitting; folded into each feature's scope 
    `photos/views.py:564-628` already disables/rejects/auto-resets unavailable TV options and
    propagates live via the existing `Event` post-save broadcast. No new story; flag a concrete
    failing scenario later if one turns up.
+7. **E2/E3 — Wi-Fi credential validation approach**: format/policy check only (SSID set +
+   security-appropriate password length), not a live OS-level network join. Reason: a real join
+   attempt could disconnect the server from its own network mid-event, taking the whole app
+   offline for every connected guest — too large a risk for what's a checkbox-level feature.

@@ -12,6 +12,8 @@
 | US-D2 | US-D1 | needs the `hidden` field to exist before any view can filter on it |
 | US-E1 | none | touches `Event`/`SiteSettings`/dashboard's TV-layout tab/admin_management — disjoint from every other wave-1/2 story |
 | US-F1 | none | touches only `choose_pseudo`/`share_drive_view` guards — disjoint from everything else |
+| US-E2 | US-E1 | splits E1's `wifi_qr_enabled` back out from `SiteSettings` onto `Event` — needs E1's fields to exist first |
+| US-E3 | none | only adds a validity check + badge on the admin page's credential form — independent of E2's per-event toggle work |
 
 No other story-to-story dependencies — A1, B1, C1, D1 touch disjoint code (events tab / dashboard
 entry point / export endpoint / photo model+toggle), so nothing here blocks anything else.
@@ -32,7 +34,16 @@ entry point / export endpoint / photo model+toggle), so nothing here blocks anyt
 - US-E1 (site-wide Wi-Fi config)
 - US-F1 (skip Drive-share email when unconfigured)
 
+**Wave 4 — added after testing wave 3, dispatch in parallel, needs US-E1 merged (already is):**
+- US-E2 (per-event Wi-Fi QR toggle, split back out of US-E1)
+- US-E3 (Wi-Fi credential format-check indicator)
+
+Both touch `admin_management.html`/`admin_views.py`, the same files each other edits — expect a
+merge conflict on integration, same as wave 1's A1/C1 overlap; resolve additively, don't drop
+either side's change.
+
 All waves run each story as dev + test in parallel against the story's fixed contract (per
 `program-increments/README.md` stage 5). Wave 2 doesn't start until wave 1's stories are marked
 done in `03-dev-log.md`, since B2 and D2 both build on wave-1 output. Wave 3 has no such
-dependency on wave 1/2, but is sequenced after them here since that's when it was raised.
+dependency on wave 1/2, but is sequenced after them here since that's when it was raised. Wave 4
+depends only on US-E1 (already merged), not on wave 2/3 as a whole.
