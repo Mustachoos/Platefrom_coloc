@@ -68,6 +68,11 @@ urlpatterns = [
     path("qr/wifi.png", views.wifi_qr_code, name="wifi-qr-code"),
     path("dashboard/", views.dashboard_view, name="dashboard"),
     path("dashboard/photos/<int:photo_id>/delete/", views.dashboard_delete_photo, name="dashboard-delete-photo"),
+    path(
+        "dashboard/photos/<int:photo_id>/toggle-hidden/",
+        views.dashboard_toggle_photo_hidden,
+        name="dashboard-toggle-photo-hidden",
+    ),
     path("dashboard/guests/<int:identity_id>/delete/", views.dashboard_delete_guest, name="dashboard-delete-guest"),
     path(
         "dashboard/whiteboard/<int:drawing_id>/delete/",

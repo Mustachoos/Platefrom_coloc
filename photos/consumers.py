@@ -20,6 +20,9 @@ class PhotosConsumer(WebsocketConsumer):
     def photo_deleted(self, event):
         self.send(text_data=json.dumps({"event": "deleted", "url": event["url"]}))
 
+    def photo_hidden(self, event):
+        self.send(text_data=json.dumps({"event": "hidden", "url": event["url"]}))
+
     def settings_changed(self, event):
         self.send(text_data=json.dumps({"event": "settings", "interval_seconds": event["interval_seconds"]}))
 

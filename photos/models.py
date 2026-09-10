@@ -116,6 +116,7 @@ class Photo(models.Model):
     image = models.ImageField(upload_to=photo_upload_path)
     uploaded_at = models.DateTimeField(auto_now_add=True)
     drive_file_id = models.CharField(max_length=100, blank=True)
+    hidden = models.BooleanField(default=False)
 
     class Meta:
         ordering = ["-uploaded_at"]

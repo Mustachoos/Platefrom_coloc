@@ -678,6 +678,28 @@ def dashboard_delete_photo(request, photo_id):
 
 
 @staff_member_required(login_url="staff-login")
+def dashboard_toggle_photo_hidden(request, photo_id):
+    if request.method == "POST":
+        photo = get_object_or_404(Photo, id=photo_id)
+        photo.hidden = not photo.hidden
+        photo.save(update_fields=["hidden"])
+        channel_layer = get_channel_layer()
+        if photo.hidden:
+            async_to_sync(channel_layer.group_send)(
+                "tv_updates",
+                {"type": "photo.hidden", "url": photo.image.url},
+            )
+            messages.success(request, "Photo hidden.")
+        else:
+            async_to_sync(channel_layer.group_send)(
+                "tv_updates",
+                {"type": "photo.uploaded", "photo": _photo_payload(photo)},
+            )
+            messages.success(request, "Photo unhidden.")
+    return _dashboard_redirect(tab="photos")
+
+
+@staff_member_required(login_url="staff-login")
 def dashboard_delete_guest(request, identity_id):
     if request.method == "POST":
         identity = get_object_or_404(UserIdentity, id=identity_id)
