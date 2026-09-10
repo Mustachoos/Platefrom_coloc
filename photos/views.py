@@ -1,6 +1,7 @@
 import io
 import logging
 import re
+import zipfile
 
 import qrcode
 from asgiref.sync import async_to_sync
@@ -14,6 +15,7 @@ from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils import timezone
+from django.utils.text import slugify
 
 from . import drive_service, event_service, whiteboard_service
 from .admin_views import superuser_required
@@ -869,3 +871,18 @@ def event_delete_view(request, event_id):
     event.delete()
     messages.success(request, f"'{name}' deleted.")
     return _dashboard_redirect(tab="events")
+
+
+@staff_member_required(login_url="staff-login")
+def event_export_view(request, event_id):
+    event = get_object_or_404(Event, id=event_id)
+
+    buffer = io.BytesIO()
+    with zipfile.ZipFile(buffer, "w") as zip_file:
+        for photo in event.photos.all():
+            zip_file.write(photo.image.path, arcname=photo.filename)
+
+    response = HttpResponse(buffer.getvalue(), content_type="application/zip")
+    filename = f"{slugify(event.name)}-photos.zip"
+    response["Content-Disposition"] = f'attachment; filename="{filename}"'
+    return response
