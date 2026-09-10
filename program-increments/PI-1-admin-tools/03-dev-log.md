@@ -13,6 +13,7 @@ existing test suite for the PI still passes (regression), not just the new test.
 | US-B1 | done | 5/5 pass | edd0179 | Added one line to `dashboard_view`'s context (`guest_identity = _get_user_identity(request)`) — story predicted template-only, but the template had no way to know if this session already holds an identity |
 | US-B2 | done | 27/27 pass | b4060a6 | Fast-forward merge, no conflicts |
 | US-D2 | not started | — | — | unblocked — US-D1 merged |
+| US-D2 | done | 33/33 pass (agent) → 41/41 pass (integrated) | 0f2e5f4 | Merge required fixing 6 test failures in `test_dual_session_profile.py`/`test_hidden_photo_filtering.py` — their no-Drive fixture events hit US-F1's new redirect; fixed the assertions, not the implementation |
 | US-E1 | not started | — | — | wave 3 — no dependency, can run independently of B2/D2 |
 | US-F1 | done | 29/29 pass | ddeffc3 | Fixed one pre-existing test in `test_guest_session_entry_point.py` whose assertion encoded the exact old behavior this story changes (redirect target) — real intent of that test (session survives/shares key) was untouched |
 
