@@ -215,6 +215,35 @@ class SiteSettings(models.Model):
         obj, _ = cls.objects.get_or_create(pk=1)
         return obj
 
+    @staticmethod
+    def wifi_credentials_check(ssid, password, security):
+        """Format/policy check for Wi-Fi credentials — deliberately NOT a
+        live network test (see US-E3 in program-increments/): actually
+        joining the network to prove it works risks dropping the server's
+        own network connection at a live event, so this only checks that
+        the SSID/password/security combination is well-formed.
+
+        Returns (is_valid, error): error is None both when valid and when
+        nothing is configured yet (a blank SSID is a normal "not configured"
+        state, not an error) — it's only set when a security-specific rule
+        is actually violated, e.g. a WPA password under 8 characters.
+        """
+        if not ssid:
+            return False, None
+        if security == SiteSettings.WIFI_SECURITY_NOPASS:
+            if password:
+                return False, "Open networks can't have a password — clear the password field or change the security type."
+            return True, None
+        if security == SiteSettings.WIFI_SECURITY_WPA:
+            if not (8 <= len(password) <= 63):
+                return False, "WPA/WPA2/WPA3 passwords must be 8-63 characters."
+            return True, None
+        if security == SiteSettings.WIFI_SECURITY_WEP:
+            if len(password) not in (5, 13):
+                return False, "WEP passwords must be exactly 5 or 13 characters (the two common WEP ASCII key lengths)."
+            return True, None
+        return False, None
+
 
 class AdminInvite(models.Model):
     """A single-use link the admin can hand out so someone else can create

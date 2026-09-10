@@ -432,10 +432,23 @@ def admin_management_view(request):
 
     port = _request_port(request)
 
+    # Format/policy check only — see SiteSettings.wifi_credentials_check's
+    # docstring for why this deliberately isn't a live join attempt.
+    # Computed synchronously on every render (no background thread, no
+    # polling, unlike the IP check above), straight from whatever is
+    # currently stored — including right after save_wifi_config saves and
+    # redirects back here, so the indicator reflects new credentials
+    # without any extra mechanism beyond that existing redirect.
+    wifi_credentials_valid, wifi_credentials_error = SiteSettings.wifi_credentials_check(
+        site_settings.wifi_ssid, site_settings.wifi_password, site_settings.wifi_security
+    )
+
     return render(request, "photos/admin_management.html", {
         "invites": AdminInvite.objects.all(),
         "site_settings": site_settings,
         "wifi_security_choices": SiteSettings.WIFI_SECURITY_CHOICES,
+        "wifi_credentials_valid": wifi_credentials_valid,
+        "wifi_credentials_error": wifi_credentials_error,
         "verify_token": verify_token,
         "verify_ip": verify_ip,
         "verified_ip": verified_ip,

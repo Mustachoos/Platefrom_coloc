@@ -251,7 +251,7 @@
             <summary>
               <h2><span
                 class="status-circle{% if site_settings.wifi_qr_enabled and site_settings.wifi_ssid %} verified{% endif %}"
-              ></span>Wi-Fi</h2>
+              ></span>Wi-Fi{% if wifi_credentials_valid %} <span class="badge badge--success" title="Format check only — not a live connectivity test.">✓ Credentials look valid</span>{% endif %}</h2>
             </summary>
             <div class="details-body">
               <form method="post" class="flex gap-2xs items-end flex-wrap">
@@ -273,6 +273,9 @@
                   </select>
                 </div>
                 <button type="submit" name="save_wifi_config" class="btn btn--light btn--sm">Save</button>
+                {% if wifi_credentials_error %}
+                <p class="text-sm" style="color:var(--danger);width:100%;margin:var(--space-2xs) 0 0;">{{ wifi_credentials_error }}</p>
+                {% endif %}
               </form>
               <div class="flex items-center gap-sm" style="margin-top:var(--space-sm);">
                 <form method="post">
