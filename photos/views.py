@@ -314,7 +314,7 @@ def photo_list_api(request):
     active_event = Event.get_active()
     if not active_event:
         return JsonResponse([], safe=False)
-    photos = Photo.objects.filter(event=active_event).order_by("uploaded_at")
+    photos = Photo.objects.filter(event=active_event, hidden=False).order_by("uploaded_at")
     return JsonResponse([_photo_payload(photo, user=user) for photo in photos], safe=False)
 
 
@@ -328,6 +328,8 @@ def like_toggle_api(request, photo_id):
     if not user:
         return JsonResponse({"error": "identity required"}, status=403)
     photo = get_object_or_404(Photo, pk=photo_id, event=active_event)
+    if photo.hidden:
+        return JsonResponse({"error": "photo is hidden"}, status=403)
     like, created = Like.objects.get_or_create(photo=photo, user=user)
     if not created:
         like.delete()
@@ -346,7 +348,11 @@ def like_toggle_api(request, photo_id):
 def gallery_view(request):
     user = _get_user_identity(request)
     active_event = Event.get_active()
-    photos_qs = Photo.objects.filter(event=active_event).order_by("-uploaded_at") if active_event else Photo.objects.none()
+    photos_qs = (
+        Photo.objects.filter(event=active_event, hidden=False).order_by("-uploaded_at")
+        if active_event
+        else Photo.objects.none()
+    )
     payloads = [_photo_payload(photo, user=user) for photo in photos_qs]
     likes_enabled = active_event.likes_enabled if active_event else True
     whiteboard_enabled = active_event.whiteboard_enabled if active_event else False
