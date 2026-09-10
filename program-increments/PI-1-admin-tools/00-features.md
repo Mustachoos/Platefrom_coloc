@@ -1,6 +1,7 @@
 # PI-1: Admin tools
 
-Four features, formalized from the intake conversation. Grounded against the current code
+Six features, formalized from the intake conversation (A-D) plus a wave-3 addition (E-F)
+surfaced while manually testing waves 1-2. Grounded against the current code
 (`photos/models.py`, `photos/views.py`, `docs/user-types.md`) — each states what exists today and
 the gap being closed, not a rewrite of working behavior.
 
@@ -79,6 +80,50 @@ as hidden by staff — moderation stays transparent to the guest, not a silent d
 
 ---
 
+## Feature E — Wi-Fi config becomes site-wide, admin-only
+
+**Problem.** `wifi_ssid`/`wifi_password`/`wifi_security`/`wifi_qr_enabled` live on `Event` today,
+edited by staff from the dashboard's TV-layout tab — re-entered per event even though the venue's
+Wi-Fi network is almost always the same across events held there. The server's LAN address is
+already a global admin-only `SiteSettings` field for the same underlying reason (`admin_views.py`,
+`admin_management_view`, already `@superuser_required`) — Wi-Fi should follow that pattern.
+
+**Scope.** Move the four `wifi_*` fields from `Event` to `SiteSettings` (a migration copies the
+currently-active event's non-blank values forward before the columns are dropped from `Event`, so
+existing config isn't silently lost). Move the write handlers (`save_wifi_config`,
+`toggle_wifi_qr` — currently inline in `dashboard_view`'s POST handling) into
+`admin_management_view`, operating on `SiteSettings.get_solo()` instead of `active_event`. Update
+the three read sites — `tv_view`, `slideshow_settings_api`, `wifi_qr_code` — to read from
+`SiteSettings` instead of the active event. Remove the Wi-Fi block from `dashboard.html`'s
+TV-layout tab; add it to `admin_management.html`, naturally alongside the existing
+`#network-details` LAN-address section since both are physical-network config.
+
+**Out of scope.** No per-event Wi-Fi override — after this, Wi-Fi is one setting for the whole
+install, full stop. No change to how the Wi-Fi QR code itself is generated/encoded.
+
+**Actors.** Admin (superuser) only — same tier as every other `admin_management_view` action.
+
+---
+
+## Feature F — Skip the Drive-share email step when Drive isn't configured
+
+**Problem.** `share_drive_view` (`/pseudo/share-drive/`) always asks a guest for an email to
+share Drive access, even when the active event has no `drive_folder_id` at all — there's nothing
+to share, so the ask is pure friction. A "Skip" button already exists, but the step still
+interrupts the upload flow for no reason.
+
+**Scope.** In `choose_pseudo`, redirect straight to `/upload/` instead of `/share-drive/` after
+creating the `UserIdentity` when `active_event.drive_folder_id` is blank. Add the same guard at
+the top of `share_drive_view` itself (redirect to `upload` immediately) so directly hitting the
+URL can't resurface the step either.
+
+**Out of scope.** No change to the flow when Drive *is* configured — the email ask and "Skip"
+button behave exactly as they do today in that case.
+
+**Actors.** Guest (experience only — no staff/admin-facing change).
+
+---
+
 ## Decisions locked
 
 Resolved with the user before story-splitting; folded into each feature's scope above.
@@ -87,3 +132,8 @@ Resolved with the user before story-splitting; folded into each feature's scope 
 2. **A↔C dependency**: soft nudge, not a hard gate.
 3. **B — entry point**: dedicated dashboard action, not the plain `/pseudo/` page.
 4. **D — guest-facing visibility**: visible in "My photos", labeled as hidden.
+5. **E — Wi-Fi scope**: becomes site-wide (`SiteSettings`), not just relocated-but-per-event.
+6. **Item "TV features gated by availability"** (raised alongside E/F): already implemented —
+   `photos/views.py:564-628` already disables/rejects/auto-resets unavailable TV options and
+   propagates live via the existing `Event` post-save broadcast. No new story; flag a concrete
+   failing scenario later if one turns up.

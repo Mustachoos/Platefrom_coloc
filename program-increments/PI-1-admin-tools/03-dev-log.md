@@ -13,6 +13,8 @@ existing test suite for the PI still passes (regression), not just the new test.
 | US-B1 | done | 5/5 pass | edd0179 | Added one line to `dashboard_view`'s context (`guest_identity = _get_user_identity(request)`) — story predicted template-only, but the template had no way to know if this session already holds an identity |
 | US-B2 | not started | — | — | unblocked — US-B1 merged |
 | US-D2 | not started | — | — | unblocked — US-D1 merged |
+| US-E1 | not started | — | — | wave 3 — no dependency, can run independently of B2/D2 |
+| US-F1 | not started | — | — | wave 3 — no dependency, can run independently of B2/D2 |
 
 **Wave 1 integration check** (after merging all four branches into `pi-1-admin-tools`, one manual
 conflict resolution needed in `dashboard.html`/`urls.py`/`views.py` where A1/C1 both touched the
