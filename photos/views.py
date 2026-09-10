@@ -122,6 +122,8 @@ def choose_pseudo(request):
                     form.add_error("pseudo", "That name is already taken, please choose another one.")
                 else:
                     request.session["pseudo"] = pseudo
+                    if not active_event.drive_folder_id:
+                        return redirect("upload")
                     return redirect("share-drive")
     else:
         form = PseudoForm()
@@ -134,6 +136,9 @@ def share_drive_view(request):
         return redirect("choose-pseudo")
     active_event = user.event
     pseudo = user.pseudo
+
+    if not active_event.drive_folder_id:
+        return redirect("upload")
 
     if request.method == "POST":
         if "skip" in request.POST:
