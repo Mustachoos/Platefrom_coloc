@@ -52,9 +52,14 @@
 
     .ip-verify-row{display:flex;gap:var(--space-xs);align-items:flex-end;flex-wrap:wrap}
     .ip-verify-row .field{flex:1;min-width:200px}
-    #checking-action,#action-buttons{flex:1 1 100%;display:flex;flex-direction:row;gap:var(--space-2xs)}
+    #checking-action,#action-buttons,#wifi-action-buttons{flex:1 1 100%;display:flex;flex-direction:row;gap:var(--space-2xs)}
     .help-btn{display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:50%;background:var(--surface-sunken);color:var(--ink-600);font-size:0.7rem;font-weight:700;padding:0;margin-left:var(--space-3xs);vertical-align:middle}
-    #ip_address:read-only{background:var(--surface-sunken);color:var(--ink-600)}
+    #ip_address:read-only,#wifi_ssid:read-only,#wifi_password:read-only{background:var(--surface-sunken);color:var(--ink-600)}
+    select.locked{pointer-events:none;background:var(--surface-sunken);color:var(--ink-600)}
+    .password-field{display:flex;align-items:center;gap:var(--space-3xs)}
+    .password-field .input{flex:1}
+    .password-toggle{display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;flex:0 0 auto;border-radius:50%;border:none;background:transparent;color:var(--ink-600);cursor:pointer}
+    .password-toggle:hover{background:var(--surface-sunken)}
     .textbox-btn{display:block;flex:1;padding:var(--space-2xs);border-radius:var(--radius-md);border:1px solid var(--line);background:var(--surface-solid);color:var(--ink-900);font-weight:700;font-size:var(--text-sm);text-align:center}
     .textbox-btn:hover{background:var(--surface-sunken)}
     .textbox-btn:disabled{background:var(--surface-sunken);color:var(--ink-400);cursor:not-allowed}
@@ -255,33 +260,81 @@
           <details id="wifi-details" class="hub-details">
             <summary>
               <h2><span
-                class="status-circle{% if site_settings.wifi_ssid %} verified{% endif %}"
+                class="status-circle{% if wifi_credentials_valid %} verified{% endif %}"
+                id="wifi-status-circle"
+                title="Format check only — not a live connectivity test."
               ></span>Wi-Fi{% if wifi_credentials_valid %} <span class="badge badge--success" title="Format check only — not a live connectivity test.">✓ Credentials look valid</span>{% endif %}</h2>
             </summary>
             <div class="details-body">
-              <form method="post" class="flex gap-2xs items-end flex-wrap">
-                {% csrf_token %}
-                <div class="field grow" style="min-width:100px;">
-                  <label for="wifi_ssid">Network name (SSID)</label>
-                  <input class="input" type="text" id="wifi_ssid" name="wifi_ssid" value="{{ site_settings.wifi_ssid }}" placeholder="e.g. Chez Axel">
+
+            <form method="post" class="ip-verify-row" id="wifi-form">
+              {% csrf_token %}
+              <div class="field">
+                <label for="wifi_ssid">Network name (SSID)</label>
+                <input
+                  class="input" type="text" id="wifi_ssid" name="wifi_ssid" placeholder="e.g. Chez Axel"
+                  value="{{ site_settings.wifi_ssid }}"
+                  {% if wifi_credentials_valid %}readonly{% endif %}
+                >
+              </div>
+              <div class="field">
+                <label for="wifi_password">Password</label>
+                <div class="password-field">
+                  <input
+                    class="input" type="password" id="wifi_password" name="wifi_password" placeholder="Leave blank if open"
+                    value="{{ site_settings.wifi_password }}"
+                    {% if wifi_credentials_valid %}readonly{% endif %}
+                  >
+                  <button type="button" class="password-toggle" id="wifi-password-toggle" aria-label="Show password">
+                    <span class="icon-show">{% icon 'eye' size=18 %}</span>
+                    <span class="icon-hide" hidden>{% icon 'eye-off' size=18 %}</span>
+                  </button>
                 </div>
-                <div class="field grow" style="min-width:100px;">
-                  <label for="wifi_password">Password</label>
-                  <input class="input" type="text" id="wifi_password" name="wifi_password" value="{{ site_settings.wifi_password }}" placeholder="Leave blank if open">
-                </div>
-                <div class="field grow" style="min-width:100px;">
-                  <label for="wifi_security">Security</label>
-                  <select class="input" id="wifi_security" name="wifi_security">
-                    {% for value, label in wifi_security_choices %}
-                    <option value="{{ value }}" {% if site_settings.wifi_security == value %}selected{% endif %}>{{ label }}</option>
-                    {% endfor %}
-                  </select>
-                </div>
-                <button type="submit" name="save_wifi_config" class="btn btn--light btn--sm">Save</button>
-                {% if wifi_credentials_error %}
-                <p class="text-sm" style="color:var(--danger);width:100%;margin:var(--space-2xs) 0 0;">{{ wifi_credentials_error }}</p>
-                {% endif %}
-              </form>
+              </div>
+              <div class="field">
+                <label for="wifi_security">Security</label>
+                <select class="input{% if wifi_credentials_valid %} locked{% endif %}" id="wifi_security" name="wifi_security" {% if wifi_credentials_valid %}tabindex="-1"{% endif %}>
+                  {% for value, label in wifi_security_choices %}
+                  <option value="{{ value }}" {% if site_settings.wifi_security == value %}selected{% endif %}>{{ label }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+
+              <div id="wifi-action-buttons">
+                <button type="button" class="textbox-btn" id="modify-wifi-btn" {% if not wifi_credentials_valid %}disabled{% endif %}>Modify</button>
+                <button type="submit" name="save_wifi_config" class="textbox-btn">Save</button>
+              </div>
+
+              {% if wifi_credentials_error %}
+              <p class="text-sm" style="color:var(--danger);width:100%;margin:var(--space-2xs) 0 0;">{{ wifi_credentials_error }}</p>
+              {% endif %}
+            </form>
+
+            <script>
+              document.getElementById('modify-wifi-btn').addEventListener('click', function () {
+                var ssid = document.getElementById('wifi_ssid');
+                document.getElementById('wifi_password').readOnly = false;
+                document.getElementById('wifi_security').classList.remove('locked');
+                document.getElementById('wifi_security').removeAttribute('tabindex');
+                ssid.readOnly = false;
+                ssid.focus();
+                ssid.select();
+                this.disabled = true;
+                document.getElementById('wifi-status-circle').classList.remove('verified');
+              });
+
+              document.getElementById('wifi-password-toggle').addEventListener('click', function () {
+                var input = document.getElementById('wifi_password');
+                var showIcon = this.querySelector('.icon-show');
+                var hideIcon = this.querySelector('.icon-hide');
+                var revealing = input.type === 'password';
+                input.type = revealing ? 'text' : 'password';
+                showIcon.hidden = revealing;
+                hideIcon.hidden = !revealing;
+                this.setAttribute('aria-label', revealing ? 'Hide password' : 'Show password');
+              });
+            </script>
+
             </div>
           </details>
         </div>
