@@ -181,37 +181,7 @@
             <span class="text-xs text-muted" style="text-transform:uppercase;letter-spacing:0.03em;font-weight:700;">Top right — QR codes</span>
             <div class="flex gap-2xs flex-wrap">
               <span class="btn btn--sm btn--placeholder">Upload QR</span>
-              <form method="post">
-                {% csrf_token %}
-                <button type="submit" name="toggle_wifi_qr" class="btn btn--sm {% if active_event.wifi_qr_enabled %}btn--dark{% else %}btn--outline{% endif %}">Wi-Fi QR</button>
-              </form>
             </div>
-            <form method="post" class="flex gap-2xs items-end flex-wrap" style="padding-top:var(--space-2xs);border-top:1px dashed var(--line);">
-              {% csrf_token %}
-              <div class="field grow" style="min-width:100px;">
-                <label for="wifi_ssid">Network name (SSID)</label>
-                <input class="input" type="text" id="wifi_ssid" name="wifi_ssid" value="{{ active_event.wifi_ssid }}" placeholder="e.g. Chez Axel">
-              </div>
-              <div class="field grow" style="min-width:100px;">
-                <label for="wifi_password">Password</label>
-                <input class="input" type="text" id="wifi_password" name="wifi_password" value="{{ active_event.wifi_password }}" placeholder="Leave blank if open">
-              </div>
-              <div class="field grow" style="min-width:100px;">
-                <label for="wifi_security">Security</label>
-                <select class="input" id="wifi_security" name="wifi_security">
-                  {% for value, label in wifi_security_choices %}
-                  <option value="{{ value }}" {% if active_event.wifi_security == value %}selected{% endif %}>{{ label }}</option>
-                  {% endfor %}
-                </select>
-              </div>
-              <button type="submit" name="save_wifi_config" class="btn btn--light btn--sm">Save</button>
-            </form>
-            {% if active_event.wifi_qr_enabled and active_event.wifi_ssid %}
-            <div class="flex items-center gap-sm">
-              <img src="{% url 'wifi-qr-code' %}" alt="Wi-Fi QR code preview" width="64" height="64" style="border-radius:var(--radius-sm);">
-              <span class="text-xs text-muted">Preview — this is exactly what guests will scan on the TV screen.</span>
-            </div>
-            {% endif %}
           </div>
 
           <div class="card card--solid card--tight flex-col gap-sm" style="display:flex;background:var(--app-bg);">

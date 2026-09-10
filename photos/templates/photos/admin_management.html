@@ -246,6 +246,46 @@
 
             </div>
           </details>
+
+          <details id="wifi-details" class="hub-details">
+            <summary>
+              <h2><span
+                class="status-circle{% if site_settings.wifi_qr_enabled and site_settings.wifi_ssid %} verified{% endif %}"
+              ></span>Wi-Fi</h2>
+            </summary>
+            <div class="details-body">
+              <form method="post" class="flex gap-2xs items-end flex-wrap">
+                {% csrf_token %}
+                <div class="field grow" style="min-width:100px;">
+                  <label for="wifi_ssid">Network name (SSID)</label>
+                  <input class="input" type="text" id="wifi_ssid" name="wifi_ssid" value="{{ site_settings.wifi_ssid }}" placeholder="e.g. Chez Axel">
+                </div>
+                <div class="field grow" style="min-width:100px;">
+                  <label for="wifi_password">Password</label>
+                  <input class="input" type="text" id="wifi_password" name="wifi_password" value="{{ site_settings.wifi_password }}" placeholder="Leave blank if open">
+                </div>
+                <div class="field grow" style="min-width:100px;">
+                  <label for="wifi_security">Security</label>
+                  <select class="input" id="wifi_security" name="wifi_security">
+                    {% for value, label in wifi_security_choices %}
+                    <option value="{{ value }}" {% if site_settings.wifi_security == value %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                  </select>
+                </div>
+                <button type="submit" name="save_wifi_config" class="btn btn--light btn--sm">Save</button>
+              </form>
+              <div class="flex items-center gap-sm" style="margin-top:var(--space-sm);">
+                <form method="post">
+                  {% csrf_token %}
+                  <button type="submit" name="toggle_wifi_qr" class="btn btn--sm {% if site_settings.wifi_qr_enabled %}btn--dark{% else %}btn--outline{% endif %}">Wi-Fi QR code on TV</button>
+                </form>
+                {% if site_settings.wifi_qr_enabled and site_settings.wifi_ssid %}
+                <img src="{% url 'wifi-qr-code' %}" alt="Wi-Fi QR code preview" width="64" height="64" style="border-radius:var(--radius-sm);">
+                <span class="text-xs text-muted">Preview — this is exactly what guests will scan on the TV screen.</span>
+                {% endif %}
+              </div>
+            </div>
+          </details>
         </div>
 
         <div class="card card--solid">
