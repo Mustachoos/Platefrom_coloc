@@ -50,7 +50,9 @@ class GuestSessionEntryPointTests(TestCase):
     def test_picking_a_pseudo_keeps_staff_logged_in_and_shares_the_session_key(self):
         response = self.client.post(reverse("choose-pseudo"), {"pseudo": "PartyGuest"})
 
-        self.assertRedirects(response, reverse("share-drive"))
+        # self.event has no drive_folder_id, so per US-F1 this skips
+        # share-drive and lands straight on upload.
+        self.assertRedirects(response, reverse("upload"))
         self.assertTrue(self._staff_still_authenticated())
 
         identity = UserIdentity.objects.get(event=self.event, pseudo="PartyGuest")
