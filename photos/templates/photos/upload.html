@@ -16,6 +16,11 @@
     {% include "photos/_page_header.html" with page_icon="upload" page_title="Upload de photos" %}
     <main class="card">
       <p class="text-muted text-sm">Envoi en tant que <strong>{{ pseudo }}</strong></p>
+      {% if request.user.is_authenticated %}
+      <p class="text-sm" style="margin-top:var(--space-3xs);">
+        <a class="link" href="{% url 'dashboard' %}">← Retour au dashboard</a>
+      </p>
+      {% endif %}
 
       {% if messages %}
       <div class="flex-col gap-2xs" style="display:flex;margin-top:var(--space-sm);">
