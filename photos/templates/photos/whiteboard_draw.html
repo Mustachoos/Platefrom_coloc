@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="fr">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
@@ -114,24 +114,24 @@
         </div>
       </div>
       <div class="zoom-controls">
-        <button type="button" id="zoom-in-btn" class="fab fab--light" aria-label="Zoom in">{% icon 'zoom-in' size=18 %}</button>
-        <button type="button" id="zoom-out-btn" class="fab fab--light" aria-label="Zoom out">{% icon 'zoom-out' size=18 %}</button>
-        <button type="button" id="zoom-reset-btn" class="fab fab--light" aria-label="Fit to screen">{% icon 'maximize' size=18 %}</button>
+        <button type="button" id="zoom-in-btn" class="fab fab--light" aria-label="Zoomer">{% icon 'zoom-in' size=18 %}</button>
+        <button type="button" id="zoom-out-btn" class="fab fab--light" aria-label="Dézoomer">{% icon 'zoom-out' size=18 %}</button>
+        <button type="button" id="zoom-reset-btn" class="fab fab--light" aria-label="Ajuster à l'écran">{% icon 'maximize' size=18 %}</button>
       </div>
     </div>
   </div>
 
   <div class="fab-stack fab-cluster">
-    <button type="button" id="upload-btn" class="fab fab--dark" aria-label="Add to the whiteboard">
+    <button type="button" id="upload-btn" class="fab fab--dark" aria-label="Ajouter au tableau">
       <span id="save-icon">{% icon 'check' size=20 %}</span>
       <span id="save-timer" style="display:none"></span>
     </button>
-    <button type="button" id="options-toggle" class="fab fab--light" aria-label="Pen options">{% icon 'adjustments-horizontal' size=20 %}</button>
+    <button type="button" id="options-toggle" class="fab fab--light" aria-label="Options du stylo">{% icon 'adjustments-horizontal' size=20 %}</button>
   </div>
   <div id="upload-status"></div>
 
   <div class="tool-panel" id="options-panel">
-    <p class="text-sm text-muted" style="margin-bottom:var(--space-sm);">Drawing as <strong style="color:var(--ink-900);">{{ pseudo }}</strong></p>
+    <p class="text-sm text-muted" style="margin-bottom:var(--space-sm);">Tu dessines en tant que <strong style="color:var(--ink-900);">{{ pseudo }}</strong></p>
     <div class="tool-row">
       <span class="tool-row__label">Mode</span>
       <div class="segmented">
@@ -141,33 +141,33 @@
     </div>
 
     <div class="tool-row" id="simple-colors">
-      <span class="tool-row__label">Color</span>
+      <span class="tool-row__label">Couleur</span>
       <div class="swatch-row">
-        <button type="button" class="swatch is-selected" data-color="#000000" style="background:#000000" aria-label="Black"></button>
-        <button type="button" class="swatch" data-color="#ffffff" style="background:#ffffff" aria-label="White"></button>
-        <button type="button" class="swatch" data-color="#2563eb" style="background:#2563eb" aria-label="Blue"></button>
-        <button type="button" class="swatch" data-color="#16a34a" style="background:#16a34a" aria-label="Green"></button>
-        <button type="button" class="swatch" data-color="#dc2626" style="background:#dc2626" aria-label="Red"></button>
+        <button type="button" class="swatch is-selected" data-color="#000000" style="background:#000000" aria-label="Noir"></button>
+        <button type="button" class="swatch" data-color="#ffffff" style="background:#ffffff" aria-label="Blanc"></button>
+        <button type="button" class="swatch" data-color="#2563eb" style="background:#2563eb" aria-label="Bleu"></button>
+        <button type="button" class="swatch" data-color="#16a34a" style="background:#16a34a" aria-label="Vert"></button>
+        <button type="button" class="swatch" data-color="#dc2626" style="background:#dc2626" aria-label="Rouge"></button>
       </div>
     </div>
 
     <div class="tool-row" id="artist-colors" style="display:none">
-      <span class="tool-row__label">Color</span>
-      <input type="range" id="hue-slider" class="slider slider--spectrum grow" min="0" max="359" value="0" aria-label="Hue">
+      <span class="tool-row__label">Couleur</span>
+      <input type="range" id="hue-slider" class="slider slider--spectrum grow" min="0" max="359" value="0" aria-label="Teinte">
       <div class="hue-preview-dot" id="hue-preview" style="background:#ff0000"></div>
       <button type="button" id="eyedropper-btn" class="btn btn--light btn--sm">{% icon 'color-picker' size=16 %} Pipette</button>
     </div>
 
     <div class="tool-row">
-      <span class="tool-row__label">Pen size</span>
-      <input type="range" id="pen-size" class="slider grow" min="1" max="{{ pen_max }}" value="8" aria-label="Pen size">
+      <span class="tool-row__label">Taille du stylo</span>
+      <input type="range" id="pen-size" class="slider grow" min="1" max="{{ pen_max }}" value="8" aria-label="Taille du stylo">
       <span id="pen-size-label" class="text-sm text-muted">8px</span>
     </div>
 
     <div class="tool-row">
-      <span class="tool-row__label">Canvas</span>
-      <button type="button" id="pan-btn" class="btn btn--light btn--sm">{% icon 'hand-move' size=16 %} Pan</button>
-      <button type="button" id="clear-btn" class="btn btn--light btn--sm">{% icon 'eraser' size=16 %} Clear</button>
+      <span class="tool-row__label">Tableau</span>
+      <button type="button" id="pan-btn" class="btn btn--light btn--sm">{% icon 'hand-move' size=16 %} Déplacer</button>
+      <button type="button" id="clear-btn" class="btn btn--light btn--sm">{% icon 'eraser' size=16 %} Effacer</button>
     </div>
   </div>
 
@@ -613,7 +613,7 @@
     uploadBtn.addEventListener('click', () => {
       if (uploadBtn.disabled) return;
       uploadBtn.disabled = true;
-      showStatus('Uploading…');
+      showStatus('Envoi…');
       drawCanvas.toBlob((blob) => {
         const form = new FormData();
         form.append('drawing', blob, 'drawing.png');
@@ -626,21 +626,21 @@
           .then((r) => r.json().then((data) => ({ ok: r.ok, data: data })))
           .then(({ ok, data }) => {
             if (ok && data.ok) {
-              showStatus('Added to the whiteboard!', 2500);
+              showStatus('Ajouté au tableau !', 2500);
               drawCtx.clearRect(0, 0, drawCanvas.width, drawCanvas.height);
               cooldownRemaining = COOLDOWN_SECONDS;
               setCooldownUi();
             } else if (data.error === 'cooldown') {
               cooldownRemaining = data.retry_after;
-              showStatus('Please wait before uploading again.', 2500);
+              showStatus('Attends un peu avant de renvoyer.', 2500);
               setCooldownUi();
             } else {
-              showStatus(data.error || 'Could not upload the drawing.', 3000);
+              showStatus(data.error || 'Impossible d\'envoyer le dessin.', 3000);
               uploadBtn.disabled = false;
             }
           })
           .catch(() => {
-            showStatus('Network error, please try again.', 3000);
+            showStatus('Erreur réseau, réessaie.', 3000);
             uploadBtn.disabled = false;
           });
       }, 'image/png');

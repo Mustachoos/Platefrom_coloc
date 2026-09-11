@@ -30,9 +30,9 @@ WHITEBOARD_COOLDOWN_SECONDS = 30
 def _drive_fix_summary(message, uploaded, failed):
     summary = f"{message}."
     if uploaded:
-        summary += f" {uploaded} photo(s) re-uploaded."
+        summary += f" {uploaded} photo(s) réenvoyée(s)."
     if failed:
-        summary += f" {failed} failed to upload."
+        summary += f" {failed} échec(s) d'envoi."
     return summary
 
 
@@ -77,7 +77,7 @@ def account_view(request):
         if request.method == "POST" and "update_email" in request.POST:
             request.user.email = request.POST.get("email", "").strip()
             request.user.save(update_fields=["email"])
-            messages.success(request, "Email updated.")
+            messages.success(request, "Email mis à jour.")
             return redirect("account")
 
         if request.method == "POST" and "change_password" in request.POST:
@@ -87,7 +87,7 @@ def account_view(request):
                 # Changing your own password rotates the session auth hash —
                 # without this you'd be logged out by your own request.
                 update_session_auth_hash(request, user)
-                messages.success(request, "Password changed.")
+                messages.success(request, "Mot de passe changé.")
                 return redirect("account")
         else:
             password_form = StyledPasswordChangeForm(request.user)
@@ -110,7 +110,7 @@ def choose_pseudo(request):
         if form.is_valid():
             pseudo = form.cleaned_data["pseudo"].strip()
             if UserIdentity.objects.filter(event=active_event, pseudo__iexact=pseudo).exists():
-                form.add_error("pseudo", "That name is already taken, please choose another one.")
+                form.add_error("pseudo", "Ce nom est déjà pris, choisis-en un autre.")
             else:
                 if not request.session.session_key:
                     request.session.create()
@@ -119,7 +119,7 @@ def choose_pseudo(request):
                         event=active_event, pseudo=pseudo, session_key=request.session.session_key
                     )
                 except IntegrityError:
-                    form.add_error("pseudo", "That name is already taken, please choose another one.")
+                    form.add_error("pseudo", "Ce nom est déjà pris, choisis-en un autre.")
                 else:
                     request.session["pseudo"] = pseudo
                     if not active_event.drive_folder_id:
@@ -159,7 +159,7 @@ def share_drive_view(request):
                         permission_id = ""
                 except drive_service.DriveError as exc:
                     logger.warning("Could not validate Drive sharing for %s: %s", email, exc)
-                    messages.error(request, "Could not share the Drive folder, please try again.")
+                    messages.error(request, "Impossible de partager le dossier Drive, réessaie.")
                     return render(request, "photos/share_drive.html", {"form": form, "pseudo": pseudo})
                 else:
                     user.email = email
@@ -202,7 +202,7 @@ def upload_view(request):
                         photo.drive_file_id = file_id
                         photo.save(update_fields=["drive_file_id"])
             return redirect(f"{reverse('upload')}?uploaded=1")
-        messages.error(request, "Please choose at least one photo.")
+        messages.error(request, "Choisis au moins une photo.")
     just_uploaded = request.GET.get("uploaded") == "1"
     return render(
         request,
@@ -254,13 +254,13 @@ def whiteboard_draw_view(request):
 
 def whiteboard_upload_view(request):
     if request.method != "POST":
-        return JsonResponse({"error": "POST required"}, status=405)
+        return JsonResponse({"error": "POST requis"}, status=405)
     active_event = Event.get_active()
     if not active_event or not active_event.whiteboard_enabled:
-        return JsonResponse({"error": "The whiteboard is disabled."}, status=403)
+        return JsonResponse({"error": "Le Whiteboard est désactivé."}, status=403)
     user = _get_user_identity(request)
     if not user:
-        return JsonResponse({"error": "identity required"}, status=403)
+        return JsonResponse({"error": "identité requise"}, status=403)
 
     last = (
         WhiteboardDrawing.objects.filter(event=active_event, username=user.pseudo)
@@ -277,7 +277,7 @@ def whiteboard_upload_view(request):
 
     image = request.FILES.get("drawing")
     if not image:
-        return JsonResponse({"error": "No drawing provided."}, status=400)
+        return JsonResponse({"error": "Aucun dessin fourni."}, status=400)
 
     drawing = WhiteboardDrawing.objects.create(event=active_event, username=user.pseudo, image=image)
     whiteboard_service.add_layer(active_event, drawing)
@@ -311,7 +311,7 @@ def delete_own_photo(request, photo_id):
         # ever delete their own photos from their own event.
         photo = get_object_or_404(Photo, id=photo_id, event=user.event, username=user.pseudo)
         photo.delete()
-        messages.success(request, "Photo deleted.")
+        messages.success(request, "Photo supprimée.")
     return redirect("my-photos")
 
 
@@ -452,7 +452,7 @@ def drive_reauth_start(request):
     try:
         flow = drive_service.build_oauth_flow(redirect_uri)
     except drive_service.DriveError as exc:
-        messages.error(request, f"Could not start Google Drive authorization: {exc}")
+        messages.error(request, f"Impossible de démarrer l'autorisation Google Drive : {exc}")
         return _dashboard_redirect(tab="features")
     auth_url, state = flow.authorization_url(
         access_type="offline", prompt="consent", include_granted_scopes="true"
@@ -465,10 +465,10 @@ def drive_reauth_start(request):
 def drive_reauth_callback(request):
     expected_state = request.session.pop("drive_oauth_state", None)
     if not expected_state or request.GET.get("state") != expected_state:
-        messages.error(request, "Google Drive authorization failed (session expired) — try again.")
+        messages.error(request, "L'autorisation Google Drive a échoué (session expirée) — réessaie.")
         return _dashboard_redirect(tab="features")
     if "error" in request.GET:
-        messages.error(request, f"Google Drive authorization was not completed: {request.GET['error']}")
+        messages.error(request, f"L'autorisation Google Drive n'a pas abouti : {request.GET['error']}")
         return _dashboard_redirect(tab="features")
     redirect_uri = request.build_absolute_uri(reverse("drive-reauth-callback"))
     try:
@@ -477,9 +477,9 @@ def drive_reauth_callback(request):
         drive_service.save_credentials(flow.credentials)
     except Exception as exc:
         logger.warning("Drive re-auth callback failed: %s", exc)
-        messages.error(request, f"Google Drive authorization failed: {exc}")
+        messages.error(request, f"L'autorisation Google Drive a échoué : {exc}")
         return _dashboard_redirect(tab="features")
-    messages.success(request, "Google Drive reconnected.")
+    messages.success(request, "Google Drive reconnecté.")
     return _dashboard_redirect(tab="features")
 
 
@@ -496,7 +496,7 @@ def staff_login_view(request):
         if form.is_valid():
             user = form.get_user()
             if not user.is_staff:
-                form.add_error(None, "This account doesn't have staff access.")
+                form.add_error(None, "Ce compte n'a pas d'accès staff.")
             else:
                 auth_login(request, user)
                 return _post_login_redirect(user)
@@ -514,7 +514,7 @@ def dashboard_view(request):
 
     if request.method == "POST":
         if active_event is None:
-            messages.error(request, "No active event yet — create one below first.")
+            messages.error(request, "Aucun évènement actif — crée-en un ci-dessous d'abord.")
             return _dashboard_redirect()
 
         if "recreate_drive_folder" in request.POST:
@@ -522,14 +522,14 @@ def dashboard_view(request):
             if ok:
                 messages.success(
                     request,
-                    _drive_fix_summary(f"New Drive folder created for '{active_event.name}': {message}", uploaded, failed),
+                    _drive_fix_summary(f"Nouveau dossier Drive créé pour '{active_event.name}' : {message}", uploaded, failed),
                 )
             else:
-                messages.error(request, f"Could not create a new Drive folder: {message}")
+                messages.error(request, f"Impossible de créer un nouveau dossier Drive : {message}")
             return _dashboard_redirect(tab="features")
         if "toggle_drive_sharing" in request.POST:
             if not active_event.drive_folder_id:
-                messages.error(request, "Connect a Drive folder before sharing it.")
+                messages.error(request, "Connecte un dossier Drive avant de le partager.")
             else:
                 active_event.drive_sharing_enabled = not active_event.drive_sharing_enabled
                 active_event.save(update_fields=["drive_sharing_enabled"])
@@ -550,9 +550,9 @@ def dashboard_view(request):
                             guest.drive_permission_id = permission_id
                             guest.save(update_fields=["drive_shared", "drive_permission_id"])
                             granted += 1
-                    summary = f"Drive sharing on: {granted} guest(s) granted access"
+                    summary = f"Partage Drive activé : accès accordé à {granted} invité(s)"
                     if failed:
-                        summary += f", {failed} failed"
+                        summary += f", {failed} échec(s)"
                     messages.success(request, summary)
                 else:
                     revoked, failed = 0, 0
@@ -570,9 +570,9 @@ def dashboard_view(request):
                         guest.drive_permission_id = ""
                         guest.save(update_fields=["drive_shared", "drive_permission_id"])
                         revoked += 1
-                    summary = f"Drive sharing off: access revoked for {revoked} guest(s)"
+                    summary = f"Partage Drive désactivé : accès révoqué pour {revoked} invité(s)"
                     if failed:
-                        summary += f", {failed} failed"
+                        summary += f", {failed} échec(s)"
                     messages.success(request, summary)
             return _dashboard_redirect(tab="features")
         if "toggle_likes" in request.POST:
@@ -583,7 +583,7 @@ def dashboard_view(request):
                 active_event.tv_bottom_right = Event.TV_BOTTOM_RIGHT_NONE
                 update_fields.append("tv_bottom_right")
             active_event.save(update_fields=update_fields)
-            messages.success(request, "Likes " + ("enabled." if active_event.likes_enabled else "disabled."))
+            messages.success(request, "Likes " + ("activés." if active_event.likes_enabled else "désactivés."))
             return _dashboard_redirect(tab="tv-layout")
         if "toggle_whiteboard" in request.POST:
             active_event.whiteboard_enabled = not active_event.whiteboard_enabled
@@ -593,40 +593,40 @@ def dashboard_view(request):
                 active_event.tv_layout = Event.TV_LAYOUT_SLIDESHOW
                 update_fields.append("tv_layout")
             active_event.save(update_fields=update_fields)
-            messages.success(request, "Whiteboard " + ("enabled." if active_event.whiteboard_enabled else "disabled."))
+            messages.success(request, "Whiteboard " + ("activé." if active_event.whiteboard_enabled else "désactivé."))
             return _dashboard_redirect(tab="tv-layout")
         if "toggle_wifi_qr" in request.POST:
             site_settings = SiteSettings.get_solo()
             if not active_event.wifi_qr_enabled and not site_settings.wifi_ssid:
-                messages.error(request, "Ask an admin to set up Wi-Fi credentials first.")
+                messages.error(request, "Demande à un admin de configurer les identifiants Wi-Fi d'abord.")
             else:
                 active_event.wifi_qr_enabled = not active_event.wifi_qr_enabled
                 active_event.save(update_fields=["wifi_qr_enabled"])
-                messages.success(request, "Wi-Fi QR code " + ("enabled." if active_event.wifi_qr_enabled else "disabled."))
+                messages.success(request, "QR code Wi-Fi " + ("activé." if active_event.wifi_qr_enabled else "désactivé."))
             return _dashboard_redirect(tab="tv-layout")
         if "set_tv_layout" in request.POST:
             layout = request.POST.get("set_tv_layout")
             valid_layouts = dict(Event.TV_LAYOUT_CHOICES)
             if layout not in valid_layouts:
-                messages.error(request, "Unknown TV layout.")
+                messages.error(request, "Disposition TV inconnue.")
             elif layout == Event.TV_LAYOUT_WHITEBOARD and not active_event.whiteboard_enabled:
-                messages.error(request, "Enable the whiteboard feature first.")
+                messages.error(request, "Active le Whiteboard d'abord.")
             else:
                 active_event.tv_layout = layout
                 active_event.save(update_fields=["tv_layout"])
-                messages.success(request, f"TV now shows the {valid_layouts[layout].lower()}.")
+                messages.success(request, f"La TV affiche maintenant le {valid_layouts[layout].lower()}.")
             return _dashboard_redirect(tab="tv-layout")
         if "set_tv_bottom_right" in request.POST:
             widget = request.POST.get("set_tv_bottom_right")
             valid_widgets = dict(Event.TV_BOTTOM_RIGHT_CHOICES)
             if widget not in valid_widgets:
-                messages.error(request, "Unknown TV widget.")
+                messages.error(request, "Widget TV inconnu.")
             elif widget == Event.TV_BOTTOM_RIGHT_LEADERBOARD and not active_event.likes_enabled:
-                messages.error(request, "Enable Photo likes first.")
+                messages.error(request, "Active les likes d'abord.")
             else:
                 active_event.tv_bottom_right = widget
                 active_event.save(update_fields=["tv_bottom_right"])
-                messages.success(request, f"TV now shows {valid_widgets[widget].lower()} in the bottom-right frame.")
+                messages.success(request, f"La TV affiche maintenant « {valid_widgets[widget].lower()} » dans la zone en bas à droite.")
             return _dashboard_redirect(tab="tv-layout")
         return _dashboard_redirect(tab="features")
 
@@ -680,7 +680,7 @@ def dashboard_delete_photo(request, photo_id):
     if request.method == "POST":
         photo = get_object_or_404(Photo, id=photo_id)
         photo.delete()
-        messages.success(request, "Photo deleted.")
+        messages.success(request, "Photo supprimée.")
     return _dashboard_redirect(tab="photos")
 
 
@@ -696,13 +696,13 @@ def dashboard_toggle_photo_hidden(request, photo_id):
                 "tv_updates",
                 {"type": "photo.hidden", "url": photo.image.url},
             )
-            messages.success(request, "Photo hidden.")
+            messages.success(request, "Photo masquée.")
         else:
             async_to_sync(channel_layer.group_send)(
                 "tv_updates",
                 {"type": "photo.uploaded", "photo": _photo_payload(photo)},
             )
-            messages.success(request, "Photo unhidden.")
+            messages.success(request, "Photo réaffichée.")
     return _dashboard_redirect(tab="photos")
 
 
@@ -722,11 +722,11 @@ def dashboard_delete_guest(request, identity_id):
         if revoke_failed:
             messages.error(
                 request,
-                f"'{pseudo}' removed, but revoking their Drive access failed — "
-                "you may need to remove it manually in Drive's sharing settings.",
+                f"'{pseudo}' supprimé, mais la révocation de son accès Drive a échoué — "
+                "il faudra peut-être le retirer manuellement dans les réglages de partage Drive.",
             )
         else:
-            messages.success(request, f"'{pseudo}' removed from the event.")
+            messages.success(request, f"'{pseudo}' retiré de l'évènement.")
     return _dashboard_redirect(tab="guests")
 
 
@@ -742,7 +742,7 @@ def dashboard_delete_whiteboard_drawing(request, drawing_id):
             "tv_updates",
             {"type": "whiteboard.updated", "url": event.whiteboard_image.url if event.whiteboard_image else ""},
         )
-        messages.success(request, "Drawing removed from the whiteboard.")
+        messages.success(request, "Dessin retiré du Whiteboard.")
     return _dashboard_redirect(tab="whiteboard")
 
 
@@ -752,7 +752,7 @@ def create_event_view(request):
         return redirect("dashboard")
     name = request.POST.get("name", "").strip()
     if not name:
-        messages.error(request, "Give the event a name.")
+        messages.error(request, "Donne un nom à l'évènement.")
         return redirect("dashboard")
 
     event = Event.objects.filter(name=name).first()
@@ -763,8 +763,8 @@ def create_event_view(request):
         if not ok:
             messages.error(
                 request,
-                f"Event '{name}' saved, but its Drive folder could not be connected: {message}. "
-                "Fix it from the events list, then switch to it.",
+                f"Évènement '{name}' enregistré, mais son dossier Drive n'a pas pu être connecté : {message}. "
+                "Corrige ça depuis la liste des évènements, puis bascule dessus.",
             )
             return redirect("dashboard")
     return redirect("event-switch", event_id=event.id)
@@ -776,7 +776,7 @@ def event_switch_view(request, event_id):
     active = Event.get_active()
 
     if target.is_active:
-        messages.info(request, f"'{target.name}' is already the active event.")
+        messages.info(request, f"'{target.name}' est déjà l'évènement actif.")
         return redirect("dashboard")
 
     # Live, uncached check every time this page is hit — a cached
@@ -798,38 +798,38 @@ def event_switch_view(request, event_id):
             if ok:
                 messages.success(
                     request,
-                    _drive_fix_summary(f"New Drive folder created for '{ev.name}': {message}", uploaded, failed),
+                    _drive_fix_summary(f"Nouveau dossier Drive créé pour '{ev.name}' : {message}", uploaded, failed),
                 )
             else:
-                messages.error(request, f"Could not create a new Drive folder: {message}")
+                messages.error(request, f"Impossible de créer un nouveau dossier Drive : {message}")
             return redirect("event-switch", event_id=target.id)
 
         if "relink_folder" in request.POST:
             ev = get_object_or_404(Event, id=request.POST.get("broken_event_id"))
             link = request.POST.get("drive_folder_id_or_url", "").strip()
             if not link:
-                messages.error(request, "Paste a Drive folder ID or URL.")
+                messages.error(request, "Colle l'ID ou l'URL d'un dossier Drive.")
                 return redirect("event-switch", event_id=target.id)
             ok, message, uploaded, failed = event_service.relink_drive_folder(ev, link)
             if ok:
                 messages.success(
                     request,
-                    _drive_fix_summary(f"'{ev.name}' now points to a different Drive folder: {message}", uploaded, failed),
+                    _drive_fix_summary(f"'{ev.name}' pointe maintenant vers un autre dossier Drive : {message}", uploaded, failed),
                 )
             else:
-                messages.error(request, f"Could not connect that folder: {message}")
+                messages.error(request, f"Impossible de connecter ce dossier : {message}")
             return redirect("event-switch", event_id=target.id)
 
         if "force_switch" in request.POST:
             downloaded, failed = event_service.switch_active_event(target)
             summary = (
-                f"Switched to '{target.name}' by force — any local photo without a working "
-                "Drive backup was discarded."
+                f"Basculé sur '{target.name}' de force — toute photo locale sans sauvegarde "
+                "Drive fonctionnelle a été perdue."
             )
             if downloaded:
-                summary += f" Restored {downloaded} photo(s) from Drive."
+                summary += f" {downloaded} photo(s) restaurée(s) depuis Drive."
             if failed:
-                summary += f" {failed} file(s) could not be restored."
+                summary += f" {failed} fichier(s) n'ont pas pu être restauré(s)."
             messages.warning(request, summary)
             return redirect("dashboard")
 
@@ -837,30 +837,30 @@ def event_switch_view(request, event_id):
             if active:
                 uploaded, failed = event_service.backup_pending_photos(active)
                 if failed:
-                    messages.error(request, f"{uploaded} photo(s) backed up, {failed} still failing.")
+                    messages.error(request, f"{uploaded} photo(s) sauvegardée(s), {failed} en échec.")
                 else:
-                    messages.success(request, f"{uploaded} photo(s) backed up to Drive.")
+                    messages.success(request, f"{uploaded} photo(s) sauvegardée(s) sur Drive.")
             return redirect("event-switch", event_id=target.id)
 
         if "confirm" in request.POST:
             if broken:
-                messages.error(request, f"Drive folder for '{broken.name}' is still unreachable.")
+                messages.error(request, f"Le dossier Drive de '{broken.name}' est toujours injoignable.")
                 return redirect("event-switch", event_id=target.id)
             if active and active.drive_folder_id:
                 pending = event_service.unbacked_up_photo_count(active)
                 if pending:
                     messages.error(
                         request,
-                        f"'{active.name}' still has {pending} photo(s) not backed up to Drive — "
-                        "can't switch safely yet.",
+                        f"'{active.name}' a encore {pending} photo(s) non sauvegardée(s) sur Drive — "
+                        "impossible de basculer en sécurité pour l'instant.",
                     )
                     return redirect("event-switch", event_id=target.id)
             downloaded, failed = event_service.switch_active_event(target)
-            summary = f"Switched to '{target.name}'."
+            summary = f"Basculé sur '{target.name}'."
             if downloaded:
-                summary += f" Restored {downloaded} photo(s) from Drive."
+                summary += f" {downloaded} photo(s) restaurée(s) depuis Drive."
             if failed:
-                summary += f" {failed} file(s) could not be restored."
+                summary += f" {failed} fichier(s) n'ont pas pu être restauré(s)."
             messages.success(request, summary)
             return redirect("dashboard")
 
@@ -889,7 +889,7 @@ def event_delete_view(request, event_id):
         return _dashboard_redirect(tab="events")
 
     if event.is_active:
-        messages.error(request, "Switch to another event before deleting this one.")
+        messages.error(request, "Bascule sur un autre évènement avant de supprimer celui-ci.")
         return _dashboard_redirect(tab="events")
 
     name = event.name
@@ -898,7 +898,7 @@ def event_delete_view(request, event_id):
     for drawing in event.whiteboard_drawings.all():
         drawing.image.delete(save=False)
     event.delete()
-    messages.success(request, f"'{name}' deleted.")
+    messages.success(request, f"'{name}' supprimé.")
     return _dashboard_redirect(tab="events")
 
 

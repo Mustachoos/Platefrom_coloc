@@ -1,9 +1,9 @@
 <!doctype html>
-<html lang="en">
+<html lang="fr">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>Event dashboard</title>
+  <title>Dashboard staff</title>
   {% load static %}
   {% load icons %}
   <link rel="stylesheet" href="{% static 'photos/tokens.css' %}">
@@ -15,21 +15,21 @@
     {% include "photos/_account_button.html" %}
     <div class="flex justify-between items-center gap-sm flex-wrap" style="margin-bottom:var(--space-md);">
       <div>
-        <h1>Event dashboard{% if active_event %} — {{ active_event.name }}{% endif %}</h1>
-        <p class="text-muted text-sm" style="margin-top:var(--space-2xs);">Signed in as staff.</p>
+        <h1>Dashboard staff{% if active_event %} — {{ active_event.name }}{% endif %}</h1>
+        <p class="text-muted text-sm" style="margin-top:var(--space-2xs);">Connecté en tant que staff.</p>
       </div>
       <div class="flex gap-2xs items-center">
         {% if guest_identity %}
-        <a href="{% url 'upload' %}" class="btn btn--outline btn--sm">Continue as guest</a>
+        <a href="{% url 'upload' %}" class="btn btn--outline btn--sm">Continuer en tant qu'invité</a>
         {% else %}
-        <a href="{% url 'choose-pseudo' %}" class="btn btn--outline btn--sm">Start a guest session</a>
+        <a href="{% url 'choose-pseudo' %}" class="btn btn--outline btn--sm">Démarrer une session invité</a>
         {% endif %}
         {% if user.is_superuser %}
-        <a href="{% url 'admin-management' %}" class="btn btn--outline btn--sm">Admin dashboard</a>
+        <a href="{% url 'admin-management' %}" class="btn btn--outline btn--sm">Dashboard admin</a>
         {% endif %}
         <form method="post" action="{% url 'staff-logout' %}">
           {% csrf_token %}
-          <button type="submit" class="btn btn--light btn--sm">Log out</button>
+          <button type="submit" class="btn btn--light btn--sm">Se déconnecter</button>
         </form>
       </div>
     </div>
@@ -43,74 +43,74 @@
     {% endif %}
 
     <div class="tabbar">
-      <a href="#" class="tabbar__tab{% if active_tab == "events" %} is-active{% endif %}" data-tab="events">Events</a>
-      <a href="#" class="tabbar__tab{% if active_tab == "features" %} is-active{% endif %}" data-tab="features">Optional features</a>
-      <a href="#" class="tabbar__tab{% if active_tab == "tv-layout" %} is-active{% endif %}" data-tab="tv-layout">TV layout</a>
+      <a href="#" class="tabbar__tab{% if active_tab == "events" %} is-active{% endif %}" data-tab="events">Évènements</a>
+      <a href="#" class="tabbar__tab{% if active_tab == "features" %} is-active{% endif %}" data-tab="features">Fonctionnalités optionnelles</a>
+      <a href="#" class="tabbar__tab{% if active_tab == "tv-layout" %} is-active{% endif %}" data-tab="tv-layout">Disposition TV</a>
       <a href="#" class="tabbar__tab{% if active_tab == "whiteboard" %} is-active{% endif %}" data-tab="whiteboard">Whiteboard ({{ whiteboard_drawings|length }})</a>
-      <a href="#" class="tabbar__tab{% if active_tab == "guests" %} is-active{% endif %}" data-tab="guests">Guests ({{ identities|length }})</a>
+      <a href="#" class="tabbar__tab{% if active_tab == "guests" %} is-active{% endif %}" data-tab="guests">Invités ({{ identities|length }})</a>
       <a href="#" class="tabbar__tab{% if active_tab == "photos" %} is-active{% endif %}" data-tab="photos">Photos ({{ photos|length }})</a>
     </div>
 
     <div class="card card--solid" id="panel-events" {% if active_tab != "events" %}hidden{% endif %}>
-      <p class="card__title">Events</p>
+      <p class="card__title">Évènements</p>
       <div class="flex-col gap-2xs" style="display:flex;margin-bottom:var(--space-sm);">
         {% for event in events %}
         <div class="card card--solid card--tight flex justify-between items-center gap-sm flex-wrap">
           <div>
             <span style="font-weight:700;">{{ event.name }}</span>
-            {% if event.is_active %}<span class="badge badge--success" style="margin-left:var(--space-2xs);">ACTIVE</span>{% endif %}
+            {% if event.is_active %}<span class="badge badge--success" style="margin-left:var(--space-2xs);">ACTIF</span>{% endif %}
             <div class="text-sm text-muted" style="margin-top:2px;">
               {% if event.drive_status == "ok" %}
-                {% if event.drive_count is not None %}{{ event.drive_count }} photo(s) on Drive{% else %}Drive unreachable — photo count unknown{% endif %}
-                · <a class="link" href="{{ event.drive_folder_url }}" target="_blank" rel="noopener">Drive folder</a>
+                {% if event.drive_count is not None %}{{ event.drive_count }} photo(s) sur Drive{% else %}Drive injoignable — nombre de photos inconnu{% endif %}
+                · <a class="link" href="{{ event.drive_folder_url }}" target="_blank" rel="noopener">Dossier Drive</a>
               {% elif event.drive_status == "broken" %}
-                <span class="alert" style="display:inline-flex;">{% icon 'alert-triangle' size=15 %} Drive folder is deleted or unreachable</span>{% if event.is_active %} — fix it below{% endif %}
+                <span class="alert" style="display:inline-flex;">{% icon 'alert-triangle' size=15 %} Le dossier Drive est supprimé ou injoignable</span>{% if event.is_active %} — corrige ça ci-dessous{% endif %}
               {% else %}
-                no Drive folder connected
+                aucun dossier Drive connecté
               {% endif %}
             </div>
           </div>
           <div class="flex gap-2xs items-center">
             {% if not event.is_active %}
-            <a class="btn btn--light btn--sm" href="{% url 'event-switch' event.id %}">Switch to this event</a>
+            <a class="btn btn--light btn--sm" href="{% url 'event-switch' event.id %}">Basculer sur cet évènement</a>
             {% if user.is_superuser %}
             <form method="post" action="{% url 'event-delete' event.id %}">
               {% csrf_token %}
-              <button type="submit" class="btn btn--danger btn--sm">Delete</button>
+              <button type="submit" class="btn btn--danger btn--sm">Supprimer</button>
             </form>
             {% endif %}
             {% endif %}
-            <a class="btn btn--outline btn--sm" href="{% url 'event-export' event.id %}">Download photos</a>
+            <a class="btn btn--outline btn--sm" href="{% url 'event-export' event.id %}">Télécharger les photos</a>
           </div>
         </div>
         {% empty %}
-        <p class="text-muted" style="font-style:italic;">No event created yet.</p>
+        <p class="text-muted" style="font-style:italic;">Aucun évènement créé pour l'instant.</p>
         {% endfor %}
       </div>
 
       <form method="post" action="{% url 'create-event' %}" class="flex gap-sm items-end flex-wrap" style="padding-top:var(--space-sm);border-top:1px dashed var(--line);">
         {% csrf_token %}
         <div class="field grow" style="min-width:200px;">
-          <label for="name">New event name</label>
-          <input class="input" type="text" id="name" name="name" placeholder="e.g. 15/08/2026" required>
+          <label for="name">Nom du nouvel évènement</label>
+          <input class="input" type="text" id="name" name="name" placeholder="ex. 15/08/2026" required>
         </div>
-        <button type="submit" class="btn btn--light">Create &amp; connect Drive folder</button>
+        <button type="submit" class="btn btn--light">Créer et connecter le dossier Drive</button>
       </form>
     </div>
 
     {% if active_event %}
     <div class="card card--solid" id="panel-features" {% if active_tab != "features" %}hidden{% endif %}>
-      <p class="card__title">Optional features</p>
+      <p class="card__title">Fonctionnalités optionnelles</p>
       <div class="flex-col gap-sm" style="display:flex;padding-bottom:var(--space-sm);border-bottom:1px solid var(--line);margin-bottom:var(--space-sm);">
         <div>
-          <div style="font-weight:700;">Google Drive backup</div>
+          <div style="font-weight:700;">Sauvegarde Google Drive</div>
           <div class="text-sm text-muted" style="margin-top:2px;">
             {% if active_event.drive_status == "broken" %}
-              <span class="alert" style="display:inline-flex;">{% icon 'alert-triangle' size=15 %} This event's Drive folder is deleted or unreachable. New photos can't be backed up until it's fixed.</span>
+              <span class="alert" style="display:inline-flex;">{% icon 'alert-triangle' size=15 %} Le dossier Drive de cet évènement est supprimé ou injoignable. Les nouvelles photos ne peuvent pas être sauvegardées tant qu'il n'est pas réparé.</span>
             {% elif active_event.drive_folder_url %}
-              Uploaded photos are copied to <a class="link" href="{{ active_event.drive_folder_url }}" target="_blank" rel="noopener">{{ active_event.name }}</a>
+              Les photos envoyées sont copiées dans <a class="link" href="{{ active_event.drive_folder_url }}" target="_blank" rel="noopener">{{ active_event.name }}</a>
             {% else %}
-              Not connected yet — every event needs a Drive folder before it can be activated.
+              Pas encore connecté — chaque évènement a besoin d'un dossier Drive avant de pouvoir être activé.
             {% endif %}
           </div>
         </div>
@@ -118,28 +118,28 @@
           {% if active_event.drive_status == "broken" %}
           <form method="post">
             {% csrf_token %}
-            <button type="submit" name="recreate_drive_folder" class="btn btn--dark btn--sm">Create a new Drive folder</button>
+            <button type="submit" name="recreate_drive_folder" class="btn btn--dark btn--sm">Créer un nouveau dossier Drive</button>
           </form>
           {% endif %}
           <form method="post" action="{% url 'drive-reauth-start' %}">
             {% csrf_token %}
-            <button type="submit" class="btn btn--outline btn--sm">Reconnect Google Drive</button>
+            <button type="submit" class="btn btn--outline btn--sm">Reconnecter Google Drive</button>
           </form>
         </div>
       </div>
 
       <div class="flex justify-between items-center gap-sm">
         <div>
-          <div style="font-weight:700;">Share Drive with participants <span class="badge {% if active_event.drive_sharing_enabled %}badge--success{% else %}badge--neutral{% endif %}" style="margin-left:var(--space-2xs);">{% if active_event.drive_sharing_enabled %}ON{% else %}OFF{% endif %}</span></div>
+          <div style="font-weight:700;">Partager Drive avec les participants <span class="badge {% if active_event.drive_sharing_enabled %}badge--success{% else %}badge--neutral{% endif %}" style="margin-left:var(--space-2xs);">{% if active_event.drive_sharing_enabled %}ON{% else %}OFF{% endif %}</span></div>
           <div class="text-sm text-muted" style="margin-top:2px;">
-            {{ guests_shared }} of {{ guests_with_email }} guest(s) with an email currently have read access.
-            {% if active_event.drive_sharing_enabled %}Turning this off revokes everyone's access.{% else %}Turning this on grants read access to every guest with an email on file.{% endif %}
+            {{ guests_shared }} invité(s) sur {{ guests_with_email }} avec un email ont actuellement un accès en lecture.
+            {% if active_event.drive_sharing_enabled %}Désactiver ça révoque l'accès de tout le monde.{% else %}Activer ça donne un accès en lecture à tous les invités ayant renseigné un email.{% endif %}
           </div>
         </div>
         <form method="post" class="js-auto-submit">
           {% csrf_token %}
           <input type="hidden" name="toggle_drive_sharing" value="1">
-          <label class="toggle" aria-label="Toggle Drive sharing with participants">
+          <label class="toggle" aria-label="Activer/désactiver le partage Drive avec les participants">
             <input type="checkbox" {% if active_event.drive_sharing_enabled %}checked{% endif %}>
             <span class="toggle__track"></span>
           </label>
@@ -148,27 +148,27 @@
     </div>
 
     <div class="card card--solid" id="panel-tv-layout" {% if active_tab != "tv-layout" %}hidden{% endif %}>
-      <p class="card__title">TV layout</p>
-      <p class="text-sm text-muted" style="margin-bottom:var(--space-sm);">A preview of what's on the TV screen — pick what goes in each frame.</p>
+      <p class="card__title">Disposition TV</p>
+      <p class="text-sm text-muted" style="margin-bottom:var(--space-sm);">Un aperçu de ce qui s'affiche sur l'écran TV — choisis ce qui va dans chaque zone.</p>
       <div class="flex gap-sm flex-wrap" style="align-items:stretch;">
         <div class="card card--solid card--tight flex-col gap-sm" style="display:flex;flex:1;min-width:260px;background:var(--app-bg);">
-          <span class="text-xs text-muted" style="text-transform:uppercase;letter-spacing:0.03em;font-weight:700;">Main</span>
+          <span class="text-xs text-muted" style="text-transform:uppercase;letter-spacing:0.03em;font-weight:700;">Principal</span>
           <form method="post" class="flex gap-2xs flex-wrap">
             {% csrf_token %}
-            <button type="submit" name="set_tv_layout" value="slideshow" class="btn btn--sm {% if active_event.tv_layout == 'slideshow' %}btn--dark{% else %}btn--outline{% endif %}">Photo slideshow</button>
+            <button type="submit" name="set_tv_layout" value="slideshow" class="btn btn--sm {% if active_event.tv_layout == 'slideshow' %}btn--dark{% else %}btn--outline{% endif %}">Diaporama photo</button>
             <button
               type="submit" name="set_tv_layout" value="whiteboard"
               class="btn btn--sm {% if active_event.tv_layout == 'whiteboard' %}btn--dark{% else %}btn--outline{% endif %}"
               {% if not active_event.whiteboard_enabled %}disabled{% endif %}
-            >Collective whiteboard</button>
+            >Whiteboard collectif</button>
           </form>
-          {% if not active_event.whiteboard_enabled %}<p class="text-xs text-muted">Turn on the whiteboard below to enable that option.</p>{% endif %}
+          {% if not active_event.whiteboard_enabled %}<p class="text-xs text-muted">Active le Whiteboard ci-dessous pour débloquer cette option.</p>{% endif %}
           <div class="flex justify-between items-center gap-sm text-sm" style="margin-top:auto;font-weight:700;">
-            <span>Whiteboard feature</span>
+            <span>Fonctionnalité Whiteboard</span>
             <form method="post" class="js-auto-submit">
               {% csrf_token %}
               <input type="hidden" name="toggle_whiteboard" value="1">
-              <label class="toggle" aria-label="Toggle whiteboard">
+              <label class="toggle" aria-label="Activer/désactiver le Whiteboard">
                 <input type="checkbox" {% if active_event.whiteboard_enabled %}checked{% endif %}>
                 <span class="toggle__track"></span>
               </label>
@@ -178,9 +178,9 @@
 
         <div class="flex-col gap-sm" style="display:flex;flex:0 0 30%;min-width:220px;">
           <div class="card card--solid card--tight flex-col gap-sm" style="display:flex;background:var(--app-bg);">
-            <span class="text-xs text-muted" style="text-transform:uppercase;letter-spacing:0.03em;font-weight:700;">Top right — QR codes</span>
+            <span class="text-xs text-muted" style="text-transform:uppercase;letter-spacing:0.03em;font-weight:700;">En haut à droite — QR codes</span>
             <div class="flex gap-2xs flex-wrap">
-              <span class="btn btn--sm btn--placeholder">Upload QR</span>
+              <span class="btn btn--sm btn--placeholder">QR Upload</span>
               <form method="post">
                 {% csrf_token %}
                 <button
@@ -190,27 +190,27 @@
                 >Wi-Fi QR</button>
               </form>
             </div>
-            {% if not wifi_configured %}<p class="text-xs text-muted">Requires admin to set up Wi-Fi credentials.</p>{% endif %}
+            {% if not wifi_configured %}<p class="text-xs text-muted">Nécessite que l'admin configure les identifiants Wi-Fi.</p>{% endif %}
           </div>
 
           <div class="card card--solid card--tight flex-col gap-sm" style="display:flex;background:var(--app-bg);">
-            <span class="text-xs text-muted" style="text-transform:uppercase;letter-spacing:0.03em;font-weight:700;">Bottom right</span>
+            <span class="text-xs text-muted" style="text-transform:uppercase;letter-spacing:0.03em;font-weight:700;">En bas à droite</span>
             <form method="post" class="flex gap-2xs flex-wrap">
               {% csrf_token %}
               <button
                 type="submit" name="set_tv_bottom_right" value="leaderboard"
                 class="btn btn--sm {% if active_event.tv_bottom_right == 'leaderboard' %}btn--dark{% else %}btn--outline{% endif %}"
                 {% if not active_event.likes_enabled %}disabled{% endif %}
-              >Leaderboard</button>
-              <button type="submit" name="set_tv_bottom_right" value="none" class="btn btn--sm {% if active_event.tv_bottom_right == 'none' %}btn--dark{% else %}btn--outline{% endif %}">Nothing</button>
+              >Classement</button>
+              <button type="submit" name="set_tv_bottom_right" value="none" class="btn btn--sm {% if active_event.tv_bottom_right == 'none' %}btn--dark{% else %}btn--outline{% endif %}">Rien</button>
             </form>
-            {% if not active_event.likes_enabled %}<p class="text-xs text-muted">Turn on photo likes below to enable the leaderboard.</p>{% endif %}
+            {% if not active_event.likes_enabled %}<p class="text-xs text-muted">Active les likes ci-dessous pour débloquer le classement.</p>{% endif %}
             <div class="flex justify-between items-center gap-sm text-sm" style="margin-top:auto;font-weight:700;">
-              <span>Photo likes feature</span>
+              <span>Fonctionnalité likes</span>
               <form method="post" class="js-auto-submit">
                 {% csrf_token %}
                 <input type="hidden" name="toggle_likes" value="1">
-                <label class="toggle" aria-label="Toggle photo likes">
+                <label class="toggle" aria-label="Activer/désactiver les likes">
                   <input type="checkbox" {% if active_event.likes_enabled %}checked{% endif %}>
                   <span class="toggle__track"></span>
                 </label>
@@ -224,19 +224,19 @@
     <div class="card card--solid" id="panel-whiteboard" {% if active_tab != "whiteboard" %}hidden{% endif %}>
       <p class="card__title">Whiteboard ({{ whiteboard_drawings|length }})</p>
       {% if active_event.whiteboard_image %}
-      <img class="thumb" src="{{ active_event.whiteboard_image.url }}" alt="Current whiteboard" style="width:100%;max-width:420px;margin-bottom:var(--space-sm);">
+      <img class="thumb" src="{{ active_event.whiteboard_image.url }}" alt="Whiteboard actuel" style="width:100%;max-width:420px;margin-bottom:var(--space-sm);">
       {% else %}
-      <p class="text-muted" style="font-style:italic;">No drawing uploaded yet for the active event.</p>
+      <p class="text-muted" style="font-style:italic;">Aucun dessin envoyé pour l'évènement actif.</p>
       {% endif %}
       {% if whiteboard_drawings %}
       <div class="media-list">
         {% for drawing in whiteboard_drawings %}
         <div class="media-item">
-          <img class="thumb thumb--sm" src="{{ drawing.image.url }}" alt="Drawing by {{ drawing.username }}" loading="lazy">
+          <img class="thumb thumb--sm" src="{{ drawing.image.url }}" alt="Dessin de {{ drawing.username }}" loading="lazy">
           <div class="grow text-sm">{{ drawing.username }} · {{ drawing.uploaded_at|date:"d/m H:i" }}</div>
           <form method="post" action="{% url 'dashboard-delete-whiteboard-drawing' drawing.id %}">
             {% csrf_token %}
-            <button type="submit" class="btn btn--danger btn--sm">Delete</button>
+            <button type="submit" class="btn btn--danger btn--sm">Supprimer</button>
           </form>
         </div>
         {% endfor %}
@@ -246,22 +246,22 @@
     {% endif %}
 
     <div class="card card--solid" id="panel-guests" {% if active_tab != "guests" %}hidden{% endif %}>
-      <p class="card__title">Guests ({{ identities|length }})</p>
+      <p class="card__title">Invités ({{ identities|length }})</p>
       {% if identities %}
       <div style="overflow-x:auto;">
         <table class="table">
-          <thead><tr><th>Pseudo</th><th>Email</th><th>Drive shared</th><th>Joined</th><th></th></tr></thead>
+          <thead><tr><th>Pseudo</th><th>Email</th><th>Drive partagé</th><th>Arrivée</th><th></th></tr></thead>
           <tbody>
             {% for identity in identities %}
             <tr>
               <td>{{ identity.pseudo }}</td>
               <td>{{ identity.email|default:"—" }}</td>
-              <td>{{ identity.drive_shared|yesno:"Yes,No" }}</td>
+              <td>{{ identity.drive_shared|yesno:"Oui,Non" }}</td>
               <td>{{ identity.created_at }}</td>
               <td>
                 <form method="post" action="{% url 'dashboard-delete-guest' identity.id %}">
                   {% csrf_token %}
-                  <button type="submit" class="btn btn--danger btn--sm">Delete</button>
+                  <button type="submit" class="btn btn--danger btn--sm">Supprimer</button>
                 </form>
               </td>
             </tr>
@@ -270,7 +270,7 @@
         </table>
       </div>
       {% else %}
-      <p class="text-muted" style="font-style:italic;">No guest has joined the active event yet.</p>
+      <p class="text-muted" style="font-style:italic;">Aucun invité n'a encore rejoint l'évènement actif.</p>
       {% endif %}
     </div>
 
@@ -282,24 +282,24 @@
         <div class="photo-card">
           <div style="position:relative;">
             <img class="thumb" src="{{ photo.image.url }}" alt="{{ photo.filename }}" style="width:100%;height:110px;object-fit:cover;">
-            {% if photo.hidden %}<span class="badge badge--warning" style="position:absolute;top:var(--space-2xs);left:var(--space-2xs);">Hidden</span>{% endif %}
+            {% if photo.hidden %}<span class="badge badge--warning" style="position:absolute;top:var(--space-2xs);left:var(--space-2xs);">Masquée</span>{% endif %}
           </div>
           <div class="text-xs text-muted">{{ photo.username }} · {{ photo.uploaded_at|date:"d/m H:i" }}</div>
           <div style="display:flex;gap:var(--space-2xs);">
             <form method="post" action="{% url 'dashboard-toggle-photo-hidden' photo.id %}">
               {% csrf_token %}
-              <button type="submit" class="btn btn--outline btn--sm">{% if photo.hidden %}Unhide{% else %}Hide{% endif %}</button>
+              <button type="submit" class="btn btn--outline btn--sm">{% if photo.hidden %}Réafficher{% else %}Masquer{% endif %}</button>
             </form>
             <form method="post" action="{% url 'dashboard-delete-photo' photo.id %}">
               {% csrf_token %}
-              <button type="submit" class="btn btn--danger btn--sm">Delete</button>
+              <button type="submit" class="btn btn--danger btn--sm">Supprimer</button>
             </form>
           </div>
         </div>
         {% endfor %}
       </div>
       {% else %}
-      <p class="text-muted" style="font-style:italic;">No photo uploaded yet for the active event.</p>
+      <p class="text-muted" style="font-style:italic;">Aucune photo envoyée pour l'évènement actif.</p>
       {% endif %}
     </div>
   </div>

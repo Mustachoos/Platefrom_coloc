@@ -32,11 +32,11 @@ class DualSessionProfileTests(TestCase):
         response = self.client.get(reverse("account"))
 
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "Account type:")
+        self.assertContains(response, "Type de compte :")
         self.assertContains(response, "Staff")
         self.assertContains(response, "staffer")
-        self.assertNotContains(response, "Account type: <strong>Guest</strong>")
-        self.assertNotContains(response, "no email on file")
+        self.assertNotContains(response, "Type de compte : <strong>Invité</strong>")
+        self.assertNotContains(response, "aucun email enregistré")
 
     def test_guest_only_session_shows_guest_panel_only(self):
         session = self.client.session
@@ -48,10 +48,10 @@ class DualSessionProfileTests(TestCase):
         response = self.client.get(reverse("account"))
 
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "Account type: <strong>Guest</strong>")
+        self.assertContains(response, "Type de compte : <strong>Invité</strong>")
         self.assertContains(response, "PartyGuest")
-        self.assertNotContains(response, "Change password")
-        self.assertNotContains(response, "Log out")
+        self.assertNotContains(response, "Changer le mot de passe")
+        self.assertNotContains(response, "Se déconnecter")
 
     def test_dual_session_shows_both_panels_together(self):
         staff_user = User.objects.create_user(
@@ -74,9 +74,9 @@ class DualSessionProfileTests(TestCase):
         # Staff panel present.
         self.assertContains(response, "Staff")
         self.assertContains(response, "staffer")
-        self.assertContains(response, "Change password")
+        self.assertContains(response, "Changer le mot de passe")
         # Guest panel present too.
-        self.assertContains(response, "Account type: <strong>Guest</strong>")
+        self.assertContains(response, "Type de compte : <strong>Invité</strong>")
         self.assertContains(response, "PartyGuest")
 
         # Staff login must not have been disturbed by acquiring the guest identity.

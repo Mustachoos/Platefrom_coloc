@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="fr">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -149,35 +149,35 @@
       <div class="slide-wrap" id="slideshow-wrap">
         <div class="tv-frame-border" aria-hidden="true"></div>
         <img id="slide" alt="">
-        <div id="empty" class="tv-empty">Waiting for photos&hellip;</div>
+        <div id="empty" class="tv-empty">En attente de photos&hellip;</div>
 
         <div id="new-photo-overlay" class="card new-photo-overlay" aria-hidden="true">
-          <img id="new-photo-img" src="" alt="new photo">
+          <img id="new-photo-img" src="" alt="nouvelle photo">
           <div>
             <div id="new-photo-username" class="new-photo-overlay__username"></div>
-            <div class="new-photo-overlay__sub">Just uploaded</div>
+            <div class="new-photo-overlay__sub">À l'instant</div>
           </div>
         </div>
       </div>
       <div class="slide-wrap" id="whiteboard-wrap" style="display:none">
         <div class="tv-frame-border" aria-hidden="true"></div>
-        <img id="board-slide" alt="Collective whiteboard">
-        <div id="board-empty" class="tv-empty">Waiting for drawings&hellip;</div>
+        <img id="board-slide" alt="Tableau collectif">
+        <div id="board-empty" class="tv-empty">En attente de dessins&hellip;</div>
       </div>
     </div>
     <div class="tv-layout__side">
       <div class="qr-row">
         <div class="card card--solid card--tight qr-card tv-qr-card" id="wifi-qr-card" style="display:{% if not wifi_qr_shown %}none{% endif %}">
-          <img src="{% if wifi_qr_shown %}{% url 'wifi-qr-code' %}{% endif %}" data-src="{% url 'wifi-qr-code' %}" alt="QR code to join the Wi-Fi">
-          <p class="qr-card__caption">Scan to join Wi-Fi</p>
+          <img src="{% if wifi_qr_shown %}{% url 'wifi-qr-code' %}{% endif %}" data-src="{% url 'wifi-qr-code' %}" alt="QR code pour rejoindre le Wi-Fi">
+          <p class="qr-card__caption">Scanner pour rejoindre le Wi-Fi</p>
         </div>
         <div class="card card--solid card--tight qr-card tv-qr-card">
-          <img src="{% url 'upload-qr-code' %}" alt="QR code to upload photos">
-          <p class="qr-card__caption">Scan to upload</p>
+          <img src="{% url 'upload-qr-code' %}" alt="QR code pour envoyer des photos">
+          <p class="qr-card__caption">Scanner pour envoyer des photos</p>
         </div>
       </div>
       <aside class="card card--solid" id="leaderboard">
-        <p class="card__title">Top liked photos</p>
+        <p class="card__title">Photos les plus aimées</p>
         <div id="top-list" class="media-list"></div>
       </aside>
     </div>

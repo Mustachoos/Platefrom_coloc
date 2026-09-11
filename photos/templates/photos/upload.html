@@ -1,9 +1,9 @@
 <!doctype html>
-<html lang="en">
+<html lang="fr">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>Upload photos</title>
+  <title>Upload de photos</title>
   {% load static %}
   {% load icons %}
   <link rel="stylesheet" href="{% static 'photos/tokens.css' %}">
@@ -13,9 +13,9 @@
 <body>
   <div class="page shell">
     {% include "photos/_account_button.html" %}
-    {% include "photos/_page_header.html" with page_icon="upload" page_title="Upload photos" %}
+    {% include "photos/_page_header.html" with page_icon="upload" page_title="Upload de photos" %}
     <main class="card">
-      <p class="text-muted text-sm">Uploading as <strong>{{ pseudo }}</strong></p>
+      <p class="text-muted text-sm">Envoi en tant que <strong>{{ pseudo }}</strong></p>
 
       {% if messages %}
       <div class="flex-col gap-2xs" style="display:flex;margin-top:var(--space-sm);">
@@ -29,18 +29,18 @@
         <div id="photo-status"
              class="alert alert--boxed{% if just_uploaded %} alert--success{% endif %}"
              data-just-uploaded="{{ just_uploaded|yesno:'1,0' }}"
-        >{% if just_uploaded %}Upload successful{% else %}No photo yet :({% endif %}</div>
+        >{% if just_uploaded %}Envoi réussi{% else %}Pas encore de photo :({% endif %}</div>
       </div>
 
       <form id="upload-form" method="post" enctype="multipart/form-data">
         {% csrf_token %}
         <div class="field">
-          <label class="text-center" style="width:100%;">Add a photo</label>
+          <label class="text-center" style="width:100%;">Ajouter une photo</label>
           <input type="file" id="images" name="images" accept="image/*" style="display:none">
           <input type="file" id="camera-input" accept="image/*" capture="environment" style="display:none">
           <div class="flex flex-wrap gap-sm" style="margin-top:var(--space-2xs);justify-content:center;">
-            <button type="button" id="choose-btn" class="btn btn--light">{% icon 'photo' size=18 %} Choose a photo</button>
-            <button type="button" id="camera-btn" class="btn btn--light">{% icon 'camera' size=18 %} Take a photo</button>
+            <button type="button" id="choose-btn" class="btn btn--light">{% icon 'photo' size=18 %} Choisir une photo</button>
+            <button type="button" id="camera-btn" class="btn btn--light">{% icon 'camera' size=18 %} Prendre une photo</button>
           </div>
         </div>
 
@@ -79,9 +79,9 @@
           function updateSelectionStatus() {
             if (input.files && input.files.length > 0) {
               const file = input.files[0];
-              setStatus('selected', cameraFiles.has(file) ? 'I see you took a nice picture !' : file.name);
+              setStatus('selected', cameraFiles.has(file) ? 'Jolie photo !' : file.name);
             } else {
-              setStatus('empty', 'No photo yet :(');
+              setStatus('empty', 'Pas encore de photo :(');
             }
           }
 
@@ -145,7 +145,7 @@
               // Already server-rendered as "Upload successful"; just schedule
               // the transition back to the empty state.
               setTimeout(function () {
-                setStatus('empty', 'No photo yet :(');
+                setStatus('empty', 'Pas encore de photo :(');
               }, 3000);
             } else {
               update();

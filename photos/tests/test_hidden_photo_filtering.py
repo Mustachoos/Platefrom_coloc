@@ -8,7 +8,7 @@ Covers the three query sites named in the story contract:
 
 Plus the "no filtering change, just a label" side of the contract:
 - `my_photos_view` (/my-photos/) still lists a guest's own hidden photo,
-  with a "Hidden by staff" label shown only for that photo.
+  with a "Masquée par le staff" label shown only for that photo.
 
 And the reversal: unhiding a photo restores it everywhere and makes it
 likeable again.
@@ -160,7 +160,7 @@ class HiddenPhotoFilteringTests(TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, f'data-id="{self.hidden_photo.id}"')
-        self.assertContains(response, "Hidden by staff")
+        self.assertContains(response, "Masquée par le staff")
 
     def test_my_photos_does_not_label_a_visible_photo(self):
         self._join_as_guest("alice")
@@ -169,4 +169,4 @@ class HiddenPhotoFilteringTests(TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, f'data-id="{self.visible_photo.id}"')
-        self.assertNotContains(response, "Hidden by staff")
+        self.assertNotContains(response, "Masquée par le staff")

@@ -86,7 +86,7 @@ class DeleteEventTests(TestCase):
         self.assertTrue(os.path.exists(photo.image.path))
 
         messages = [str(m) for m in get_messages(response.wsgi_request)]
-        self.assertTrue(any("Switch to another event before deleting this one" in m for m in messages))
+        self.assertTrue(any("Bascule sur un autre évènement avant de supprimer celui-ci" in m for m in messages))
 
     def test_staff_non_superuser_cannot_delete(self):
         event, photo, drawing, identity = self._build_event("Someone Else's Party")

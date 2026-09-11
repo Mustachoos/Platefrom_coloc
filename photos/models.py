@@ -72,15 +72,15 @@ class Event(models.Model):
     TV_LAYOUT_SLIDESHOW = "slideshow"
     TV_LAYOUT_WHITEBOARD = "whiteboard"
     TV_LAYOUT_CHOICES = [
-        (TV_LAYOUT_SLIDESHOW, "Photo slideshow"),
-        (TV_LAYOUT_WHITEBOARD, "Collective whiteboard"),
+        (TV_LAYOUT_SLIDESHOW, "Diaporama photo"),
+        (TV_LAYOUT_WHITEBOARD, "Whiteboard collectif"),
     ]
     tv_layout = models.CharField(max_length=20, choices=TV_LAYOUT_CHOICES, default=TV_LAYOUT_SLIDESHOW)
     TV_BOTTOM_RIGHT_LEADERBOARD = "leaderboard"
     TV_BOTTOM_RIGHT_NONE = "none"
     TV_BOTTOM_RIGHT_CHOICES = [
-        (TV_BOTTOM_RIGHT_LEADERBOARD, "Leaderboard"),
-        (TV_BOTTOM_RIGHT_NONE, "Nothing"),
+        (TV_BOTTOM_RIGHT_LEADERBOARD, "Classement"),
+        (TV_BOTTOM_RIGHT_NONE, "Rien"),
     ]
     tv_bottom_right = models.CharField(
         max_length=20, choices=TV_BOTTOM_RIGHT_CHOICES, default=TV_BOTTOM_RIGHT_LEADERBOARD
@@ -176,10 +176,10 @@ class SiteSettings(models.Model):
     WIFI_SECURITY_CHOICES = [
         (WIFI_SECURITY_WPA, "WPA / WPA2 / WPA3"),
         (WIFI_SECURITY_WEP, "WEP"),
-        (WIFI_SECURITY_NOPASS, "Open (no password)"),
+        (WIFI_SECURITY_NOPASS, "Ouvert (sans mot de passe)"),
     ]
-    wifi_ssid = models.CharField(max_length=100, blank=True, verbose_name="Wi-Fi network name (SSID)")
-    wifi_password = models.CharField(max_length=200, blank=True, verbose_name="Wi-Fi password")
+    wifi_ssid = models.CharField(max_length=100, blank=True, verbose_name="Nom du réseau Wi-Fi (SSID)")
+    wifi_password = models.CharField(max_length=200, blank=True, verbose_name="Mot de passe Wi-Fi")
     wifi_security = models.CharField(max_length=10, choices=WIFI_SECURITY_CHOICES, default=WIFI_SECURITY_WPA)
     server_host = models.CharField(
         max_length=255,

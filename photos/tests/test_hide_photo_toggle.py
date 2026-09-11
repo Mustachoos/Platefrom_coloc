@@ -115,7 +115,7 @@ class ToggleHiddenPhotoTests(TestCase):
         self._mock_channel_layer()
         response = self.client.post(self.toggle_url, follow=True)
         messages = [str(m) for m in response.context["messages"]]
-        self.assertIn("Photo hidden.", messages)
+        self.assertIn("Photo masquée.", messages)
 
     # -- Unhiding -----------------------------------------------------------------
 
@@ -146,7 +146,7 @@ class ToggleHiddenPhotoTests(TestCase):
         self._mock_channel_layer()
         response = self.client.post(self.toggle_url, follow=True)
         messages = [str(m) for m in response.context["messages"]]
-        self.assertIn("Photo unhidden.", messages)
+        self.assertIn("Photo réaffichée.", messages)
 
     # -- Never deletes -----------------------------------------------------------------
 

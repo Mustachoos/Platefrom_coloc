@@ -1,9 +1,9 @@
 <!doctype html>
-<html lang="en">
+<html lang="fr">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>Invite link no longer valid</title>
+  <title>Lien d'invitation invalide</title>
   {% load static %}
   <link rel="stylesheet" href="{% static 'photos/tokens.css' %}">
   <link rel="stylesheet" href="{% static 'photos/base.css' %}">
@@ -12,16 +12,16 @@
 <body>
   <div class="page shell" style="min-height:100vh;display:flex;align-items:center;justify-content:center;">
     <main class="card" style="width:100%;max-width:420px;">
-      <h1>This invite link is no longer valid</h1>
+      <h1>Ce lien d'invitation n'est plus valide</h1>
       <p class="text-muted" style="margin-top:var(--space-2xs);">
         {% if invite.status == "expired" %}
-        Invite links expire one hour after they're generated. Ask the admin for a new one.
+        Les liens d'invitation expirent une heure après leur génération. Demande un nouveau lien à l'admin.
         {% elif invite.status == "revoked" %}
-        This invite has been revoked by the admin.
+        Cette invitation a été révoquée par l'admin.
         {% elif invite.status == "active" %}
-        This invite has already been used to create an account.
+        Cette invitation a déjà été utilisée pour créer un compte.
         {% else %}
-        This invite can no longer be used.
+        Cette invitation ne peut plus être utilisée.
         {% endif %}
       </p>
     </main>

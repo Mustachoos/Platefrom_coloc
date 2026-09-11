@@ -1,9 +1,9 @@
 <!doctype html>
-<html lang="en">
+<html lang="fr">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>My photos</title>
+  <title>Mes photos</title>
   {% load static %}
   <link rel="stylesheet" href="{% static 'photos/tokens.css' %}">
   <link rel="stylesheet" href="{% static 'photos/base.css' %}">
@@ -12,7 +12,7 @@
 <body>
   <div class="page shell">
     {% include "photos/_account_button.html" %}
-    {% include "photos/_page_header.html" with page_icon="photo" page_title="My photos" %}
+    {% include "photos/_page_header.html" with page_icon="photo" page_title="Mes photos" %}
     <main class="card">
       {% include "photos/_photos_segmented.html" %}
 
@@ -34,19 +34,19 @@
               <div class="media-item__name">{{ photo.filename }}</div>
               <div class="text-xs text-muted">{{ photo.uploaded_at }}</div>
               {% if photo.hidden %}
-              <span class="badge badge--warning">Hidden by staff</span>
+              <span class="badge badge--warning">Masquée par le staff</span>
               {% endif %}
             </div>
             <form method="post" action="{% url 'delete-own-photo' photo.id %}">
               {% csrf_token %}
-              <button type="submit" class="btn btn--danger btn--sm">Delete</button>
+              <button type="submit" class="btn btn--danger btn--sm">Supprimer</button>
             </form>
           </div>
         </div>
         {% endfor %}
       </div>
       {% else %}
-      <p class="text-muted text-center">You haven't uploaded any photos yet.</p>
+      <p class="text-muted text-center">Tu n'as encore envoyé aucune photo.</p>
       {% endif %}
     </main>
   </div>

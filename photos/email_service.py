@@ -15,8 +15,8 @@ def build_backend():
 
 def send_test_email(to_address):
     EmailMessage(
-        subject="PartyBooth test email",
-        body="If you're reading this, the recovery email is configured correctly.",
+        subject="Email de test PartyBooth",
+        body="Si tu lis ceci, l'email de récupération est correctement configuré.",
         to=[to_address],
         connection=build_backend(),
     ).send()

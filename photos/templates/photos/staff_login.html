@@ -1,9 +1,9 @@
 <!doctype html>
-<html lang="en">
+<html lang="fr">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>Staff sign in</title>
+  <title>Connexion staff</title>
   {% load static %}
   <link rel="stylesheet" href="{% static 'photos/tokens.css' %}">
   <link rel="stylesheet" href="{% static 'photos/base.css' %}">
@@ -12,8 +12,8 @@
 <body>
   <div class="page shell" style="min-height:100vh;display:flex;align-items:center;justify-content:center;">
     <main class="card" style="width:100%;max-width:420px;">
-      <h1>Staff sign in</h1>
-      <p class="text-muted" style="margin-top:var(--space-2xs);margin-bottom:var(--space-md);">Sign in with your admin or subadmin account to reach the dashboard.</p>
+      <h1>Connexion staff</h1>
+      <p class="text-muted" style="margin-top:var(--space-2xs);margin-bottom:var(--space-md);">Connecte-toi avec ton compte admin ou sous-admin pour accéder au dashboard.</p>
 
       {% if form.non_field_errors %}
       <div class="alert alert--boxed" style="margin-bottom:var(--space-md);">{{ form.non_field_errors|join:" " }}</div>
@@ -22,19 +22,19 @@
       <form method="post">
         {% csrf_token %}
         <div class="field">
-          <label for="{{ form.username.id_for_label }}">Username</label>
+          <label for="{{ form.username.id_for_label }}">Nom d'utilisateur</label>
           {{ form.username }}
         </div>
         <div class="field" style="margin-top:var(--space-sm);">
-          <label for="{{ form.password.id_for_label }}">Password</label>
+          <label for="{{ form.password.id_for_label }}">Mot de passe</label>
           {{ form.password }}
         </div>
         <div class="flex flex-wrap gap-sm items-center" style="margin-top:var(--space-md);">
-          <button type="submit" class="btn btn--dark">Sign in</button>
+          <button type="submit" class="btn btn--dark">Se connecter</button>
           {% if recovery_email_configured %}
-          <a class="link text-sm" href="{% url 'password-reset' %}">Forgot password?</a>
+          <a class="link text-sm" href="{% url 'password-reset' %}">Mot de passe oublié ?</a>
           {% else %}
-          <span class="link text-sm" style="color:var(--ink-400);text-decoration-color:var(--ink-400);cursor:not-allowed;" title="The admin hasn't set up a recovery email yet — ask them to configure one from the admin dashboard.">Forgot password?</span>
+          <span class="link text-sm" style="color:var(--ink-400);text-decoration-color:var(--ink-400);cursor:not-allowed;" title="L'admin n'a pas encore configuré d'email de récupération — demande-lui d'en configurer un depuis le compte admin.">Mot de passe oublié ?</span>
           {% endif %}
         </div>
       </form>

@@ -1,6 +1,6 @@
 """US-B1 — Staff starts a guest session without logging out.
 
-Covers the dashboard's "Start a guest session" / "Continue as guest" entry
+Covers the dashboard's "Démarrer une session invité" / "Continuer en tant qu'invité" entry
 point: it should link to the existing `choose-pseudo` URL, flip its label
 once the staff user's session already holds a guest identity, and never
 disturb the staff auth session itself.
@@ -34,8 +34,8 @@ class GuestSessionEntryPointTests(TestCase):
         response = self.client.get(reverse("dashboard"))
 
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "Start a guest session")
-        self.assertNotContains(response, "Continue as guest")
+        self.assertContains(response, "Démarrer une session invité")
+        self.assertNotContains(response, "Continuer en tant qu'invité")
         self.assertContains(response, reverse("choose-pseudo"))
 
     def test_clicking_entry_point_lands_on_pseudo_page_staff_session_untouched(self):
@@ -66,8 +66,8 @@ class GuestSessionEntryPointTests(TestCase):
         response = self.client.get(reverse("dashboard"))
 
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "Continue as guest")
-        self.assertNotContains(response, "Start a guest session")
+        self.assertContains(response, "Continuer en tant qu'invité")
+        self.assertNotContains(response, "Démarrer une session invité")
         self.assertContains(response, reverse("upload"))
 
     def test_clicking_continue_as_guest_redirects_straight_to_upload(self):

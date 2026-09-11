@@ -65,7 +65,7 @@ class PerEventWifiQrToggleTests(TestCase):
         response = self.client.get(self.dashboard_url + "?tab=tv-layout")
         self.assertEqual(response.status_code, 200)
         content = response.content.decode()
-        self.assertIn("Requires admin to set up Wi-Fi credentials", content)
+        self.assertIn("Nécessite que l'admin configure les identifiants Wi-Fi", content)
         self.assertRegex(content, r'name="toggle_wifi_qr"[^>]*disabled')
 
     def test_posting_toggle_directly_rejected_when_no_ssid(self):
@@ -74,7 +74,7 @@ class PerEventWifiQrToggleTests(TestCase):
         self.event_a.refresh_from_db()
         self.assertFalse(self.event_a.wifi_qr_enabled)
         messages = [str(m) for m in response.context["messages"]]
-        self.assertIn("Ask an admin to set up Wi-Fi credentials first.", messages)
+        self.assertIn("Demande à un admin de configurer les identifiants Wi-Fi d'abord.", messages)
 
     # --- SSID configured: staff can toggle per event ------------------------
 
@@ -83,7 +83,7 @@ class PerEventWifiQrToggleTests(TestCase):
         self._login_staff()
         response = self.client.get(self.dashboard_url + "?tab=tv-layout")
         content = response.content.decode()
-        self.assertNotIn("Requires admin to set up Wi-Fi credentials", content)
+        self.assertNotIn("Nécessite que l'admin configure les identifiants Wi-Fi", content)
         self.assertNotRegex(content, r'name="toggle_wifi_qr"[^>]*disabled')
 
     def test_staff_can_toggle_wifi_qr_on_and_off(self):
@@ -94,13 +94,13 @@ class PerEventWifiQrToggleTests(TestCase):
         self.event_a.refresh_from_db()
         self.assertTrue(self.event_a.wifi_qr_enabled)
         messages = [str(m) for m in response.context["messages"]]
-        self.assertIn("Wi-Fi QR code enabled.", messages)
+        self.assertIn("QR code Wi-Fi activé.", messages)
 
         response = self.client.post(self.dashboard_url, {"toggle_wifi_qr": "1"}, follow=True)
         self.event_a.refresh_from_db()
         self.assertFalse(self.event_a.wifi_qr_enabled)
         messages = [str(m) for m in response.context["messages"]]
-        self.assertIn("Wi-Fi QR code disabled.", messages)
+        self.assertIn("QR code Wi-Fi désactivé.", messages)
 
     def test_switching_active_event_preserves_each_events_own_choice(self):
         self._configure_credentials()

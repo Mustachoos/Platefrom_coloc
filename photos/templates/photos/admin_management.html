@@ -1,9 +1,9 @@
 <!doctype html>
-<html lang="en">
+<html lang="fr">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>Admin dashboard</title>
+  <title>Dashboard admin</title>
   {% load static %}
   {% load icons %}
   <link rel="stylesheet" href="{% static 'photos/tokens.css' %}">
@@ -70,8 +70,8 @@
     {% include "photos/_account_button.html" %}
     <div class="flex justify-between items-start gap-sm flex-wrap" style="margin-bottom:var(--space-md);">
       <div>
-        <h1>Admin dashboard</h1>
-        <p class="text-muted text-sm" style="margin-top:var(--space-2xs);">Signed in as <strong>{{ request.user.username }}</strong> (admin).</p>
+        <h1>Dashboard admin</h1>
+        <p class="text-muted text-sm" style="margin-top:var(--space-2xs);">Connecté en tant que <strong>{{ request.user.username }}</strong> (admin).</p>
       </div>
     </div>
 
@@ -82,22 +82,22 @@
           <div class="alert alert--boxed{% if "success" in message.tags %} alert--success{% endif %}" style="margin-bottom:var(--space-sm);">{{ message }}</div>
           {% endif %}{% endfor %}
           <p class="card__title" style="margin-bottom:var(--space-2xs);">Staff ({{ invites|length }})</p>
-          <p class="text-muted text-sm" style="margin-bottom:var(--space-sm);">Generate a one-time link and share it with someone to let them create their own staff
-            account. They'll be able to use the dashboard, but not manage subadmins themselves.</p>
+          <p class="text-muted text-sm" style="margin-bottom:var(--space-sm);">Génère un lien à usage unique et partage-le avec quelqu'un pour qu'il crée son propre compte
+            staff. Il pourra utiliser le dashboard, mais pas gérer les sous-admins lui-même.</p>
 
-          <button type="button" class="btn btn--dark btn--sm" onclick="document.getElementById('invite-modal').showModal()">Generate invite link</button>
+          <button type="button" class="btn btn--dark btn--sm" onclick="document.getElementById('invite-modal').showModal()">Générer un lien d'invitation</button>
 
           <dialog id="invite-modal">
             <form method="post">
               {% csrf_token %}
-              <h2>Who is this invite for?</h2>
+              <h2>Cette invitation est pour qui ?</h2>
               <div class="field">
-                <label for="invitee_name">Name</label>
-                <input class="input" type="text" id="invitee_name" name="invitee_name" required placeholder="e.g. Alex" autofocus>
+                <label for="invitee_name">Nom</label>
+                <input class="input" type="text" id="invitee_name" name="invitee_name" required placeholder="ex. Alex" autofocus>
               </div>
               <div class="flex gap-sm items-center" style="margin-top:var(--space-md);">
-                <button type="button" class="btn btn--outline btn--sm" onclick="document.getElementById('invite-modal').close()">Cancel</button>
-                <button type="submit" name="generate_invite" class="btn btn--dark btn--sm">Generate link</button>
+                <button type="button" class="btn btn--outline btn--sm" onclick="document.getElementById('invite-modal').close()">Annuler</button>
+                <button type="submit" name="generate_invite" class="btn btn--dark btn--sm">Générer le lien</button>
               </div>
             </form>
           </dialog>
@@ -105,7 +105,7 @@
           {% if invites %}
           <div style="overflow-x:auto;margin-top:var(--space-sm);">
             <table class="table">
-              <thead><tr><th>Name</th><th>Status</th><th></th></tr></thead>
+              <thead><tr><th>Nom</th><th>Statut</th><th></th></tr></thead>
               <tbody>
                 {% for invite in invites %}
                 <tr>
@@ -117,16 +117,16 @@
                         type="button" class="btn btn--outline btn--sm copy-link-btn"
                         data-url="{{ request.scheme }}://{% if site_settings.server_host %}{{ site_settings.server_host }}{% else %}{{ request.get_host }}{% endif %}{% url 'subadmin-invite' invite.token %}"
                         {% if invite.status != "pending" %}disabled{% endif %}
-                      >Copy link</button>
+                      >Copier le lien</button>
                       {% if invite.status != "revoked" %}
                       <form method="post" action="{% url 'admin-invite-revoke' invite.token %}">
                         {% csrf_token %}
-                        <button type="submit" class="btn btn--danger btn--sm">Revoke</button>
+                        <button type="submit" class="btn btn--danger btn--sm">Révoquer</button>
                       </form>
                       {% else %}
                       <form method="post" action="{% url 'admin-invite-delete' invite.token %}">
                         {% csrf_token %}
-                        <button type="submit" class="btn btn--danger btn--sm" aria-label="Delete">{% icon 'trash' size=16 %}</button>
+                        <button type="submit" class="btn btn--danger btn--sm" aria-label="Supprimer">{% icon 'trash' size=16 %}</button>
                       </form>
                       {% endif %}
                     </div>
@@ -137,7 +137,7 @@
             </table>
           </div>
           {% else %}
-          <p class="text-muted text-sm" style="font-style:italic;margin-top:var(--space-sm);">No subadmin invited yet.</p>
+          <p class="text-muted text-sm" style="font-style:italic;margin-top:var(--space-sm);">Aucun sous-admin invité pour l'instant.</p>
           {% endif %}
         </div>
 
@@ -146,7 +146,7 @@
             btn.addEventListener('click', function () {
               navigator.clipboard.writeText(btn.dataset.url).then(function () {
                 var original = btn.textContent;
-                btn.textContent = 'Copied!';
+                btn.textContent = 'Copié !';
                 setTimeout(function () { btn.textContent = original; }, 1500);
               });
             });
@@ -164,27 +164,27 @@
               <h2><span
                 class="status-circle{% if verify_token %} checking{% elif verified_ip %} verified{% endif %}"
                 id="ip-status-circle"
-              ></span>Network address</h2>
+              ></span>Adresse réseau</h2>
             </summary>
             <div class="details-body">
 
             <form method="post" class="ip-verify-row" id="ip-form">
               {% csrf_token %}
               <div class="field">
-                <label for="ip_address">IP address <button type="button" class="help-btn" onclick="document.getElementById('ip-help-modal').showModal()">?</button></label>
+                <label for="ip_address">Adresse IP <button type="button" class="help-btn" onclick="document.getElementById('ip-help-modal').showModal()">?</button></label>
                 <input
-                  class="input" type="text" id="ip_address" name="ip_address" placeholder="e.g. 192.168.1.13"
+                  class="input" type="text" id="ip_address" name="ip_address" placeholder="ex. 192.168.1.13"
                   value="{% if verify_token %}{{ verify_ip }}{% else %}{{ verified_ip }}{% endif %}"
                   {% if verify_token or verified_ip %}readonly{% endif %}
                   required
                 >
               </div>
               <div id="checking-action" {% if not verify_token %}style="display:none"{% endif %}>
-                <button type="button" class="textbox-btn" disabled>Checking IP</button>
+                <button type="button" class="textbox-btn" disabled>Vérification…</button>
               </div>
               <div id="action-buttons" {% if verify_token %}style="display:none"{% endif %}>
-                <button type="button" class="textbox-btn" id="modify-ip-btn" {% if not verified_ip %}disabled{% endif %}>Modify</button>
-                <button type="submit" name="start_verify_ip" class="textbox-btn">Check the IP</button>
+                <button type="button" class="textbox-btn" id="modify-ip-btn" {% if not verified_ip %}disabled{% endif %}>Modifier</button>
+                <button type="submit" name="start_verify_ip" class="textbox-btn">Vérifier l'IP</button>
               </div>
             </form>
 
@@ -237,14 +237,14 @@
 
             <dialog id="ip-help-modal">
               <form method="dialog">
-                <h2>Where do I find my IP address?</h2>
+                <h2>Où trouver mon adresse IP ?</h2>
                 <p class="text-sm text-muted">
-                  <strong>Windows:</strong> Settings → Network &amp; Internet → Wi-Fi → click your network → look for "IPv4 address".<br><br>
-                  <strong>macOS:</strong> System Settings → Wi-Fi → Details, next to your network → "IP Address".<br><br>
-                  <strong>Linux:</strong> run <span class="mono">ip addr</span> in a terminal and look for the address under your active network interface.
+                  <strong>Windows :</strong> Paramètres → Réseau et Internet → Wi-Fi → clique sur ton réseau → cherche « Adresse IPv4 ».<br><br>
+                  <strong>macOS :</strong> Réglages Système → Wi-Fi → Détails, à côté de ton réseau → « Adresse IP ».<br><br>
+                  <strong>Linux :</strong> lance <span class="mono">ip addr</span> dans un terminal et cherche l'adresse sous ton interface réseau active.
                 </p>
                 <div class="flex gap-sm items-center" style="margin-top:var(--space-md);">
-                  <button type="button" class="btn btn--dark btn--sm" onclick="document.getElementById('ip-help-modal').close()">Got it</button>
+                  <button type="button" class="btn btn--dark btn--sm" onclick="document.getElementById('ip-help-modal').close()">Compris</button>
                 </div>
               </form>
             </dialog>
@@ -270,29 +270,29 @@
             <form method="post" class="ip-verify-row" id="wifi-form">
               {% csrf_token %}
               <div class="field">
-                <label for="wifi_ssid">Network name (SSID)</label>
+                <label for="wifi_ssid">Nom du réseau (SSID)</label>
                 <input
-                  class="input" type="text" id="wifi_ssid" name="wifi_ssid" placeholder="e.g. Chez Axel"
+                  class="input" type="text" id="wifi_ssid" name="wifi_ssid" placeholder="ex. Chez Axel"
                   value="{{ site_settings.wifi_ssid }}"
                   {% if wifi_credentials_valid %}readonly{% endif %}
                 >
               </div>
               <div class="field">
-                <label for="wifi_password">Password</label>
+                <label for="wifi_password">Mot de passe</label>
                 <div class="password-field">
                   <input
-                    class="input" type="password" id="wifi_password" name="wifi_password" placeholder="Leave blank if open"
+                    class="input" type="password" id="wifi_password" name="wifi_password" placeholder="Laisse vide si ouvert"
                     value="{{ site_settings.wifi_password }}"
                     {% if wifi_credentials_valid %}readonly{% endif %}
                   >
-                  <button type="button" class="password-toggle" id="wifi-password-toggle" aria-label="Show password">
+                  <button type="button" class="password-toggle" id="wifi-password-toggle" aria-label="Afficher le mot de passe">
                     <span class="icon-show">{% icon 'eye' size=18 %}</span>
                     <span class="icon-hide" hidden>{% icon 'eye-off' size=18 %}</span>
                   </button>
                 </div>
               </div>
               <div class="field">
-                <label for="wifi_security">Security</label>
+                <label for="wifi_security">Sécurité</label>
                 <select class="input{% if wifi_credentials_valid %} locked{% endif %}" id="wifi_security" name="wifi_security" {% if wifi_credentials_valid %}tabindex="-1"{% endif %}>
                   {% for value, label in wifi_security_choices %}
                   <option value="{{ value }}" {% if site_settings.wifi_security == value %}selected{% endif %}>{{ label }}</option>
@@ -301,8 +301,8 @@
               </div>
 
               <div id="wifi-action-buttons">
-                <button type="button" class="textbox-btn" id="modify-wifi-btn" {% if not wifi_credentials_valid %}disabled{% endif %}>Modify</button>
-                <button type="submit" name="save_wifi_config" class="textbox-btn">Save</button>
+                <button type="button" class="textbox-btn" id="modify-wifi-btn" {% if not wifi_credentials_valid %}disabled{% endif %}>Modifier</button>
+                <button type="submit" name="save_wifi_config" class="textbox-btn">Enregistrer</button>
               </div>
 
               {% if wifi_credentials_error %}
@@ -331,7 +331,7 @@
                 input.type = revealing ? 'text' : 'password';
                 showIcon.hidden = revealing;
                 hideIcon.hidden = !revealing;
-                this.setAttribute('aria-label', revealing ? 'Hide password' : 'Show password');
+                this.setAttribute('aria-label', revealing ? 'Masquer le mot de passe' : 'Afficher le mot de passe');
               });
             </script>
 
@@ -350,20 +350,20 @@
             <div class="details-body">
               <button type="button" class="drive-step-row" onclick="document.getElementById('drive-step1-modal').showModal()">
                 <span class="status-circle{% if has_client_secret and not client_secret_valid %} failed{% elif client_secret_valid %} verified{% endif %}"></span>
-                1. Upload Google credentials
+                1. Envoyer les identifiants Google
               </button>
               <button type="button" class="drive-step-row" onclick="document.getElementById('drive-step2-modal').showModal()">
                 <span class="status-circle{% if has_token and not token_valid %} failed{% elif token_valid %} verified{% endif %}"></span>
-                2. Connect your Google account
+                2. Connecter ton compte Google
               </button>
               <button type="button" class="drive-step-row" onclick="document.getElementById('drive-step3-modal').showModal()">
                 <span class="status-circle{% if current_folder_id and not folder_valid %} failed{% elif folder_valid %} verified{% endif %}"></span>
-                3. Choose Drive folder
+                3. Choisir le dossier Drive
               </button>
               {% if has_client_secret or has_token or current_folder_id %}
               <form method="post" style="margin-top:var(--space-sm);">
                 {% csrf_token %}
-                <button type="submit" name="disconnect_drive" class="btn btn--danger btn--sm">Remove Drive connection</button>
+                <button type="submit" name="disconnect_drive" class="btn btn--danger btn--sm">Supprimer la connexion Drive</button>
               </form>
               {% endif %}
             </div>
@@ -376,31 +376,31 @@
           {% endif %}{% endfor %}
           <details id="support-email-details" class="hub-details">
             <summary>
-              <h2><span class="status-circle{% if email_ready %} verified{% elif email_attention %} failed{% endif %}"></span>Recovery email</h2>
+              <h2><span class="status-circle{% if email_ready %} verified{% elif email_attention %} failed{% endif %}"></span>Email de récupération</h2>
             </summary>
             <div class="details-body">
-              <p class="text-sm text-muted" style="margin-bottom:var(--space-sm);">Sends password-reset links to admins and subadmins who forget their password, via the same Google account connected below — Google no longer accepts plain-password Gmail logins, so there's no address or password to type here. Steps 1 and 2 are the exact same steps as the Google Drive box: connecting either one connects both.</p>
+              <p class="text-sm text-muted" style="margin-bottom:var(--space-sm);">Envoie les liens de réinitialisation de mot de passe aux admins et sous-admins qui l'oublient, via le même compte Google connecté ci-dessous — Google n'accepte plus les connexions Gmail par simple mot de passe, il n'y a donc ni adresse ni mot de passe à saisir ici. Les étapes 1 et 2 sont exactement les mêmes que celles du bloc Google Drive : connecter l'une connecte les deux.</p>
               <button type="button" class="drive-step-row" onclick="document.getElementById('drive-step1-modal').showModal()">
                 <span class="status-circle{% if has_client_secret and not client_secret_valid %} failed{% elif client_secret_valid %} verified{% endif %}"></span>
-                1. Upload Google credentials
+                1. Envoyer les identifiants Google
               </button>
               <button type="button" class="drive-step-row" onclick="document.getElementById('drive-step2-modal').showModal()">
                 <span class="status-circle{% if has_gmail_token and not gmail_token_valid %} failed{% elif gmail_token_valid %} verified{% endif %}"></span>
-                2. Connect your Google account
+                2. Connecter ton compte Google
               </button>
               {% if gmail_token_valid %}
-              <p class="step-ok" style="margin-top:var(--space-sm);">✓ Ready — sending as {{ site_settings.support_email }}.</p>
+              <p class="step-ok" style="margin-top:var(--space-sm);">✓ Prêt — envoi depuis {{ site_settings.support_email }}.</p>
               {% if request.user.email %}
               <form method="post" style="margin-top:var(--space-xs);">
                 {% csrf_token %}
-                <button type="submit" name="send_test_email" class="btn btn--outline btn--sm">Send test email to {{ request.user.email }}</button>
+                <button type="submit" name="send_test_email" class="btn btn--outline btn--sm">Envoyer un email de test à {{ request.user.email }}</button>
               </form>
               {% endif %}
               {% endif %}
               {% if has_gmail_token %}
               <form method="post" style="margin-top:var(--space-xs);">
                 {% csrf_token %}
-                <button type="submit" name="disconnect_gmail" class="btn btn--danger btn--sm">Disconnect</button>
+                <button type="submit" name="disconnect_gmail" class="btn btn--danger btn--sm">Déconnecter</button>
               </form>
               {% endif %}
             </div>
@@ -412,37 +412,37 @@
     <dialog id="drive-step1-modal" class="wide">
       <form method="post" enctype="multipart/form-data">
         {% csrf_token %}
-        <h2>1. Upload Google credentials</h2>
+        <h2>1. Envoyer les identifiants Google</h2>
         {% if client_secret_valid %}
-        <p class="step-ok">✓ Credentials file looks good.</p>
-        <p class="text-sm text-muted">Already did this from the Drive box or the recovery-email box? You don't need a second Google Cloud project — just make sure both the <a class="link" href="https://console.cloud.google.com/apis/library/drive.googleapis.com" target="_blank" rel="noopener">Google Drive API</a> and the <a class="link" href="https://console.cloud.google.com/apis/library/gmail.googleapis.com" target="_blank" rel="noopener">Gmail API</a> are enabled on that same project, and that both scopes are added on its <a class="link" href="https://console.cloud.google.com/apis/credentials/consent" target="_blank" rel="noopener">OAuth consent screen</a>. Uploading a file below replaces the one currently stored — no separate slot for each.</p>
+        <p class="step-ok">✓ Le fichier d'identifiants est valide.</p>
+        <p class="text-sm text-muted">Tu as déjà fait ça depuis le bloc Drive ou le bloc email de récupération ? Pas besoin d'un second projet Google Cloud — assure-toi juste que la <a class="link" href="https://console.cloud.google.com/apis/library/drive.googleapis.com" target="_blank" rel="noopener">Google Drive API</a> et la <a class="link" href="https://console.cloud.google.com/apis/library/gmail.googleapis.com" target="_blank" rel="noopener">Gmail API</a> sont toutes les deux activées sur ce même projet, et que les deux scopes sont ajoutés sur son <a class="link" href="https://console.cloud.google.com/apis/credentials/consent" target="_blank" rel="noopener">OAuth consent screen</a>. Envoyer un fichier ci-dessous remplace celui déjà enregistré — pas d'emplacement séparé pour chacun.</p>
         {% else %}
           {% if has_client_secret %}
-          <p class="step-warn">⚠ This file isn't a valid Google OAuth credentials file — upload the right one.</p>
+          <p class="step-warn">⚠ Ce fichier n'est pas un fichier d'identifiants OAuth Google valide — envoie le bon fichier.</p>
           {% endif %}
-          <p class="text-sm text-muted">This one set of credentials covers both Drive backups and the recovery email below — already have a Google Cloud project from setting up one of them before? Skip to whichever step you're missing (enabling the other API, or adding its scope) instead of starting a new project.</p>
+          <p class="text-sm text-muted">Ce seul jeu d'identifiants couvre à la fois les sauvegardes Drive et l'email de récupération ci-dessous — tu as déjà un projet Google Cloud pour en avoir configuré un des deux avant ? Passe directement à l'étape qui te manque (activer l'autre API, ou ajouter son scope) plutôt que de créer un nouveau projet.</p>
           <ol class="checklist">
-            <li><a class="link" href="https://console.cloud.google.com/projectcreate" target="_blank" rel="noopener">Create a project</a> on Google Cloud Console.</li>
-            <li><a class="link" href="https://console.cloud.google.com/apis/library/drive.googleapis.com" target="_blank" rel="noopener">Enable the Google Drive API</a> and the <a class="link" href="https://console.cloud.google.com/apis/library/gmail.googleapis.com" target="_blank" rel="noopener">Gmail API</a> for that project.</li>
-            <li><a class="link" href="https://console.cloud.google.com/apis/credentials/consent" target="_blank" rel="noopener">Configure the OAuth consent screen</a> — type "External", and add both the Drive and <span class="mono text-sm">gmail.send</span> scopes.</li>
-            <li><a class="link" href="https://console.cloud.google.com/auth/audience" target="_blank" rel="noopener">Add yourself as a test user</a> — add your address, it's the same one used in step 2.</li>
-            <li><a class="link" href="https://console.cloud.google.com/apis/credentials" target="_blank" rel="noopener">Create OAuth credentials</a> → type <strong>Web application</strong> (not Desktop app) → add this exact address as an authorized redirect URI:
+            <li><a class="link" href="https://console.cloud.google.com/projectcreate" target="_blank" rel="noopener">Crée un projet</a> sur Google Cloud Console.</li>
+            <li><a class="link" href="https://console.cloud.google.com/apis/library/drive.googleapis.com" target="_blank" rel="noopener">Active la Google Drive API</a> et la <a class="link" href="https://console.cloud.google.com/apis/library/gmail.googleapis.com" target="_blank" rel="noopener">Gmail API</a> pour ce projet.</li>
+            <li><a class="link" href="https://console.cloud.google.com/apis/credentials/consent" target="_blank" rel="noopener">Configure l'OAuth consent screen</a> — type « External », et ajoute les scopes Drive et <span class="mono text-sm">gmail.send</span>.</li>
+            <li><a class="link" href="https://console.cloud.google.com/auth/audience" target="_blank" rel="noopener">Ajoute-toi comme test user</a> — ajoute ton adresse, c'est la même qu'à l'étape 2.</li>
+            <li><a class="link" href="https://console.cloud.google.com/apis/credentials" target="_blank" rel="noopener">Crée des OAuth credentials</a> → type <strong>Web application</strong> (pas Desktop app) → ajoute exactement cette adresse comme authorized redirect URI :
               <div class="redirect-uri">{{ drive_redirect_uri }}</div>
             </li>
-            <li>Download the generated JSON file and upload it below.</li>
+            <li>Télécharge le fichier JSON généré et envoie-le ci-dessous.</li>
           </ol>
         {% endif %}
         <div class="field" style="margin-top:var(--space-sm);">
-          <label for="{{ client_secret_form.client_secret_file.id_for_label }}">Credentials file (JSON)</label>
+          <label for="{{ client_secret_form.client_secret_file.id_for_label }}">Fichier d'identifiants (JSON)</label>
           {{ client_secret_form.client_secret_file }}
           <div class="flex gap-sm items-center flex-wrap">
-            <button type="button" id="choose-credentials-btn" class="btn btn--light btn--sm">Choose file</button>
-            <span id="credentials-filename" class="text-sm text-muted">No file chosen</span>
+            <button type="button" id="choose-credentials-btn" class="btn btn--light btn--sm">Choisir un fichier</button>
+            <span id="credentials-filename" class="text-sm text-muted">Aucun fichier choisi</span>
           </div>
         </div>
         <div class="flex gap-sm items-center" style="margin-top:var(--space-md);">
-          <button type="button" class="btn btn--outline btn--sm" onclick="document.getElementById('drive-step1-modal').close()">Close</button>
-          <button type="submit" name="upload_client_secret" class="btn btn--dark btn--sm">{% if client_secret_valid %}Replace file{% else %}Upload{% endif %}</button>
+          <button type="button" class="btn btn--outline btn--sm" onclick="document.getElementById('drive-step1-modal').close()">Fermer</button>
+          <button type="submit" name="upload_client_secret" class="btn btn--dark btn--sm">{% if client_secret_valid %}Remplacer le fichier{% else %}Envoyer{% endif %}</button>
         </div>
       </form>
     </dialog>
@@ -454,38 +454,38 @@
         if (!input || !chooseBtn) return;
         chooseBtn.addEventListener('click', function () { input.click(); });
         input.addEventListener('change', function () {
-          filename.textContent = input.files && input.files.length > 0 ? input.files[0].name : 'No file chosen';
+          filename.textContent = input.files && input.files.length > 0 ? input.files[0].name : 'Aucun fichier choisi';
         });
       })();
     </script>
 
     <dialog id="drive-step2-modal">
       <form method="dialog">
-        <h2>2. Connect your Google account</h2>
+        <h2>2. Connecter ton compte Google</h2>
         {% if not client_secret_valid %}
-        <p class="step-locked">Complete step 1 first.</p>
+        <p class="step-locked">Termine d'abord l'étape 1.</p>
         {% elif not drive_is_localhost %}
         <p class="text-sm text-muted">
-          This step requires a browser running on the server machine itself (Google rejects
-          plain http:// addresses that aren't "localhost"). Open this button from a browser
-          <strong>on that machine</strong> to connect:
+          Cette étape nécessite un navigateur lancé sur la machine du serveur elle-même (Google
+          rejette les adresses http:// simples qui ne sont pas « localhost »). Ouvre ce bouton
+          depuis un navigateur <strong>sur cette machine</strong> pour te connecter :
         </p>
         <div class="flex gap-sm items-center" style="margin-top:var(--space-sm);">
-          <a class="btn btn--dark btn--sm" href="{{ drive_localhost_url }}">Open on localhost</a>
+          <a class="btn btn--dark btn--sm" href="{{ drive_localhost_url }}">Ouvrir sur localhost</a>
         </div>
         {% else %}
           {% if token_valid %}
-          <p class="step-ok">✓ Connected — used for Drive backups and, if Gmail is granted below, for password-reset emails too.</p>
-          <p class="text-sm text-muted" style="margin-top:calc(-1 * var(--space-sm));margin-bottom:var(--space-sm);">Linked Google account: {{ drive_account_email }}</p>
+          <p class="step-ok">✓ Connecté — utilisé pour les sauvegardes Drive et, si Gmail est accordé ci-dessous, pour les emails de réinitialisation aussi.</p>
+          <p class="text-sm text-muted" style="margin-top:calc(-1 * var(--space-sm));margin-bottom:var(--space-sm);">Compte Google lié : {{ drive_account_email }}</p>
           {% elif has_token %}
-          <p class="step-warn">⚠ The stored connection no longer works — reconnect below.</p>
+          <p class="step-warn">⚠ La connexion enregistrée ne fonctionne plus — reconnecte-toi ci-dessous.</p>
           {% endif %}
           <div class="flex gap-sm items-center">
-            <a class="btn btn--dark btn--sm" href="{% url 'drive-google-connect' %}">{% if token_valid %}Reconnect{% else %}Connect my Google account{% endif %}</a>
+            <a class="btn btn--dark btn--sm" href="{% url 'drive-google-connect' %}">{% if token_valid %}Se reconnecter{% else %}Connecter mon compte Google{% endif %}</a>
           </div>
         {% endif %}
         <div class="flex gap-sm items-center" style="margin-top:var(--space-md);">
-          <button type="submit" class="btn btn--outline btn--sm">Close</button>
+          <button type="submit" class="btn btn--outline btn--sm">Fermer</button>
         </div>
       </form>
     </dialog>
@@ -493,19 +493,19 @@
     <dialog id="drive-step3-modal" class="wide">
       <form method="post">
         {% csrf_token %}
-        <h2>3. Choose Drive folder</h2>
+        <h2>3. Choisir le dossier Drive</h2>
         {% if not token_valid %}
-        <p class="step-locked">Complete step 2 first.</p>
+        <p class="step-locked">Termine d'abord l'étape 2.</p>
         {% else %}
           {% if drive_error %}
           <div class="alert alert--boxed" style="margin-bottom:var(--space-sm);">{{ drive_error }}</div>
           {% elif folder_valid %}
-          <p class="step-ok">✓ Connected — each event creates its own subfolder inside this one.</p>
+          <p class="step-ok">✓ Connecté — chaque évènement crée son propre sous-dossier à l'intérieur de celui-ci.</p>
           {% elif current_folder_id %}
-          <p class="step-warn">⚠ The previously chosen folder is no longer reachable — pick another one.</p>
+          <p class="step-warn">⚠ Le dossier choisi précédemment n'est plus joignable — choisis-en un autre.</p>
           {% endif %}
           <div class="field">
-            <label for="folder_choice">Folder</label>
+            <label for="folder_choice">Dossier</label>
             <select
               class="input" name="folder_choice" id="folder_choice"
               onchange="document.getElementById('new-folder-name-row').style.display = (this.value === '__new__') ? '' : 'none'"
@@ -513,18 +513,18 @@
               {% for folder in drive_folders %}
               <option value="{{ folder.id }}" {% if folder.id == current_folder_id %}selected{% endif %}>{{ folder.name }}</option>
               {% endfor %}
-              <option value="__new__">+ Create a new folder</option>
+              <option value="__new__">+ Créer un nouveau dossier</option>
             </select>
           </div>
           <div class="field" id="new-folder-name-row" style="display:none;margin-top:var(--space-sm);">
-            <label for="new_folder_name">New folder name</label>
-            <input class="input" type="text" id="new_folder_name" name="new_folder_name" placeholder="e.g. Coloc Photos">
+            <label for="new_folder_name">Nom du nouveau dossier</label>
+            <input class="input" type="text" id="new_folder_name" name="new_folder_name" placeholder="ex. Coloc Photos">
           </div>
         {% endif %}
         <div class="flex gap-sm items-center" style="margin-top:var(--space-md);">
-          <button type="button" class="btn btn--outline btn--sm" onclick="document.getElementById('drive-step3-modal').close()">Close</button>
+          <button type="button" class="btn btn--outline btn--sm" onclick="document.getElementById('drive-step3-modal').close()">Fermer</button>
           {% if token_valid %}
-          <button type="submit" name="choose_folder" class="btn btn--dark btn--sm">{% if folder_valid %}Change folder{% else %}Connect folder{% endif %}</button>
+          <button type="submit" name="choose_folder" class="btn btn--dark btn--sm">{% if folder_valid %}Changer de dossier{% else %}Connecter le dossier{% endif %}</button>
           {% endif %}
         </div>
       </form>
@@ -535,9 +535,9 @@
     {% endif %}
 
     <div class="card card--solid" style="margin-top:var(--space-md);">
-      <p class="card__title">More</p>
+      <p class="card__title">Plus</p>
       <div class="links-list">
-        <a class="link" href="{% url 'dashboard' %}?tab=events">All events</a>
+        <a class="link" href="{% url 'dashboard' %}?tab=events">Tous les évènements</a>
       </div>
     </div>
   </div>

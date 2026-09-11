@@ -73,8 +73,8 @@ def _root_folder_id():
     root = _configured_root_folder_id()
     if not root:
         raise DriveError(
-            "No Drive root folder configured. Set it from the admin account page's Drive "
-            "step, or set GOOGLE_DRIVE_ROOT_FOLDER_ID."
+            "Aucun dossier Drive racine configuré. Configure-le depuis l'étape Drive de la "
+            "page compte admin, ou définis GOOGLE_DRIVE_ROOT_FOLDER_ID."
         )
     return root
 
@@ -85,7 +85,7 @@ def save_credentials(creds):
     the management command, the dashboard re-auth view, and token refresh."""
     token_path = token_file()
     if not token_path:
-        raise DriveError("GOOGLE_OAUTH_TOKEN_FILE is not set.")
+        raise DriveError("GOOGLE_OAUTH_TOKEN_FILE n'est pas défini.")
     os.makedirs(os.path.dirname(token_path) or ".", exist_ok=True)
     with open(token_path, "w") as f:
         f.write(creds.to_json())
@@ -99,7 +99,7 @@ def build_oauth_flow(redirect_uri):
     client_secret_path = client_secret_file()
     if not client_secret_path or not os.path.exists(client_secret_path):
         raise DriveError(
-            "GOOGLE_OAUTH_CLIENT_SECRET_FILE is not set or the file doesn't exist."
+            "GOOGLE_OAUTH_CLIENT_SECRET_FILE n'est pas défini ou le fichier n'existe pas."
         )
     return Flow.from_client_secrets_file(client_secret_path, scopes=SCOPES, redirect_uri=redirect_uri)
 
@@ -108,8 +108,8 @@ def _get_credentials():
     token_path = token_file()
     if not token_path or not os.path.exists(token_path):
         raise DriveError(
-            "No Google Drive token found. Run 'python manage.py google_drive_auth' "
-            "once (locally, with a browser) to authorize this app."
+            "Aucun token Google Drive trouvé. Lance 'python manage.py google_drive_auth' "
+            "une fois (en local, avec un navigateur) pour autoriser cette app."
         )
     creds = Credentials.from_authorized_user_file(token_path, SCOPES)
     if creds.valid:
@@ -125,14 +125,15 @@ def _get_credentials():
             # to know Drive isn't reachable right now, same as any other
             # DriveError.
             raise DriveError(
-                f"Google Drive authorization has expired or was revoked ({exc}). "
-                "Use the 'Reconnect Google Drive' button on the dashboard to re-authorize."
+                f"L'autorisation Google Drive a expiré ou a été révoquée ({exc}). "
+                "Utilise le bouton « Reconnecter Google Drive » du dashboard pour te réautoriser."
             ) from exc
         save_credentials(creds)
         return creds
     raise DriveError(
-        "Stored Google Drive credentials are invalid and can't be refreshed. "
-        "Use the 'Reconnect Google Drive' button on the dashboard to re-authorize."
+        "Les identifiants Google Drive enregistrés sont invalides et ne peuvent pas être "
+        "rafraîchis. Utilise le bouton « Reconnecter Google Drive » du dashboard pour te "
+        "réautoriser."
     )
 
 
@@ -141,7 +142,7 @@ def _get_service():
         creds = _get_credentials()
         return build("drive", "v3", credentials=creds, cache_discovery=False)
     except HttpError as exc:
-        raise DriveError(f"Could not connect to Google Drive: {exc}") from exc
+        raise DriveError(f"Impossible de se connecter à Google Drive : {exc}") from exc
 
 
 def connected_email_address():
@@ -152,7 +153,7 @@ def connected_email_address():
     try:
         about = service.about().get(fields="user").execute()
     except HttpError as exc:
-        raise DriveError(f"Could not read the connected Google account: {exc}") from exc
+        raise DriveError(f"Impossible de lire le compte Google connecté : {exc}") from exc
     return about.get("user", {}).get("emailAddress", "")
 
 
@@ -170,7 +171,7 @@ def list_root_folders():
         ).execute()
         return results.get("files", [])
     except HttpError as exc:
-        raise DriveError(f"Could not list your Drive folders: {exc}") from exc
+        raise DriveError(f"Impossible de lister tes dossiers Drive : {exc}") from exc
 
 
 def create_root_folder(name):
@@ -183,7 +184,7 @@ def create_root_folder(name):
         ).execute()
         return folder["id"]
     except HttpError as exc:
-        raise DriveError(f"Could not create Drive folder '{name}': {exc}") from exc
+        raise DriveError(f"Impossible de créer le dossier Drive '{name}' : {exc}") from exc
 
 
 def get_or_create_event_folder(name):
@@ -210,7 +211,7 @@ def get_or_create_event_folder(name):
         ).execute()
         return folder["id"], folder.get("webViewLink", "")
     except HttpError as exc:
-        raise DriveError(f"Could not create/find Drive folder '{name}': {exc}") from exc
+        raise DriveError(f"Impossible de créer/trouver le dossier Drive '{name}' : {exc}") from exc
 
 
 def upload_photo(folder_id, file_path, filename):
@@ -226,7 +227,7 @@ def upload_photo(folder_id, file_path, filename):
         ).execute()
         return file["id"]
     except HttpError as exc:
-        raise DriveError(f"Could not upload '{filename}' to Drive: {exc}") from exc
+        raise DriveError(f"Impossible d'envoyer '{filename}' sur Drive : {exc}") from exc
 
 
 def trash_file(file_id):
@@ -235,7 +236,7 @@ def trash_file(file_id):
     try:
         service.files().update(fileId=file_id, body={"trashed": True}).execute()
     except HttpError as exc:
-        raise DriveError(f"Could not remove Drive file '{file_id}': {exc}") from exc
+        raise DriveError(f"Impossible de supprimer le fichier Drive '{file_id}' : {exc}") from exc
 
 
 def folder_exists(folder_id):
@@ -265,7 +266,7 @@ def list_folder_files(folder_id):
         ).execute()
         return results.get("files", [])
     except HttpError as exc:
-        raise DriveError(f"Could not list Drive folder '{folder_id}': {exc}") from exc
+        raise DriveError(f"Impossible de lister le dossier Drive '{folder_id}' : {exc}") from exc
 
 
 def download_file(file_id):
@@ -280,7 +281,7 @@ def download_file(file_id):
             _, done = downloader.next_chunk()
         return buffer.getvalue()
     except HttpError as exc:
-        raise DriveError(f"Could not download Drive file '{file_id}': {exc}") from exc
+        raise DriveError(f"Impossible de télécharger le fichier Drive '{file_id}' : {exc}") from exc
 
 
 _FOLDER_URL_RE = re.compile(r"/folders/([a-zA-Z0-9_-]+)")
@@ -305,10 +306,10 @@ def connect_existing_folder(event):
             fileId=folder_id, fields="id, name, webViewLink, mimeType", supportsAllDrives=True
         ).execute()
     except HttpError as exc:
-        return False, f"Could not find Drive folder '{folder_id}': {exc}"
+        return False, f"Dossier Drive '{folder_id}' introuvable : {exc}"
 
     if folder.get("mimeType") != FOLDER_MIME_TYPE:
-        return False, f"'{folder_id}' is not a Drive folder."
+        return False, f"'{folder_id}' n'est pas un dossier Drive."
 
     from .models import Event
 
@@ -333,7 +334,7 @@ def share_folder_with_email(folder_id, email, notify=True):
         ).execute()
         return permission["id"]
     except HttpError as exc:
-        raise DriveError(f"Could not share Drive folder with {email}: {exc}") from exc
+        raise DriveError(f"Impossible de partager le dossier Drive avec {email} : {exc}") from exc
 
 
 def revoke_folder_permission(folder_id, permission_id):
@@ -341,7 +342,7 @@ def revoke_folder_permission(folder_id, permission_id):
     try:
         service.permissions().delete(fileId=folder_id, permissionId=permission_id).execute()
     except HttpError as exc:
-        raise DriveError(f"Could not revoke access (permission {permission_id}): {exc}") from exc
+        raise DriveError(f"Impossible de révoquer l'accès (permission {permission_id}) : {exc}") from exc
 
 
 def test_share(folder_id, email):

@@ -1,9 +1,9 @@
 <!doctype html>
-<html lang="en">
+<html lang="fr">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>Your account</title>
+  <title>Ton compte</title>
   {% load static %}
   {% load icons %}
   <link rel="stylesheet" href="{% static 'photos/tokens.css' %}">
@@ -22,54 +22,54 @@
       {% endif %}
 
       <div class="flex items-center gap-2xs">
-        <a href="#" class="link link--icon" onclick="history.back();return false;" aria-label="Go back">{% icon 'arrow-left' size=36 %}</a>
-        <h1 style="margin:0;">Your account</h1>
+        <a href="#" class="link link--icon" onclick="history.back();return false;" aria-label="Retour">{% icon 'arrow-left' size=36 %}</a>
+        <h1 style="margin:0;">Ton compte</h1>
       </div>
 
       {% if request.user.is_authenticated %}
       <p class="text-muted text-sm" style="margin-top:var(--space-2xs);margin-bottom:var(--space-md);">
-        Account type: <strong>{% if request.user.is_superuser %}Admin{% else %}Staff{% endif %}</strong>
+        Type de compte : <strong>{% if request.user.is_superuser %}Admin{% else %}Staff{% endif %}</strong>
       </p>
-      <p class="text-sm" style="margin-bottom:var(--space-2xs);"><span class="text-muted">Username</span> — {{ request.user.username }}</p>
+      <p class="text-sm" style="margin-bottom:var(--space-2xs);"><span class="text-muted">Nom d'utilisateur</span> — {{ request.user.username }}</p>
 
       <div style="margin-bottom:var(--space-md);">
         <form method="post" class="flex gap-sm items-end flex-wrap">
           {% csrf_token %}
           <div class="field grow" style="min-width:180px;">
             <label for="account_email">Email</label>
-            <input class="input" type="email" id="account_email" name="email" value="{{ request.user.email }}" placeholder="you@example.com">
+            <input class="input" type="email" id="account_email" name="email" value="{{ request.user.email }}" placeholder="toi@exemple.com">
           </div>
-          <button type="submit" name="update_email" class="btn btn--light btn--sm">Save</button>
+          <button type="submit" name="update_email" class="btn btn--light btn--sm">Enregistrer</button>
         </form>
       </div>
 
       <div style="padding-top:var(--space-md);border-top:1px dashed var(--line);">
-        <p class="card__title" style="margin-bottom:var(--space-2xs);">Change password</p>
+        <p class="card__title" style="margin-bottom:var(--space-2xs);">Changer le mot de passe</p>
         <form method="post">
           {% csrf_token %}
           <div class="field">
-            <label for="{{ password_form.old_password.id_for_label }}">Current password</label>
+            <label for="{{ password_form.old_password.id_for_label }}">Mot de passe actuel</label>
             {{ password_form.old_password }}
             {% if password_form.old_password.errors %}
             <p class="text-sm" style="color:var(--danger);">{{ password_form.old_password.errors }}</p>
             {% endif %}
           </div>
           <div class="field" style="margin-top:var(--space-sm);">
-            <label for="{{ password_form.new_password1.id_for_label }}">New password</label>
+            <label for="{{ password_form.new_password1.id_for_label }}">Nouveau mot de passe</label>
             {{ password_form.new_password1 }}
             {% if password_form.new_password1.errors %}
             <p class="text-sm" style="color:var(--danger);">{{ password_form.new_password1.errors }}</p>
             {% endif %}
           </div>
           <div class="field" style="margin-top:var(--space-sm);">
-            <label for="{{ password_form.new_password2.id_for_label }}">Confirm new password</label>
+            <label for="{{ password_form.new_password2.id_for_label }}">Confirmer le nouveau mot de passe</label>
             {{ password_form.new_password2 }}
             {% if password_form.new_password2.errors %}
             <p class="text-sm" style="color:var(--danger);">{{ password_form.new_password2.errors }}</p>
             {% endif %}
           </div>
           <div class="flex flex-wrap gap-sm items-center" style="margin-top:var(--space-md);">
-            <button type="submit" name="change_password" class="btn btn--dark">Change password</button>
+            <button type="submit" name="change_password" class="btn btn--dark">Changer le mot de passe</button>
           </div>
         </form>
       </div>
@@ -77,18 +77,18 @@
       <div style="padding-top:var(--space-md);border-top:1px dashed var(--line);">
         <form method="post" action="{% url 'staff-logout' %}">
           {% csrf_token %}
-          <button type="submit" class="btn btn--light btn--sm">Log out</button>
+          <button type="submit" class="btn btn--light btn--sm">Se déconnecter</button>
         </form>
       </div>
       {% endif %}
 
       {% if identity %}
       <div{% if request.user.is_authenticated %} style="padding-top:var(--space-md);margin-top:var(--space-md);border-top:1px dashed var(--line);"{% endif %}>
-        <p class="text-muted text-sm" style="margin-top:var(--space-2xs);margin-bottom:var(--space-md);">Account type: <strong>Guest</strong></p>
-        <p class="text-sm" style="margin-bottom:var(--space-2xs);"><span class="text-muted">Name</span> — {{ identity.pseudo }}</p>
+        <p class="text-muted text-sm" style="margin-top:var(--space-2xs);margin-bottom:var(--space-md);">Type de compte : <strong>Invité</strong></p>
+        <p class="text-sm" style="margin-bottom:var(--space-2xs);"><span class="text-muted">Nom</span> — {{ identity.pseudo }}</p>
         <p class="text-sm">
           <span class="text-muted">Email</span> —
-          {% if identity.email %}{{ identity.email }}{% else %}<span class="text-muted" style="font-style:italic;">no email on file</span>{% endif %}
+          {% if identity.email %}{{ identity.email }}{% else %}<span class="text-muted" style="font-style:italic;">aucun email enregistré</span>{% endif %}
         </p>
       </div>
       {% endif %}

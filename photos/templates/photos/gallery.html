@@ -1,11 +1,11 @@
 {% load static %}
 {% load icons %}
 <!doctype html>
-<html lang="en">
+<html lang="fr">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>Photo gallery</title>
+  <title>Galerie photo</title>
   <link rel="stylesheet" href="{% static 'photos/tokens.css' %}">
   <link rel="stylesheet" href="{% static 'photos/base.css' %}">
   <link rel="stylesheet" href="{% static 'photos/components.css' %}">
@@ -13,10 +13,10 @@
 <body>
   <div class="page shell">
     {% include "photos/_account_button.html" %}
-    {% include "photos/_page_header.html" with page_icon="photo" page_title="All photos" %}
+    {% include "photos/_page_header.html" with page_icon="photo" page_title="Toutes les photos" %}
     <main class="card">
       {% include "photos/_photos_segmented.html" %}
-      {% if likes_enabled %}<p class="text-sm text-muted text-center" style="margin-bottom:var(--space-sm);">Tap the heart to like a photo.</p>{% endif %}
+      {% if likes_enabled %}<p class="text-sm text-muted text-center" style="margin-bottom:var(--space-sm);">Touche le cœur pour aimer une photo.</p>{% endif %}
       <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:var(--space-sm);">
         {% for p in photos %}
         <div class="photo-card" data-id="{{ p.id }}">

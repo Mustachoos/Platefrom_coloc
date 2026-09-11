@@ -1,9 +1,9 @@
 <!doctype html>
-<html lang="en">
+<html lang="fr">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>{% if expired %}Link expired{% else %}IP verified{% endif %}</title>
+  <title>{% if expired %}Lien expiré{% else %}IP vérifiée{% endif %}</title>
   <style>
     html,body{margin:0;padding:0;min-height:100vh;font-family:"Trebuchet MS","Segoe UI",sans-serif}
     body{
@@ -19,12 +19,12 @@
   {% if expired %}
   <div>
     <div class="icon">⚠️</div>
-    <h1>Link expired</h1>
+    <h1>Lien expiré</h1>
   </div>
   {% else %}
   <div>
     <div class="icon">✓</div>
-    <h1>IP verified</h1>
+    <h1>IP vérifiée</h1>
   </div>
   {% endif %}
 </body>

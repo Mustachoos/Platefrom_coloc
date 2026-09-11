@@ -1,9 +1,9 @@
 <!doctype html>
-<html lang="en">
+<html lang="fr">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>Switch event</title>
+  <title>Changer d'évènement</title>
   {% load static %}
   {% load icons %}
   <link rel="stylesheet" href="{% static 'photos/tokens.css' %}">
@@ -12,9 +12,9 @@
 </head>
 <body>
   <div class="page shell" style="max-width:620px;">
-    <a class="link link--icon" href="{% url 'dashboard' %}">{% icon 'arrow-left' size=16 %} Cancel</a>
+    <a class="link link--icon" href="{% url 'dashboard' %}">{% icon 'arrow-left' size=16 %} Annuler</a>
     <main class="card" style="margin-top:var(--space-sm);">
-      <h1>Switch to "{{ target.name }}"?</h1>
+      <h1>Basculer sur « {{ target.name }} » ?</h1>
 
       {% if messages %}
       <div class="flex-col gap-2xs" style="display:flex;margin-top:var(--space-sm);">
@@ -26,77 +26,77 @@
 
       {% if broken %}
         <div class="alert alert--boxed" style="margin-top:var(--space-md);">
-          Drive folder for "{{ broken.name }}" is deleted or unreachable — it was checked just now.
-          {% if broken.pk == active.pk %}This event's local photos can't be confirmed safe, so the switch is blocked.{% else %}"{{ target.name }}" can't be activated without a working Drive folder.{% endif %}
-          Choose how to proceed:
+          Le dossier Drive de « {{ broken.name }} » est supprimé ou injoignable — vérifié à l'instant.
+          {% if broken.pk == active.pk %}Les photos locales de cet évènement ne peuvent pas être confirmées en sécurité, le changement est donc bloqué.{% else %}« {{ target.name }} » ne peut pas être activé sans un dossier Drive fonctionnel.{% endif %}
+          Choisis comment continuer :
         </div>
 
         <div class="card card--solid card--tight" style="margin-top:var(--space-sm);">
-          <h3>1. Recreate the folder</h3>
-          <p class="text-sm text-muted" style="margin:var(--space-3xs) 0 var(--space-xs);">Creates a brand new Drive folder named "{{ broken.name }}" under the root folder{% if broken.pk == active.pk %}, then lets you back up its local photos into it{% endif %}.</p>
+          <h3>1. Recréer le dossier</h3>
+          <p class="text-sm text-muted" style="margin:var(--space-3xs) 0 var(--space-xs);">Crée un nouveau dossier Drive nommé « {{ broken.name }} » sous le dossier racine{% if broken.pk == active.pk %}, puis te permet d'y sauvegarder ses photos locales{% endif %}.</p>
           <form method="post">
             {% csrf_token %}
             <input type="hidden" name="broken_event_id" value="{{ broken.id }}">
-            <button type="submit" name="recreate_folder" class="btn btn--dark">Create a new Drive folder</button>
+            <button type="submit" name="recreate_folder" class="btn btn--dark">Créer un nouveau dossier Drive</button>
           </form>
         </div>
 
         <div class="card card--solid card--tight" style="margin-top:var(--space-sm);">
-          <h3>2. Point to a different Drive folder</h3>
-          <p class="text-sm text-muted" style="margin:var(--space-3xs) 0 var(--space-xs);">Paste the ID or URL of an existing Drive folder to use instead.</p>
+          <h3>2. Pointer vers un autre dossier Drive</h3>
+          <p class="text-sm text-muted" style="margin:var(--space-3xs) 0 var(--space-xs);">Colle l'ID ou l'URL d'un dossier Drive existant à utiliser à la place.</p>
           <form method="post" class="flex gap-sm items-center flex-wrap">
             {% csrf_token %}
             <input type="hidden" name="broken_event_id" value="{{ broken.id }}">
             <input class="input grow" style="min-width:220px;width:auto;" type="text" name="drive_folder_id_or_url" placeholder="https://drive.google.com/drive/folders/...">
-            <button type="submit" name="relink_folder" class="btn btn--light">Connect this folder</button>
+            <button type="submit" name="relink_folder" class="btn btn--light">Connecter ce dossier</button>
           </form>
         </div>
 
         <div class="card card--solid card--tight" style="margin-top:var(--space-sm);">
-          <h3>3. Force the switch anyway</h3>
+          <h3>3. Forcer le changement quand même</h3>
           <p class="text-sm text-muted" style="margin:var(--space-3xs) 0 var(--space-xs);">
             {% if broken.pk == active.pk %}
-              Switches to "{{ target.name }}" right now. Any of "{{ active.name }}"'s local photos without a confirmed Drive backup will be permanently deleted.
+              Bascule sur « {{ target.name }} » immédiatement. Toutes les photos locales de « {{ active.name }} » sans sauvegarde Drive confirmée seront supprimées définitivement.
             {% else %}
-              Activates "{{ target.name }}" without a working Drive folder. Photos uploaded to it won't be backed up until the folder is fixed.
+              Active « {{ target.name }} » sans dossier Drive fonctionnel. Les photos envoyées ne seront pas sauvegardées tant que le dossier n'est pas réparé.
             {% endif %}
           </p>
           <form method="post">
             {% csrf_token %}
-            <button type="submit" name="force_switch" class="btn btn--danger">Force switch{% if broken.pk == active.pk %} and discard unsaved photos{% endif %}</button>
+            <button type="submit" name="force_switch" class="btn btn--danger">Forcer le changement{% if broken.pk == active.pk %} et perdre les photos non sauvegardées{% endif %}</button>
           </form>
         </div>
       {% elif active %}
-        <p class="text-sm text-muted" style="margin-top:var(--space-sm);">Current event: <strong class="text-muted" style="color:var(--ink-900);">{{ active.name }}</strong> — {{ active_photo_count }} photo(s).</p>
+        <p class="text-sm text-muted" style="margin-top:var(--space-sm);">Évènement actuel : <strong class="text-muted" style="color:var(--ink-900);">{{ active.name }}</strong> — {{ active_photo_count }} photo(s).</p>
         {% if pending %}
           <div class="alert alert--boxed" style="margin-top:var(--space-md);">
-            {{ pending }} photo(s) from "{{ active.name }}" are NOT backed up to Drive yet.
-            Switching deletes "{{ active.name }}"'s photos from local storage (they stay safe on Drive) and downloads "{{ target.name }}"'s photos instead — back these {{ pending }} up first, or they'd be lost for good.
+            {{ pending }} photo(s) de « {{ active.name }} » ne sont PAS encore sauvegardées sur Drive.
+            Le changement supprime les photos de « {{ active.name }} » du stockage local (elles restent en sécurité sur Drive) et télécharge celles de « {{ target.name }} » à la place — sauvegarde ces {{ pending }} photo(s) d'abord, ou elles seraient perdues pour de bon.
           </div>
           <form method="post">
             {% csrf_token %}
             <div class="flex flex-wrap gap-sm items-center" style="margin-top:var(--space-md);">
-              <button type="submit" name="retry_backup" class="btn btn--dark">Back up the {{ pending }} missing photo(s) now</button>
+              <button type="submit" name="retry_backup" class="btn btn--dark">Sauvegarder les {{ pending }} photo(s) manquante(s) maintenant</button>
             </div>
           </form>
         {% else %}
-          <div class="alert alert--boxed alert--success" style="margin-top:var(--space-md);">All photos from "{{ active.name }}" are backed up to Drive. Safe to switch.</div>
-          <p class="text-sm text-muted" style="margin-top:var(--space-sm);">This will delete "{{ active.name }}"'s photos from local storage (they remain on Drive) and download "{{ target.name }}"'s photos from its own Drive folder.</p>
+          <div class="alert alert--boxed alert--success" style="margin-top:var(--space-md);">Toutes les photos de « {{ active.name }} » sont sauvegardées sur Drive. Changement possible en toute sécurité.</div>
+          <p class="text-sm text-muted" style="margin-top:var(--space-sm);">Ça va supprimer les photos de « {{ active.name }} » du stockage local (elles restent sur Drive) et télécharger celles de « {{ target.name }} » depuis son propre dossier Drive.</p>
           <form method="post">
             {% csrf_token %}
             <div class="flex flex-wrap gap-sm items-center" style="margin-top:var(--space-md);">
-              <button type="submit" name="confirm" class="btn btn--dark">Yes, switch to "{{ target.name }}"</button>
-              <a class="btn btn--outline" href="{% url 'dashboard' %}">Cancel</a>
+              <button type="submit" name="confirm" class="btn btn--dark">Oui, basculer sur « {{ target.name }} »</button>
+              <a class="btn btn--outline" href="{% url 'dashboard' %}">Annuler</a>
             </div>
           </form>
         {% endif %}
       {% else %}
-        <p class="text-sm text-muted" style="margin-top:var(--space-sm);">No event is currently active.</p>
+        <p class="text-sm text-muted" style="margin-top:var(--space-sm);">Aucun évènement n'est actif actuellement.</p>
         <form method="post">
           {% csrf_token %}
           <div class="flex flex-wrap gap-sm items-center" style="margin-top:var(--space-md);">
-            <button type="submit" name="confirm" class="btn btn--dark">Activate "{{ target.name }}"</button>
-            <a class="btn btn--outline" href="{% url 'dashboard' %}">Cancel</a>
+            <button type="submit" name="confirm" class="btn btn--dark">Activer « {{ target.name }} »</button>
+            <a class="btn btn--outline" href="{% url 'dashboard' %}">Annuler</a>
           </div>
         </form>
       {% endif %}

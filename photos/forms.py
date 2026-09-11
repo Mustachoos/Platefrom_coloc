@@ -53,38 +53,38 @@ class StyledPasswordChangeForm(PasswordChangeForm):
 
 class PseudoForm(forms.Form):
     pseudo = forms.CharField(
-        max_length=50, label="Your name", widget=forms.TextInput(attrs={"class": "input"})
+        max_length=50, label="Ton nom", widget=forms.TextInput(attrs={"class": "input"})
     )
 
 
 class ShareDriveForm(forms.Form):
-    email = forms.EmailField(required=False, label="Your email")
+    email = forms.EmailField(required=False, label="Ton email")
 
 
 class AdminAccountForm(forms.Form):
     username = forms.CharField(
-        max_length=150, label="Admin username", widget=forms.TextInput(attrs={"class": "input"})
+        max_length=150, label="Nom d'utilisateur admin", widget=forms.TextInput(attrs={"class": "input"})
     )
     email = forms.EmailField(
         label="Email", widget=forms.EmailInput(attrs={"class": "input"}),
-        help_text="Used for password reset if you forget it.",
+        help_text="Utilisée pour réinitialiser ton mot de passe si tu l'oublies.",
     )
     password = forms.CharField(
-        widget=forms.PasswordInput(attrs={"class": "input"}), label="Password"
+        widget=forms.PasswordInput(attrs={"class": "input"}), label="Mot de passe"
     )
     password_confirm = forms.CharField(
-        widget=forms.PasswordInput(attrs={"class": "input"}), label="Confirm password"
+        widget=forms.PasswordInput(attrs={"class": "input"}), label="Confirmer le mot de passe"
     )
 
     def clean(self):
         cleaned = super().clean()
         if cleaned.get("password") and cleaned.get("password") != cleaned.get("password_confirm"):
-            self.add_error("password_confirm", "Passwords don't match.")
+            self.add_error("password_confirm", "Les mots de passe ne correspondent pas.")
         return cleaned
 
 
 class DriveClientSecretForm(forms.Form):
     client_secret_file = forms.FileField(
-        label="Google OAuth credentials (JSON)",
+        label="Identifiants OAuth Google (JSON)",
         widget=forms.ClearableFileInput(attrs={"style": "display:none"}),
     )

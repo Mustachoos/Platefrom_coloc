@@ -134,7 +134,7 @@
       clearTimeout(overlayAnimateTimeoutId);
       overlayAnimateTimeoutId = null;
     }
-    newPhotoUsername.textContent = `New photo from ${photo.username}`;
+    newPhotoUsername.textContent = `Nouvelle photo de ${photo.username}`;
     newPhotoImg.src = photo.url;
     // show centered overlay with entrance animation
     newPhotoOverlay.classList.add("visible", "new-photo-animate");

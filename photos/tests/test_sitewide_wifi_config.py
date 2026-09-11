@@ -38,7 +38,7 @@ class SiteSettingsWifiFieldsTests(TestCase):
             [
                 (SiteSettings.WIFI_SECURITY_WPA, "WPA / WPA2 / WPA3"),
                 (SiteSettings.WIFI_SECURITY_WEP, "WEP"),
-                (SiteSettings.WIFI_SECURITY_NOPASS, "Open (no password)"),
+                (SiteSettings.WIFI_SECURITY_NOPASS, "Ouvert (sans mot de passe)"),
             ],
         )
 

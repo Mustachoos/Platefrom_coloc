@@ -53,7 +53,7 @@ def is_configured():
 def save_credentials(creds):
     token_file = _token_file()
     if not token_file:
-        raise GmailError("GMAIL_SEND_TOKEN_FILE is not set.")
+        raise GmailError("GMAIL_SEND_TOKEN_FILE n'est pas défini.")
     os.makedirs(os.path.dirname(token_file) or ".", exist_ok=True)
     with open(token_file, "w") as f:
         f.write(creds.to_json())
@@ -68,7 +68,7 @@ def disconnect():
 def _get_credentials():
     token_file = _token_file()
     if not token_file or not os.path.exists(token_file):
-        raise GmailError("No Gmail account connected yet.")
+        raise GmailError("Aucun compte Gmail connecté pour l'instant.")
     creds = Credentials.from_authorized_user_file(token_file, SCOPES)
     if creds.valid:
         return creds
@@ -77,11 +77,11 @@ def _get_credentials():
             creds.refresh(Request())
         except RefreshError as exc:
             raise GmailError(
-                f"Gmail authorization has expired or was revoked ({exc}). Reconnect below."
+                f"L'autorisation Gmail a expiré ou a été révoquée ({exc}). Reconnecte-toi ci-dessous."
             ) from exc
         save_credentials(creds)
         return creds
-    raise GmailError("Stored Gmail credentials are invalid and can't be refreshed. Reconnect below.")
+    raise GmailError("Les identifiants Gmail enregistrés sont invalides et ne peuvent pas être rafraîchis. Reconnecte-toi ci-dessous.")
 
 
 def _get_service():
@@ -104,7 +104,7 @@ def connected_email_address():
         # handles) comes from the API layer's own silent refresh-on-demand —
         # e.g. a token whose granted scopes no longer match what's requested
         # after a scope change, which a plain refresh_token grant can't fix.
-        raise GmailError(f"Could not read the connected Google account: {exc}. Reconnect below.") from exc
+        raise GmailError(f"Impossible de lire le compte Google connecté : {exc}. Reconnecte-toi ci-dessous.") from exc
     return info.get("email", "")
 
 
@@ -117,7 +117,7 @@ def _send_raw(to_address, subject, body):
     try:
         service.users().messages().send(userId="me", body={"raw": raw}).execute()
     except (HttpError, RefreshError) as exc:
-        raise GmailError(f"Gmail refused to send to {to_address}: {exc}") from exc
+        raise GmailError(f"Gmail a refusé d'envoyer à {to_address} : {exc}") from exc
 
 
 class GmailApiBackend(BaseEmailBackend):

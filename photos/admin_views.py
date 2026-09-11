@@ -110,7 +110,7 @@ def create_admin_view(request):
         if form.is_valid():
             username = form.cleaned_data["username"].strip()
             if User.objects.filter(username=username).exists():
-                form.add_error("username", "That username is already taken.")
+                form.add_error("username", "Ce nom d'utilisateur est déjà pris.")
             else:
                 user = User.objects.create_superuser(
                     username, form.cleaned_data["email"].strip(), form.cleaned_data["password"]
@@ -235,7 +235,7 @@ def admin_management_view(request):
     if request.method == "POST" and "generate_invite" in request.POST:
         invitee_name = request.POST.get("invitee_name", "").strip()
         if not invitee_name:
-            messages.error(request, "Enter a name for the invite.", extra_tags="staff")
+            messages.error(request, "Entre un nom pour l'invitation.", extra_tags="staff")
         else:
             AdminInvite.objects.create(created_by=request.user, invitee_name=invitee_name)
         return redirect("admin-management")
@@ -245,7 +245,7 @@ def admin_management_view(request):
         # already-verified value, which is stored as host:port.
         ip_address = request.POST.get("ip_address", "").strip().split(":", 1)[0]
         if not ip_address:
-            messages.error(request, "Enter an IP address to verify.", extra_tags="network")
+            messages.error(request, "Entre une adresse IP à vérifier.", extra_tags="network")
             return redirect("admin-management")
         token = uuid.uuid4()
         cache.set(_verify_pending_key(token), ip_address, timeout=_VERIFY_TTL_SECONDS)
@@ -265,7 +265,7 @@ def admin_management_view(request):
         valid_security = dict(SiteSettings.WIFI_SECURITY_CHOICES)
         site_settings.wifi_security = security if security in valid_security else SiteSettings.WIFI_SECURITY_WPA
         site_settings.save(update_fields=["wifi_ssid", "wifi_password", "wifi_security"])
-        messages.success(request, "Wi-Fi details saved.", extra_tags="wifi")
+        messages.success(request, "Détails Wi-Fi enregistrés.", extra_tags="wifi")
         return redirect("admin-management")
 
     if request.method == "POST" and "disconnect_gmail" in request.POST:
@@ -277,13 +277,13 @@ def admin_management_view(request):
         gmail_service.disconnect()
         site_settings.support_email = ""
         site_settings.save(update_fields=["support_email"])
-        messages.success(request, "Google account disconnected.", extra_tags="support-email")
+        messages.success(request, "Compte Google déconnecté.", extra_tags="support-email")
         return redirect("admin-management")
 
     if request.method == "POST" and "send_test_email" in request.POST:
         if not request.user.email:
             messages.error(
-                request, "Set your own email on your profile page first — that's where the test email goes.",
+                request, "Configure d'abord ton propre email sur ta page de profil — c'est là que l'email de test sera envoyé.",
                 extra_tags="support-email",
             )
         else:
@@ -291,9 +291,9 @@ def admin_management_view(request):
                 email_service.send_test_email(request.user.email)
             except Exception as exc:
                 logger.exception("Failed to send test email to %s", request.user.email)
-                messages.error(request, f"Could not send test email: {exc}", extra_tags="support-email")
+                messages.error(request, f"Impossible d'envoyer l'email de test : {exc}", extra_tags="support-email")
             else:
-                messages.success(request, f"Test email sent to {request.user.email}.", extra_tags="support-email")
+                messages.success(request, f"Email de test envoyé à {request.user.email}.", extra_tags="support-email")
         return redirect("admin-management")
 
     if request.method == "POST" and "upload_client_secret" in request.POST:
@@ -314,8 +314,8 @@ def admin_management_view(request):
         site_settings.support_email = ""
         site_settings.save(update_fields=["drive_root_folder_id", "support_email"])
         messages.success(
-            request, "Drive connection removed — start again from step 1. This also disconnects the "
-            "recovery email, since it's the same Google account.", extra_tags="drive",
+            request, "Connexion Drive supprimée — recommence depuis l'étape 1. Ça déconnecte aussi "
+            "l'email de récupération, puisque c'est le même compte Google.", extra_tags="drive",
         )
         return redirect("admin-management")
 
@@ -325,12 +325,12 @@ def admin_management_view(request):
         try:
             if choice == "__new__":
                 if not new_name:
-                    raise drive_service.DriveError("Give the new folder a name.")
+                    raise drive_service.DriveError("Donne un nom au nouveau dossier.")
                 folder_id = drive_service.create_root_folder(new_name)
             elif choice:
                 folder_id = choice
             else:
-                raise drive_service.DriveError("Choose a folder.")
+                raise drive_service.DriveError("Choisis un dossier.")
         except drive_service.DriveError as exc:
             drive_error = str(exc)
         else:
@@ -491,7 +491,7 @@ def revoke_invite_view(request, token):
             if invite.used_by_id:
                 invite.used_by.is_active = False
                 invite.used_by.save(update_fields=["is_active"])
-            messages.success(request, f"Access revoked for {invite.invitee_name}.", extra_tags="staff")
+            messages.success(request, f"Accès révoqué pour {invite.invitee_name}.", extra_tags="staff")
     return redirect("admin-management")
 
 
@@ -501,7 +501,7 @@ def delete_invite_view(request, token):
         invite = get_object_or_404(AdminInvite, token=token, revoked_at__isnull=False)
         invitee_name = invite.invitee_name
         invite.delete()
-        messages.success(request, f"Removed {invitee_name} from the list.", extra_tags="staff")
+        messages.success(request, f"{invitee_name} retiré de la liste.", extra_tags="staff")
     return redirect("admin-management")
 
 
@@ -515,7 +515,7 @@ def subadmin_invite_view(request, token):
         if form.is_valid():
             username = form.cleaned_data["username"].strip()
             if User.objects.filter(username=username).exists():
-                form.add_error("username", "That username is already taken.")
+                form.add_error("username", "Ce nom d'utilisateur est déjà pris.")
             else:
                 user = User.objects.create_user(
                     username, form.cleaned_data["email"].strip(), form.cleaned_data["password"], is_staff=True
