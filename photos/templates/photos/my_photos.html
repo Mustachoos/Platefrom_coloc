@@ -16,13 +16,13 @@
     <main class="card">
       {% include "photos/_photos_segmented.html" %}
 
-      {% if messages %}
-      <div class="flex-col gap-2xs" style="display:flex;margin-bottom:var(--space-sm);">
-        {% for message in messages %}
-        <div class="alert alert--boxed{% if message.tags == 'success' %} alert--success{% endif %}">{{ message }}</div>
-        {% endfor %}
-      </div>
-      {% endif %}
+      {% for message in messages %}
+      <span
+        class="server-message" hidden
+        data-text="{{ message }}"
+        data-level="{% if 'error' in message.tags %}error{% elif 'success' in message.tags %}success{% elif 'warning' in message.tags %}warning{% else %}info{% endif %}"
+      ></span>
+      {% endfor %}
 
       {% if photos %}
       <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:var(--space-sm);">
@@ -51,5 +51,6 @@
     </main>
   </div>
   {% include "photos/_footer_nav.html" %}
+  <script src="{% static 'photos/notify.js' %}"></script>
 </body>
 </html>

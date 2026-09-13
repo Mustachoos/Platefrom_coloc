@@ -15,13 +15,13 @@
       <h1>Tu veux les photos en pleine résolution ?</h1>
       <p class="text-muted" style="margin-top:var(--space-2xs);margin-bottom:var(--space-md);">Laisse ton email et on te partage le dossier Google Drive de l'évènement (lecture seule). Tu peux aussi passer cette étape.</p>
 
-      {% if messages %}
-      <div class="flex-col gap-2xs" style="display:flex;margin-bottom:var(--space-md);">
-        {% for message in messages %}
-        <div class="alert alert--boxed{% if message.tags == 'success' %} alert--success{% endif %}">{{ message }}</div>
-        {% endfor %}
-      </div>
-      {% endif %}
+      {% for message in messages %}
+      <span
+        class="server-message" hidden
+        data-text="{{ message }}"
+        data-level="{% if 'error' in message.tags %}error{% elif 'success' in message.tags %}success{% elif 'warning' in message.tags %}warning{% else %}info{% endif %}"
+      ></span>
+      {% endfor %}
 
       <form method="post">
         {% csrf_token %}
@@ -39,5 +39,6 @@
       </form>
     </main>
   </div>
+  <script src="{% static 'photos/notify.js' %}"></script>
 </body>
 </html>
