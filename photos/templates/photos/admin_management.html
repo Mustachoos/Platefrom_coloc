@@ -366,7 +366,8 @@
               });
 
               document.getElementById('wifi-qr-help-btn').addEventListener('click', function () {
-                document.getElementById('wifi-qr-help-text').hidden = false;
+                var helpText = document.getElementById('wifi-qr-help-text');
+                helpText.hidden = !helpText.hidden;
               });
             </script>
 
