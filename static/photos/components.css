@@ -235,6 +235,49 @@
   border-color: rgba(28, 138, 76, 0.18);
 }
 
+/* ---------- Standardized notification (PI-2 US-B1) ---------- */
+.notify-container {
+  position: fixed;
+  top: var(--space-md);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 50;
+  pointer-events: none;
+}
+.notify {
+  min-width: 220px;
+  max-width: min(90vw, 420px);
+  padding: var(--space-sm) var(--space-md);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  font-size: var(--text-sm);
+  font-weight: 700;
+  text-align: center;
+  opacity: 0;
+  transform: translateY(-12px);
+  transition: opacity var(--base) var(--ease), transform var(--base) var(--ease);
+}
+.notify.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+.notify--success {
+  background: var(--success-bg);
+  color: var(--success-ink);
+}
+.notify--error {
+  background: rgba(227, 74, 83, 0.14);
+  color: var(--danger);
+}
+.notify--warning {
+  background: var(--warning-bg);
+  color: var(--warning-ink);
+}
+.notify--info {
+  background: var(--info-bg);
+  color: var(--info-ink);
+}
+
 /* ---------- Forms ---------- */
 .field {
   display: flex;

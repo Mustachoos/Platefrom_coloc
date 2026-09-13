@@ -42,6 +42,8 @@
   --warning-ink: #9a6414;
   --danger: #e34a53;
   --danger-ink: #ffffff;
+  --info-bg: #dbe9fb;
+  --info-ink: #1d5aa8;
 
   /* ---- Accent — the one deliberate color, used sparingly:
      liked-heart state + focus ring. Everything else in the UI
