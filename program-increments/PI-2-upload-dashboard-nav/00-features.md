@@ -72,8 +72,15 @@ a notification (using Feature B's new component) on success.
 
 **Scope.**
 - **C1**: convert all four `<details class="hub-details">` sections in `admin_management.html`
-  to plain always-visible `<div class="hub-section">` — same heading/status-dot/body content,
-  no collapse behavior, no arrow indicator. Removed the now-dead `.hub-details` collapse CSS.
+  to plain `<div class="hub-section">` — same heading/status-dot/body content, no native
+  `<details>` disclosure semantics. Removed the now-dead `.hub-details` collapse CSS.
+- **C1b** (amendment, after testing): the admin still wanted collapse/expand, but explicitly
+  *not* tied to any server-side condition (the old `<details {% if verify_token %}open{% endif
+  %}>` etc. auto-opened a section whenever an unrelated action happened — e.g. starting an IP
+  check, or a Drive error). Added a dedicated `.hub-toggle-btn` (▸, rotates on toggle)
+  positioned in each box's top-right corner; a single shared click handler toggles that
+  section's `.details-body[hidden]` — nothing else in the page ever touches it. Sections start
+  expanded on every fresh page load (no persistence across reloads — not asked for).
 - **C2**: the IP-verification poll's success branch now also calls
   `window.notify('Adresse réseau vérifiée !', 'success')`.
 

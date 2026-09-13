@@ -18,8 +18,11 @@
       .col-left,.col-right{width:100%;flex:0 0 auto}
     }
 
+    .hub-section{position:relative}
     .hub-section h2{margin:0;display:flex;align-items:center;font-size:var(--text-md)}
     .hub-section .details-body{margin-top:var(--space-sm)}
+    .hub-toggle-btn{position:absolute;top:0;right:0;display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border:none;background:transparent;color:var(--ink-600);cursor:pointer;padding:0;font-size:0.9rem;line-height:1;transform:rotate(90deg);transition:transform .2s ease}
+    .hub-toggle-btn.is-collapsed{transform:rotate(0deg)}
 
     .status-circle{box-sizing:border-box;display:inline-block;width:18px;height:18px;border-radius:50%;background:var(--line-strong);border:2px solid transparent;vertical-align:middle;margin-right:var(--space-2xs);transition:background .3s ease}
     .status-circle.verified{background:var(--success-ink)}
@@ -157,6 +160,7 @@
       <div class="col-right">
         <div class="card card--solid">
           <div id="network-details" class="hub-section">
+              <button type="button" class="hub-toggle-btn" data-target="network-details" aria-label="Réduire/développer">▸</button>
               <h2><span
                 class="status-circle{% if verify_token %} checking{% elif verified_ip %} verified{% endif %}"
                 id="ip-status-circle"
@@ -251,6 +255,7 @@
 
         <div class="card card--solid">
           <div id="wifi-details" class="hub-section">
+              <button type="button" class="hub-toggle-btn" data-target="wifi-details" aria-label="Réduire/développer">▸</button>
               <h2><span
                 class="status-circle{% if wifi_verified %} verified{% elif wifi_verified is False %} failed{% endif %}"
                 id="wifi-status-circle"
@@ -371,6 +376,7 @@
 
         <div class="card card--solid">
           <div id="drive-details" class="hub-section">
+              <button type="button" class="hub-toggle-btn" data-target="drive-details" aria-label="Réduire/développer">▸</button>
               <h2><span class="status-circle{% if drive_ready %} verified{% elif drive_attention %} failed{% elif drive_progress > 0 %} partial{% endif %}"></span>Google Drive</h2>
             <div class="details-body">
               <button type="button" class="drive-step-row" onclick="document.getElementById('drive-step1-modal').showModal()">
@@ -397,6 +403,7 @@
 
         <div class="card card--solid">
           <div id="support-email-details" class="hub-section">
+              <button type="button" class="hub-toggle-btn" data-target="support-email-details" aria-label="Réduire/développer">▸</button>
               <h2><span class="status-circle{% if email_ready %} verified{% elif email_attention %} failed{% endif %}"></span>Email de récupération</h2>
             <div class="details-body">
               <p class="text-sm text-muted" style="margin-bottom:var(--space-sm);">Envoie les liens de réinitialisation de mot de passe aux admins et sous-admins qui l'oublient, via le même compte Google connecté ci-dessous — Google n'accepte plus les connexions Gmail par simple mot de passe, il n'y a donc ni adresse ni mot de passe à saisir ici. Les étapes 1 et 2 sont exactement les mêmes que celles du bloc Google Drive : connecter l'une connecte les deux.</p>
@@ -562,5 +569,16 @@
     </div>
   </div>
   <script src="{% static 'photos/notify.js' %}"></script>
+  <script>
+    // Hub section collapse/expand: purely a click on this button, nothing
+    // else — no server-side condition ever opens or closes a section.
+    document.querySelectorAll('.hub-toggle-btn').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var body = document.getElementById(btn.dataset.target).querySelector('.details-body');
+        body.hidden = !body.hidden;
+        btn.classList.toggle('is-collapsed', body.hidden);
+      });
+    });
+  </script>
 </body>
 </html>

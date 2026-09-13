@@ -2,7 +2,13 @@
 via QR scan):
 
 - C1: the admin_management.html hub sections (network, wifi, drive,
-  recovery email) no longer collapse/expand — no <details>/<summary> left.
+  recovery email) no longer use native <details>/<summary> — collapse is
+  now a plain .details-body + a dedicated .hub-toggle-btn (top-right
+  corner of each box), toggled purely by clicking that button. No
+  server-rendered condition (verify_token, drive_error, etc.) ever sets
+  the collapsed/expanded state — that was the whole point of dropping
+  <details> here, since its {% if %}-driven `open` attribute coupled the
+  section's visibility to unrelated actions.
 - C2: verifying the network address shows a success notification (checked
   at the JS-source level — Django's test client can't execute the poll).
 - D1: "Vérifier" replaces "Enregistrer" in the Wi-Fi box. Saving credentials
@@ -21,7 +27,9 @@ from django.urls import reverse
 from photos.models import SiteSettings
 
 
-class NoCollapsePanelsTests(TestCase):
+class ArrowOnlyCollapsePanelsTests(TestCase):
+    SECTION_IDS = ("network-details", "wifi-details", "drive-details", "support-email-details")
+
     def setUp(self):
         self.client = Client()
         get_user_model().objects.create_superuser(
@@ -38,8 +46,35 @@ class NoCollapsePanelsTests(TestCase):
     def test_all_four_section_bodies_are_present_unconditionally(self):
         response = self.client.get(reverse("admin-management"))
         content = response.content.decode()
-        for section_id in ("network-details", "wifi-details", "drive-details", "support-email-details"):
+        for section_id in self.SECTION_IDS:
             self.assertIn(f'id="{section_id}"', content)
+
+    def test_each_section_has_its_own_toggle_button(self):
+        response = self.client.get(reverse("admin-management"))
+        content = response.content.decode()
+        for section_id in self.SECTION_IDS:
+            self.assertIn(f'class="hub-toggle-btn" data-target="{section_id}"', content)
+
+    def test_section_bodies_never_server_rendered_as_hidden(self):
+        # The whole point: no {% if %} (verify_token, drive_error, ...)
+        # ever sets the collapsed state — only the client-side click
+        # handler below ever touches `.details-body`'s hidden attribute.
+        # Exercise the two states that used to auto-open a <details> block
+        # (an in-progress IP verification, and a Drive connection error)
+        # and confirm the body still isn't server-rendered hidden either way.
+        response = self.client.post(
+            reverse("admin-management"), {"start_verify_ip": "1", "ip_address": "192.168.1.13"}, follow=True
+        )
+        content = response.content.decode()
+        start = content.index('id="network-details"')
+        network_section = content[start:start + 600]
+        self.assertNotIn("details-body\" hidden", network_section)
+
+    def test_toggle_click_handler_is_wired_up_in_js(self):
+        response = self.client.get(reverse("admin-management"))
+        content = response.content.decode()
+        self.assertIn("hub-toggle-btn", content)
+        self.assertIn("body.hidden = !body.hidden", content)
 
 
 class IpVerifiedNotificationTests(TestCase):
