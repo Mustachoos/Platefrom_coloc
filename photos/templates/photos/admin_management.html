@@ -306,7 +306,7 @@
               {% endif %}
             </form>
 
-            <dialog id="wifi-verify-modal">
+            <dialog id="wifi-verify-modal" class="wide" style="position:relative;overflow:visible;">
               <div style="padding:var(--space-md) var(--space-lg);">
                 <div style="position:relative;">
                   <h2>Teste tes identifiants Wi-Fi</h2>
@@ -315,14 +315,10 @@
                     style="position:absolute;top:0;right:0;"
                   >?</button>
                 </div>
-                <p id="wifi-qr-help-text" hidden class="text-sm text-muted" style="margin-bottom:var(--space-sm);">
-                  Pour vraiment tester, oublie ce réseau Wi-Fi sur ton téléphone, puis scanne ce QR
-                  code pour essayer de t'y reconnecter à partir de zéro.
-                </p>
                 <div style="display:flex;justify-content:center;margin-bottom:var(--space-sm);">
                   <img src="{% url 'wifi-qr-preview' %}" alt="QR code Wi-Fi" width="220" height="220">
                 </div>
-                <div class="flex gap-sm items-center flex-wrap" style="justify-content:center;">
+                <div class="flex gap-sm items-center" style="justify-content:center;flex-wrap:nowrap;">
                   <form method="post">
                     {% csrf_token %}
                     <button type="submit" name="wifi_verify_broken" class="btn btn--outline btn--sm">C'est cassé</button>
@@ -332,9 +328,13 @@
                     <button type="submit" name="wifi_verify_ok" class="btn btn--dark btn--sm">Ça marche du feu de Dieu !</button>
                   </form>
                 </div>
-                <div class="flex items-center" style="justify-content:center;margin-top:var(--space-sm);">
-                  <button type="button" class="btn btn--light btn--sm" onclick="document.getElementById('wifi-verify-modal').close()">Fermer</button>
-                </div>
+              </div>
+              <div
+                id="wifi-qr-help-text" hidden class="card card--solid text-sm text-muted"
+                style="position:absolute;top:0;left:100%;margin-left:var(--space-sm);width:220px;box-shadow:var(--shadow-lg);"
+              >
+                Pour vraiment tester, oublie ce réseau Wi-Fi sur ton téléphone, puis scanne ce QR
+                code pour essayer de t'y reconnecter à partir de zéro.
               </div>
             </dialog>
             {% if wifi_check and wifi_credentials_valid %}
