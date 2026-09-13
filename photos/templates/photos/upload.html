@@ -140,7 +140,16 @@
                 // right away (e.g. clicking Upload twice with nothing chosen).
                 void status.offsetWidth;
                 status.classList.add('shake');
+                return;
               }
+              if (btn.disabled) {
+                // Already submitting — a double click/tap shouldn't fire a
+                // second upload of the same photo.
+                e.preventDefault();
+                return;
+              }
+              btn.disabled = true;
+              setTimeout(function () { btn.disabled = false; }, 1000);
             });
             status.addEventListener('animationend', function () {
               status.classList.remove('shake');
