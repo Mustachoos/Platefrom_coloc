@@ -34,13 +34,13 @@
       </div>
     </div>
 
-    {% if messages %}
-    <div class="flex-col gap-2xs" style="display:flex;margin-bottom:var(--space-md);">
-      {% for message in messages %}
-      <div class="alert alert--boxed{% if message.tags == 'success' %} alert--success{% endif %}">{{ message }}</div>
-      {% endfor %}
-    </div>
-    {% endif %}
+    {% for message in messages %}
+    <span
+      class="server-message" hidden
+      data-text="{{ message }}"
+      data-level="{% if 'error' in message.tags %}error{% elif 'success' in message.tags %}success{% elif 'warning' in message.tags %}warning{% else %}info{% endif %}"
+    ></span>
+    {% endfor %}
 
     <div class="tabbar">
       <a href="#" class="tabbar__tab{% if active_tab == "events" %} is-active{% endif %}" data-tab="events">Évènements</a>
@@ -329,5 +329,6 @@
       if (checkbox) checkbox.addEventListener('change', function () { form.submit(); });
     });
   </script>
+  <script src="{% static 'photos/notify.js' %}"></script>
 </body>
 </html>

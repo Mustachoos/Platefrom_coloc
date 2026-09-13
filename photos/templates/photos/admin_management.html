@@ -68,6 +68,13 @@
 <body>
   <div class="page shell">
     {% include "photos/_account_button.html" %}
+    {% for message in messages %}
+    <span
+      class="server-message" hidden
+      data-text="{{ message }}"
+      data-level="{% if 'error' in message.tags %}error{% elif 'success' in message.tags %}success{% elif 'warning' in message.tags %}warning{% else %}info{% endif %}"
+    ></span>
+    {% endfor %}
     <div class="flex justify-between items-start gap-sm flex-wrap" style="margin-bottom:var(--space-md);">
       <div>
         <h1>Dashboard admin</h1>
@@ -78,9 +85,6 @@
     <div class="hub-layout">
       <div class="col-left">
         <div class="card card--solid">
-          {% for message in messages %}{% if "staff" in message.tags %}
-          <div class="alert alert--boxed{% if "success" in message.tags %} alert--success{% endif %}" style="margin-bottom:var(--space-sm);">{{ message }}</div>
-          {% endif %}{% endfor %}
           <p class="card__title" style="margin-bottom:var(--space-2xs);">Staff ({{ invites|length }})</p>
           <p class="text-muted text-sm" style="margin-bottom:var(--space-sm);">Génère un lien à usage unique et partage-le avec quelqu'un pour qu'il crée son propre compte
             staff. Il pourra utiliser le dashboard, mais pas gérer les sous-admins lui-même.</p>
@@ -156,9 +160,6 @@
 
       <div class="col-right">
         <div class="card card--solid">
-          {% for message in messages %}{% if "network" in message.tags %}
-          <div class="alert alert--boxed{% if "success" in message.tags %} alert--success{% endif %}" style="margin-bottom:var(--space-sm);">{{ message }}</div>
-          {% endif %}{% endfor %}
           <details id="network-details" class="hub-details" {% if verify_token %}open{% endif %}>
             <summary>
               <h2><span
@@ -254,9 +255,6 @@
         </div>
 
         <div class="card card--solid">
-          {% for message in messages %}{% if "wifi" in message.tags %}
-          <div class="alert alert--boxed{% if "success" in message.tags %} alert--success{% endif %}" style="margin-bottom:var(--space-sm);">{{ message }}</div>
-          {% endif %}{% endfor %}
           <details id="wifi-details" class="hub-details">
             <summary>
               <h2><span
@@ -340,9 +338,6 @@
         </div>
 
         <div class="card card--solid">
-          {% for message in messages %}{% if "drive" in message.tags %}
-          <div class="alert alert--boxed{% if "success" in message.tags %} alert--success{% endif %}" style="margin-bottom:var(--space-sm);">{{ message }}</div>
-          {% endif %}{% endfor %}
           <details id="drive-details" class="hub-details" {% if drive_error or drive_attention %}open{% endif %}>
             <summary>
               <h2><span class="status-circle{% if drive_ready %} verified{% elif drive_attention %} failed{% elif drive_progress > 0 %} partial{% endif %}"></span>Google Drive</h2>
@@ -371,9 +366,6 @@
         </div>
 
         <div class="card card--solid">
-          {% for message in messages %}{% if "support-email" in message.tags %}
-          <div class="alert alert--boxed{% if "success" in message.tags %} alert--success{% endif %}" style="margin-bottom:var(--space-sm);">{{ message }}</div>
-          {% endif %}{% endfor %}
           <details id="support-email-details" class="hub-details">
             <summary>
               <h2><span class="status-circle{% if email_ready %} verified{% elif email_attention %} failed{% endif %}"></span>Email de récupération</h2>
@@ -541,5 +533,6 @@
       </div>
     </div>
   </div>
+  <script src="{% static 'photos/notify.js' %}"></script>
 </body>
 </html>

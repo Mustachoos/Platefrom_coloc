@@ -13,13 +13,13 @@
 <body>
   <div class="page shell" style="min-height:100vh;display:flex;align-items:center;justify-content:center;">
     <main class="card" style="width:100%;max-width:420px;">
-      {% if messages %}
-      <div class="flex-col gap-2xs" style="display:flex;margin-bottom:var(--space-md);">
-        {% for message in messages %}
-        <div class="alert alert--boxed{% if "success" in message.tags %} alert--success{% endif %}">{{ message }}</div>
-        {% endfor %}
-      </div>
-      {% endif %}
+      {% for message in messages %}
+      <span
+        class="server-message" hidden
+        data-text="{{ message }}"
+        data-level="{% if 'error' in message.tags %}error{% elif 'success' in message.tags %}success{% elif 'warning' in message.tags %}warning{% else %}info{% endif %}"
+      ></span>
+      {% endfor %}
 
       <div class="flex items-center gap-2xs">
         <a href="#" class="link link--icon" onclick="history.back();return false;" aria-label="Retour">{% icon 'arrow-left' size=36 %}</a>
@@ -94,5 +94,6 @@
       {% endif %}
     </main>
   </div>
+  <script src="{% static 'photos/notify.js' %}"></script>
 </body>
 </html>
