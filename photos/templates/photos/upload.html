@@ -31,10 +31,7 @@
       {% endif %}
 
       <div style="margin:var(--space-lg) 0;">
-        <div id="photo-status"
-             class="alert alert--boxed{% if just_uploaded %} alert--success{% endif %}"
-             data-just-uploaded="{{ just_uploaded|yesno:'1,0' }}"
-        >{% if just_uploaded %}Envoi réussi{% else %}Pas encore de photo :({% endif %}</div>
+        <div id="photo-status" class="alert alert--boxed">Pas encore de photo :(</div>
       </div>
 
       <form id="upload-form" method="post" enctype="multipart/form-data">
@@ -54,6 +51,7 @@
         </div>
       </form>
 
+      <script src="{% static 'photos/notify.js' %}"></script>
       <script>
         (function(){
           const input = document.getElementById('images');
@@ -64,7 +62,11 @@
           const cameraBtn = document.getElementById('camera-btn');
           const status = document.getElementById('photo-status');
           const cameraFiles = new Set();
-          const justUploaded = !!status && status.dataset.justUploaded === '1';
+          const justUploaded = {{ just_uploaded|yesno:'true,false' }};
+
+          if (justUploaded) {
+            window.notify('Envoi réussi', 'success');
+          }
 
           // Drop the one-time flag from the URL so a page refresh doesn't
           // replay the "Upload successful" state.
@@ -146,15 +148,7 @@
           }
 
           document.addEventListener('DOMContentLoaded', function () {
-            if (justUploaded) {
-              // Already server-rendered as "Upload successful"; just schedule
-              // the transition back to the empty state.
-              setTimeout(function () {
-                setStatus('empty', 'Pas encore de photo :(');
-              }, 3000);
-            } else {
-              update();
-            }
+            update();
           });
         })();
       </script>

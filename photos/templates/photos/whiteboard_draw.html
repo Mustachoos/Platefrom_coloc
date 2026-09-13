@@ -45,28 +45,6 @@
     #upload-btn:disabled { opacity: 0.55; cursor: not-allowed; }
     #save-timer { font-size: var(--text-xs); font-weight: 700; line-height: 1; }
 
-    #upload-status {
-      position: fixed;
-      right: 16px;
-      bottom: calc(var(--wb-stage-bottom, 86px) + 68px);
-      background: var(--surface-solid);
-      padding: var(--space-2xs) var(--space-sm);
-      border-radius: var(--radius-pill);
-      font-size: var(--text-sm);
-      font-weight: 700;
-      color: var(--ink-600);
-      box-shadow: var(--shadow-md);
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity var(--base) var(--ease), transform var(--base) var(--ease);
-      transform: translateY(4px);
-      white-space: nowrap;
-      z-index: 9;
-      max-width: min(70vw, 320px);
-      text-align: right;
-    }
-    #upload-status.visible { opacity: 1; transform: translateY(0); }
-
     /* Tools sheet: the visual chrome is .tool-panel as given; only the
        fixed positioning + slide transform is added here, since the new
        component set doesn't ship an open/closed state for it.
@@ -128,7 +106,6 @@
     </button>
     <button type="button" id="options-toggle" class="fab fab--light" aria-label="Options du stylo">{% icon 'adjustments-horizontal' size=20 %}</button>
   </div>
-  <div id="upload-status"></div>
 
   <div class="tool-panel" id="options-panel">
     <p class="text-sm text-muted" style="margin-bottom:var(--space-sm);">Tu dessines en tant que <strong style="color:var(--ink-900);">{{ pseudo }}</strong></p>
@@ -175,6 +152,7 @@
 
   <form style="display:none">{% csrf_token %}</form>
 
+  <script src="{% static 'photos/notify.js' %}"></script>
   <script>
   (function () {
     const BOARD_IMAGE_URL = "{{ board_image_url|escapejs }}";
@@ -228,17 +206,6 @@
     const uploadBtn = document.getElementById('upload-btn');
     const saveIcon = document.getElementById('save-icon');
     const saveTimer = document.getElementById('save-timer');
-    const uploadStatus = document.getElementById('upload-status');
-
-    let statusHideTimeout = null;
-    function showStatus(text, autoHideMs) {
-      uploadStatus.textContent = text;
-      uploadStatus.classList.add('visible');
-      if (statusHideTimeout) clearTimeout(statusHideTimeout);
-      if (autoHideMs) {
-        statusHideTimeout = setTimeout(() => uploadStatus.classList.remove('visible'), autoHideMs);
-      }
-    }
 
     let currentColor = '#000000';
     let eyedropperActive = false;
@@ -613,7 +580,6 @@
     uploadBtn.addEventListener('click', () => {
       if (uploadBtn.disabled) return;
       uploadBtn.disabled = true;
-      showStatus('Envoi…');
       drawCanvas.toBlob((blob) => {
         const form = new FormData();
         form.append('drawing', blob, 'drawing.png');
@@ -626,21 +592,21 @@
           .then((r) => r.json().then((data) => ({ ok: r.ok, data: data })))
           .then(({ ok, data }) => {
             if (ok && data.ok) {
-              showStatus('Ajouté au tableau !', 2500);
+              notify('Ajouté au tableau !', 'success');
               drawCtx.clearRect(0, 0, drawCanvas.width, drawCanvas.height);
               cooldownRemaining = COOLDOWN_SECONDS;
               setCooldownUi();
             } else if (data.error === 'cooldown') {
               cooldownRemaining = data.retry_after;
-              showStatus('Attends un peu avant de renvoyer.', 2500);
+              notify('Attends un peu avant de renvoyer.', 'warning');
               setCooldownUi();
             } else {
-              showStatus(data.error || 'Impossible d\'envoyer le dessin.', 3000);
+              notify(data.error || 'Impossible d\'envoyer le dessin.', 'error');
               uploadBtn.disabled = false;
             }
           })
           .catch(() => {
-            showStatus('Erreur réseau, réessaie.', 3000);
+            notify('Erreur réseau, réessaie.', 'error');
             uploadBtn.disabled = false;
           });
       }, 'image/png');
