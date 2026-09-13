@@ -250,6 +250,8 @@ Page dédiée, distincte de `/admin/`, réservée au staff (`staff_member_requir
 
 La page est organisée en onglets (CSS pur, sans JavaScript) : **Events**, **Optional features**, **TV layout**, **Whiteboard**, **Guests**, **Photos**. L'onglet actif est conservé après chaque action grâce à un paramètre `?tab=` porté par la redirection qui suit chaque soumission de formulaire.
 
+Le dashboard et `/admin-account/` sont utilisables depuis un téléphone : en dessous de 720px, la barre d'onglets devient défilable horizontalement, le tableau des invités se transforme en cartes empilées, et les colonnes larges (disposition TV, pop-up de vérification Wi-Fi) repassent en une seule colonne.
+
 - **Events** : liste de tous les évènements créés (nom, badge ACTIVE, nombre de photos, lien vers le dossier Drive), avec un bouton "Switch to this event" pour chacun des évènements inactifs
   - **Créer un évènement** : formulaire avec un champ nom ; si Drive est configuré, son dossier est immédiatement recherché/créé sous le dossier racine configuré (voir `GOOGLE_DRIVE_ROOT_FOLDER_ID`) — sinon l'évènement est créé/activable sans dossier Drive, ses photos restant uniquement sur le serveur
   - Si un évènement du même nom existe déjà, il est réutilisé plutôt que dupliqué

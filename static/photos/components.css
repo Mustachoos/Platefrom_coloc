@@ -181,6 +181,17 @@
   font-weight: 700;
   border-color: var(--ink-900);
 }
+@media (max-width: 720px) {
+  .tabbar {
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    -webkit-overflow-scrolling: touch;
+  }
+  .tabbar__tab {
+    flex: 0 0 auto;
+    white-space: nowrap;
+  }
+}
 
 /* ---------- Badges & alerts ---------- */
 .badge {
@@ -458,6 +469,46 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+}
+.photo-card__actions {
+  display: flex;
+  gap: var(--space-2xs);
+}
+@media (max-width: 720px) {
+  .photo-card__actions {
+    flex-wrap: wrap;
+  }
+}
+
+/* ---------- Guest cards (mobile stand-in for the guests table) ---------- */
+.guest-cards {
+  display: none;
+  flex-direction: column;
+  gap: var(--space-2xs);
+}
+@media (max-width: 720px) {
+  .table-wrap {
+    display: none;
+  }
+  .guest-cards {
+    display: flex;
+  }
+}
+
+/* ---------- TV-layout side column (dashboard) ---------- */
+.tv-layout-main {
+  flex: 1;
+  min-width: 260px;
+}
+.tv-layout-side {
+  flex: 0 0 30%;
+  min-width: 220px;
+}
+@media (max-width: 720px) {
+  .tv-layout-main,
+  .tv-layout-side {
+    flex: 1 1 100%;
+  }
 }
 
 /* ---------- QR card ---------- */

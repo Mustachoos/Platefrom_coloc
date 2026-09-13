@@ -151,7 +151,7 @@
       <p class="card__title">Disposition TV</p>
       <p class="text-sm text-muted" style="margin-bottom:var(--space-sm);">Un aperçu de ce qui s'affiche sur l'écran TV — choisis ce qui va dans chaque zone.</p>
       <div class="flex gap-sm flex-wrap" style="align-items:stretch;">
-        <div class="card card--solid card--tight flex-col gap-sm" style="display:flex;flex:1;min-width:260px;background:var(--app-bg);">
+        <div class="card card--solid card--tight flex-col gap-sm tv-layout-main" style="display:flex;background:var(--app-bg);">
           <span class="text-xs text-muted" style="text-transform:uppercase;letter-spacing:0.03em;font-weight:700;">Principal</span>
           <form method="post" class="flex gap-2xs flex-wrap">
             {% csrf_token %}
@@ -176,7 +176,7 @@
           </div>
         </div>
 
-        <div class="flex-col gap-sm" style="display:flex;flex:0 0 30%;min-width:220px;">
+        <div class="flex-col gap-sm tv-layout-side" style="display:flex;">
           <div class="card card--solid card--tight flex-col gap-sm" style="display:flex;background:var(--app-bg);">
             <span class="text-xs text-muted" style="text-transform:uppercase;letter-spacing:0.03em;font-weight:700;">En haut à droite — QR codes</span>
             <div class="flex gap-2xs flex-wrap">
@@ -248,7 +248,7 @@
     <div class="card card--solid" id="panel-guests" {% if active_tab != "guests" %}hidden{% endif %}>
       <p class="card__title">Invités ({{ identities|length }})</p>
       {% if identities %}
-      <div style="overflow-x:auto;">
+      <div class="table-wrap" style="overflow-x:auto;">
         <table class="table">
           <thead><tr><th>Pseudo</th><th>Email</th><th>Drive partagé</th><th>Arrivée</th><th></th></tr></thead>
           <tbody>
@@ -269,6 +269,21 @@
           </tbody>
         </table>
       </div>
+      <div class="guest-cards">
+        {% for identity in identities %}
+        <div class="card card--solid card--tight guest-card">
+          <div class="flex justify-between items-center">
+            <span style="font-weight:700;">{{ identity.pseudo }}</span>
+            <form method="post" action="{% url 'dashboard-delete-guest' identity.id %}">
+              {% csrf_token %}
+              <button type="submit" class="btn btn--danger btn--sm">Supprimer</button>
+            </form>
+          </div>
+          <div class="text-sm text-muted">{{ identity.email|default:"—" }}</div>
+          <div class="text-sm text-muted">Drive partagé : {{ identity.drive_shared|yesno:"Oui,Non" }} · Arrivée : {{ identity.created_at }}</div>
+        </div>
+        {% endfor %}
+      </div>
       {% else %}
       <p class="text-muted" style="font-style:italic;">Aucun invité n'a encore rejoint l'évènement actif.</p>
       {% endif %}
@@ -285,7 +300,7 @@
             {% if photo.hidden %}<span class="badge badge--warning" style="position:absolute;top:var(--space-2xs);left:var(--space-2xs);">Masquée</span>{% endif %}
           </div>
           <div class="text-xs text-muted">{{ photo.username }} · {{ photo.uploaded_at|date:"d/m H:i" }}</div>
-          <div style="display:flex;gap:var(--space-2xs);">
+          <div class="photo-card__actions">
             <form method="post" action="{% url 'dashboard-toggle-photo-hidden' photo.id %}">
               {% csrf_token %}
               <button type="submit" class="btn btn--outline btn--sm">{% if photo.hidden %}Réafficher{% else %}Masquer{% endif %}</button>
