@@ -187,7 +187,7 @@ class PerEventWifiQrToggleTests(TestCase):
         content = response.content.decode()
         self.assertNotIn('name="toggle_wifi_qr"', content)
         self.assertIn('name="wifi_ssid"', content)
-        self.assertIn('name="save_wifi_config"', content)
+        self.assertIn('name="verify_wifi_config"', content)
 
     def test_posting_toggle_wifi_qr_to_admin_management_does_nothing(self):
         """The handler moved to the dashboard — admin_management_view no

@@ -275,7 +275,7 @@ class AdminManagementNotificationTests(TestCase):
         # then the Wi-Fi card further down), not duplicated into the card.
         response = self.client.post(
             reverse("admin-management"),
-            {"save_wifi_config": "1", "wifi_ssid": "PartyWifi", "wifi_password": "s3cretpw12", "wifi_security": "wpa"},
+            {"verify_wifi_config": "1", "wifi_ssid": "PartyWifi", "wifi_password": "s3cretpw12", "wifi_security": "wpa"},
             follow=True,
         )
 

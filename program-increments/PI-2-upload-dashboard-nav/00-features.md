@@ -1,6 +1,6 @@
-# PI-2: Upload ↔ Dashboard navigation, standardized notifications
+# PI-2: Upload ↔ Dashboard navigation, standardized notifications, admin dashboard polish
 
-Two features so far (more may be added later, per the user — no need to force 3-5).
+Four features so far (more may be added later, per the user — no need to force 3-5).
 
 ## Feature A — Navigate between the upload page and the Dashboard
 
@@ -59,3 +59,51 @@ already has its own working animation/queue.
 
 **Actors.** Everyone — guests and staff/admin alike, since messages appear across guest and
 staff pages.
+
+---
+
+## Feature C — Admin dashboard: no collapsing panels, IP-verified notification
+
+**Problem.** The admin dashboard's four hub sections (network address, Wi-Fi, Google Drive,
+recovery email) were `<details>`/`<summary>` accordions — click the heading to expand/collapse.
+The admin wants them always fully visible, no click-to-open step. Separately, successfully
+verifying the network address updated the status dot but gave no explicit confirmation — wanted
+a notification (using Feature B's new component) on success.
+
+**Scope.**
+- **C1**: convert all four `<details class="hub-details">` sections in `admin_management.html`
+  to plain always-visible `<div class="hub-section">` — same heading/status-dot/body content,
+  no collapse behavior, no arrow indicator. Removed the now-dead `.hub-details` collapse CSS.
+- **C2**: the IP-verification poll's success branch now also calls
+  `window.notify('Adresse réseau vérifiée !', 'success')`.
+
+**Actors.** Admin only (this page is `@superuser_required` already).
+
+---
+
+## Feature D — Wi-Fi credentials: manual verification via QR scan
+
+**Problem.** PI-1's Wi-Fi box (US-E3) only ever did an automated format/policy check — deemed
+safe but limited: "looks well-formed" is not "actually connects". The admin wants a real,
+human-driven test: save credentials, scan the resulting QR code with an actual phone, and
+confirm whether it truly works — replacing the "Enregistrer" (Save) button with "Vérifier"
+(Verify) as the single action.
+
+**Scope.** New tri-state `SiteSettings.wifi_verified` (`None` = never tested, `True` = admin
+confirmed it works, `False` = admin confirmed it's broken) drives the Wi-Fi status dot instead
+of the format check (grey / green / red — mirroring the network-address box's own
+verified/failed states). Clicking "Vérifier" saves the credentials (resetting `wifi_verified` to
+`None`, since a fresh save invalidates any prior confirmation) and, if the format check still
+passes, auto-opens a popup with a QR code (from a new admin-only preview endpoint that bypasses
+any per-event `wifi_qr_enabled` toggle — it's testing the credentials themselves, not a specific
+event's display setting) plus a "?" button explaining the admin should forget the Wi-Fi network
+on their phone and try reconnecting via the scan. Two outcome buttons — "C'est cassé" / "Ça
+marche du feu de Dieu !" — set `wifi_verified` accordingly and close the loop. Format-check
+validation (`wifi_credentials_check`) stays as a pre-condition (no popup for garbage
+credentials) and its inline error message is unchanged.
+
+**Out of scope.** No automated/live network join attempt anywhere — this remains a
+human-driven confirmation by design (see PI-1 US-E3's rationale, still valid: an automated join
+risks dropping the server's own connection at a live event).
+
+**Actors.** Admin only.

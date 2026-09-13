@@ -152,7 +152,7 @@ class AdminManagementViewWifiIndicatorTests(TestCase):
         response = self.client.post(
             self.admin_url,
             {
-                "save_wifi_config": "1",
+                "verify_wifi_config": "1",
                 "wifi_ssid": "Chez Axel",
                 "wifi_password": "a" * 12,
                 "wifi_security": SiteSettings.WIFI_SECURITY_WPA,
@@ -188,11 +188,14 @@ class AdminManagementTemplateWifiIndicatorTests(TestCase):
         self.assertNotIn("WEP passwords must be", content)
         self.assertNotIn("can't have a password", content)
 
-    def test_wpa_with_12_char_password_shows_green_dot(self):
+    def test_wpa_with_12_char_password_alone_does_not_show_green_dot(self):
+        # The green dot now means "admin manually confirmed via a QR scan"
+        # (see test_wifi_verify_workflow.py) — passing the format check
+        # alone is necessary but no longer sufficient to turn it green.
         self._set_wifi(ssid="Chez Axel", password="a" * 12, security=SiteSettings.WIFI_SECURITY_WPA)
         response = self.client.get(self.admin_url)
         content = response.content.decode()
-        self.assertIn("status-circle verified", content)
+        self.assertNotIn("status-circle verified", content)
 
     def test_wpa_with_4_char_password_shows_no_green_dot_but_shows_length_error(self):
         self._set_wifi(ssid="Chez Axel", password="abcd", security=SiteSettings.WIFI_SECURITY_WPA)
@@ -216,9 +219,13 @@ class AdminManagementTemplateWifiIndicatorTests(TestCase):
         self.assertNotIn("status-circle verified", content)
         self.assertIn("WEP passwords must be exactly 5 or 13 characters", content)
 
-    def test_status_dot_tooltip_reads_as_a_format_check_not_a_connectivity_claim(self):
+    def test_status_dot_tooltip_reads_as_a_manual_scan_not_an_automatic_test(self):
+        # Superseded by the QR-verify workflow (test_wifi_verify_workflow.py):
+        # the dot's tooltip now describes the manual QR-scan confirmation,
+        # not the format check — but the same honesty principle holds, just
+        # with updated wording.
         self._set_wifi(ssid="Chez Axel", password="a" * 12, security=SiteSettings.WIFI_SECURITY_WPA)
         response = self.client.get(self.admin_url)
         content = response.content.decode()
-        self.assertIn("Format check only", content)
+        self.assertIn("Confirmé en scannant le QR code pour de vrai", content)
         self.assertNotIn("Wi-Fi confirmed working", content)

@@ -33,6 +33,7 @@ urlpatterns = [
     ),
     path("create-admin/", admin_views.create_admin_view, name="create-admin"),
     path("admin-account/", admin_views.admin_management_view, name="admin-management"),
+    path("admin-account/wifi/qr-preview.png", admin_views.wifi_qr_preview_view, name="wifi-qr-preview"),
     path("admin-account/drive/google/connect/", admin_views.drive_google_connect_view, name="drive-google-connect"),
     path("admin-account/drive/google/callback/", admin_views.drive_google_callback_view, name="drive-google-callback"),
     path(

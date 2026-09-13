@@ -20,20 +20,23 @@ not whatever the admin typed. Pending/result/failure state lives in the
 cache (short-lived, no need to persist it).
 """
 
+import io
 import logging
 import os
+import re
 import threading
 import urllib.error
 import urllib.request
 import uuid
 
+import qrcode
 from django.contrib import messages
 from django.contrib.auth import login
 from django.contrib.auth import views as auth_views
 from django.contrib.auth.decorators import user_passes_test
 from django.contrib.auth.models import User
 from django.core.cache import cache
-from django.http import HttpResponseRedirect, JsonResponse
+from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse, reverse_lazy
 from django.utils import timezone
@@ -258,14 +261,29 @@ def admin_management_view(request):
     site_settings = SiteSettings.get_solo()
     drive_error = None
 
-    if request.method == "POST" and "save_wifi_config" in request.POST:
+    if request.method == "POST" and "verify_wifi_config" in request.POST:
         site_settings.wifi_ssid = request.POST.get("wifi_ssid", "").strip()
         site_settings.wifi_password = request.POST.get("wifi_password", "")
         security = request.POST.get("wifi_security", SiteSettings.WIFI_SECURITY_WPA)
         valid_security = dict(SiteSettings.WIFI_SECURITY_CHOICES)
         site_settings.wifi_security = security if security in valid_security else SiteSettings.WIFI_SECURITY_WPA
-        site_settings.save(update_fields=["wifi_ssid", "wifi_password", "wifi_security"])
+        # A fresh save always invalidates any prior manual confirmation —
+        # it was a confirmation of the OLD credentials, not these ones.
+        site_settings.wifi_verified = None
+        site_settings.save(update_fields=["wifi_ssid", "wifi_password", "wifi_security", "wifi_verified"])
         messages.success(request, "Détails Wi-Fi enregistrés.", extra_tags="wifi")
+        return redirect(f"{reverse('admin-management')}?wifi_check=1")
+
+    if request.method == "POST" and "wifi_verify_ok" in request.POST:
+        site_settings.wifi_verified = True
+        site_settings.save(update_fields=["wifi_verified"])
+        messages.success(request, "Wi-Fi confirmé fonctionnel.", extra_tags="wifi")
+        return redirect("admin-management")
+
+    if request.method == "POST" and "wifi_verify_broken" in request.POST:
+        site_settings.wifi_verified = False
+        site_settings.save(update_fields=["wifi_verified"])
+        messages.error(request, "Wi-Fi marqué comme cassé — modifie les identifiants.", extra_tags="wifi")
         return redirect("admin-management")
 
     if request.method == "POST" and "disconnect_gmail" in request.POST:
@@ -433,6 +451,8 @@ def admin_management_view(request):
         "wifi_security_choices": SiteSettings.WIFI_SECURITY_CHOICES,
         "wifi_credentials_valid": wifi_credentials_valid,
         "wifi_credentials_error": wifi_credentials_error,
+        "wifi_verified": site_settings.wifi_verified,
+        "wifi_check": request.GET.get("wifi_check") == "1",
         "verify_token": verify_token,
         "verify_ip": verify_ip,
         "verified_ip": verified_ip,
@@ -457,6 +477,47 @@ def admin_management_view(request):
         "email_ready": email_ready,
         "email_attention": email_attention,
     })
+
+
+_WIFI_QR_ESCAPE_RE = re.compile(r'([\\;,"])')
+
+
+def _wifi_qr_escape(value):
+    # Per the WIFI: QR payload convention (no formal RFC, but universally
+    # implemented this way): backslash, semicolon, comma and double-quote
+    # are field/record separators or quoting characters, so a literal one
+    # inside the SSID/password has to be backslash-escaped. Shared with
+    # photos/views.py's wifi_qr_code (the per-event, guest-facing QR) so the
+    # payload-encoding logic exists exactly once.
+    return _WIFI_QR_ESCAPE_RE.sub(r"\\\1", value)
+
+
+def build_wifi_qr_payload(site_settings):
+    ssid = site_settings.wifi_ssid
+    if site_settings.wifi_security == SiteSettings.WIFI_SECURITY_NOPASS:
+        return f"WIFI:T:nopass;S:{_wifi_qr_escape(ssid)};;"
+    return (
+        f"WIFI:T:{site_settings.wifi_security};"
+        f"S:{_wifi_qr_escape(ssid)};"
+        f"P:{_wifi_qr_escape(site_settings.wifi_password)};;"
+    )
+
+
+@superuser_required
+def wifi_qr_preview_view(request):
+    """Admin-only preview of the site-wide Wi-Fi credentials as a QR code,
+    used by the "Vérifier" popup so the admin can physically test them by
+    scanning — deliberately bypasses any per-event `wifi_qr_enabled` toggle
+    (photos/views.py's wifi_qr_code is guest-facing and event-scoped; this
+    one tests the credentials themselves, independent of whether any event
+    currently has the guest-facing QR turned on)."""
+    site_settings = SiteSettings.get_solo()
+    if not site_settings.wifi_ssid:
+        return HttpResponse(status=404)
+    image = qrcode.make(build_wifi_qr_payload(site_settings))
+    buffer = io.BytesIO()
+    image.save(buffer, format="PNG")
+    return HttpResponse(buffer.getvalue(), content_type="image/png")
 
 
 @superuser_required

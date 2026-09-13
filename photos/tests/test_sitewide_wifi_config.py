@@ -7,7 +7,7 @@ Covers:
   SiteSettings before the schema migration (0027) drops it from Event.
 - The credential read sites (tv_view, slideshow_settings_api, wifi_qr_code)
   read credentials from SiteSettings, independent of which event is active.
-- The write handler (save_wifi_config) only lives on admin_management_view,
+- The write handler (verify_wifi_config) only lives on admin_management_view,
   and is admin-only.
 
 Note (US-E2): the on/off "show the QR on TV" toggle was split back out to
@@ -125,7 +125,7 @@ class WifiReadSitesTests(TestCase):
 
 
 class WifiCredentialWriteHandlerAdminOnlyTests(TestCase):
-    """save_wifi_config lives on admin_management_view, which is
+    """verify_wifi_config lives on admin_management_view, which is
     @superuser_required — so only a superuser can reach it. (The on/off QR
     toggle moved to the dashboard in US-E2 — see test_per_event_wifi_toggle.py.)"""
 
@@ -145,13 +145,15 @@ class WifiCredentialWriteHandlerAdminOnlyTests(TestCase):
         response = self.client.post(
             self.admin_url,
             {
-                "save_wifi_config": "1",
+                "verify_wifi_config": "1",
                 "wifi_ssid": "Chez Axel",
                 "wifi_password": "hunter2",
                 "wifi_security": SiteSettings.WIFI_SECURITY_WEP,
             },
         )
-        self.assertRedirects(response, self.admin_url)
+        # ?wifi_check=1 triggers the verify-QR popup auto-opening on this
+        # render — see test_wifi_verify_workflow.py.
+        self.assertRedirects(response, f"{self.admin_url}?wifi_check=1")
         site_settings = SiteSettings.get_solo()
         self.assertEqual(site_settings.wifi_ssid, "Chez Axel")
         self.assertEqual(site_settings.wifi_password, "hunter2")
@@ -161,7 +163,7 @@ class WifiCredentialWriteHandlerAdminOnlyTests(TestCase):
         self.client.login(username="admin", password="pw12345")
         self.client.post(
             self.admin_url,
-            {"save_wifi_config": "1", "wifi_ssid": "Chez Axel", "wifi_security": "not-a-real-choice"},
+            {"verify_wifi_config": "1", "wifi_ssid": "Chez Axel", "wifi_security": "not-a-real-choice"},
         )
         site_settings = SiteSettings.get_solo()
         self.assertEqual(site_settings.wifi_security, SiteSettings.WIFI_SECURITY_WPA)
@@ -169,7 +171,7 @@ class WifiCredentialWriteHandlerAdminOnlyTests(TestCase):
     def test_non_superuser_staff_cannot_save_wifi_config(self):
         self.client.login(username="staffer", password="pw12345")
         response = self.client.post(
-            self.admin_url, {"save_wifi_config": "1", "wifi_ssid": "Should not save"},
+            self.admin_url, {"verify_wifi_config": "1", "wifi_ssid": "Should not save"},
         )
         self.assertEqual(response.status_code, 302)
         self.assertIn(reverse("dashboard"), response.url)
@@ -178,7 +180,7 @@ class WifiCredentialWriteHandlerAdminOnlyTests(TestCase):
 
     def test_anonymous_cannot_save_wifi_config(self):
         response = self.client.post(
-            self.admin_url, {"save_wifi_config": "1", "wifi_ssid": "Should not save"},
+            self.admin_url, {"verify_wifi_config": "1", "wifi_ssid": "Should not save"},
         )
         self.assertEqual(response.status_code, 302)
         site_settings = SiteSettings.get_solo()
@@ -203,7 +205,7 @@ class WifiTemplatePlacementTests(TestCase):
         self.assertEqual(response.status_code, 200)
         content = response.content.decode()
         self.assertIn('name="toggle_wifi_qr"', content)
-        self.assertNotIn('name="save_wifi_config"', content)
+        self.assertNotIn('name="verify_wifi_config"', content)
         self.assertNotIn('name="wifi_ssid"', content)
 
     def test_admin_management_has_credentials_form_but_not_the_toggle(self):
@@ -211,7 +213,7 @@ class WifiTemplatePlacementTests(TestCase):
         response = self.client.get(reverse("admin-management"))
         self.assertEqual(response.status_code, 200)
         content = response.content.decode()
-        self.assertIn('name="save_wifi_config"', content)
+        self.assertIn('name="verify_wifi_config"', content)
         self.assertIn('name="wifi_ssid"', content)
         self.assertNotIn('name="toggle_wifi_qr"', content)
         network_details_pos = content.index('id="network-details"')

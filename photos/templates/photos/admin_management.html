@@ -18,12 +18,8 @@
       .col-left,.col-right{width:100%;flex:0 0 auto}
     }
 
-    .hub-details summary{list-style:none;cursor:pointer;display:flex;align-items:center;justify-content:space-between}
-    .hub-details summary::-webkit-details-marker{display:none}
-    .hub-details summary h2{margin:0;display:flex;align-items:center;font-size:var(--text-md)}
-    .hub-details summary::after{content:'▸';color:var(--ink-600);font-size:0.9rem;margin-left:12px;transition:transform .2s ease}
-    .hub-details[open] summary::after{transform:rotate(90deg)}
-    .hub-details .details-body{margin-top:var(--space-sm)}
+    .hub-section h2{margin:0;display:flex;align-items:center;font-size:var(--text-md)}
+    .hub-section .details-body{margin-top:var(--space-sm)}
 
     .status-circle{box-sizing:border-box;display:inline-block;width:18px;height:18px;border-radius:50%;background:var(--line-strong);border:2px solid transparent;vertical-align:middle;margin-right:var(--space-2xs);transition:background .3s ease}
     .status-circle.verified{background:var(--success-ink)}
@@ -160,13 +156,11 @@
 
       <div class="col-right">
         <div class="card card--solid">
-          <details id="network-details" class="hub-details" {% if verify_token %}open{% endif %}>
-            <summary>
+          <div id="network-details" class="hub-section">
               <h2><span
                 class="status-circle{% if verify_token %} checking{% elif verified_ip %} verified{% endif %}"
                 id="ip-status-circle"
               ></span>Adresse réseau</h2>
-            </summary>
             <div class="details-body">
 
             <form method="post" class="ip-verify-row" id="ip-form">
@@ -210,6 +204,7 @@
                         actionButtons.style.display = '';
                         statusCircle.classList.remove('checking');
                         statusCircle.classList.add('verified');
+                        if (window.notify) window.notify('Adresse réseau vérifiée !', 'success');
                       } else if (data.failed) {
                         clearInterval(poll);
                         input.readOnly = false;
@@ -251,18 +246,16 @@
             </dialog>
 
             </div>
-          </details>
+          </div>
         </div>
 
         <div class="card card--solid">
-          <details id="wifi-details" class="hub-details">
-            <summary>
+          <div id="wifi-details" class="hub-section">
               <h2><span
-                class="status-circle{% if wifi_credentials_valid %} verified{% endif %}"
+                class="status-circle{% if wifi_verified %} verified{% elif wifi_verified is False %} failed{% endif %}"
                 id="wifi-status-circle"
-                title="Format check only — not a live connectivity test."
+                title="Confirmé en scannant le QR code pour de vrai — pas un test automatique."
               ></span>Wi-Fi</h2>
-            </summary>
             <div class="details-body">
 
             <form method="post" class="ip-verify-row" id="wifi-form">
@@ -272,7 +265,7 @@
                 <input
                   class="input" type="text" id="wifi_ssid" name="wifi_ssid" placeholder="ex. Chez Axel"
                   value="{{ site_settings.wifi_ssid }}"
-                  {% if wifi_credentials_valid %}readonly{% endif %}
+                  {% if wifi_verified %}readonly{% endif %}
                 >
               </div>
               <div class="field">
@@ -281,7 +274,7 @@
                   <input
                     class="input" type="password" id="wifi_password" name="wifi_password" placeholder="Laisse vide si ouvert"
                     value="{{ site_settings.wifi_password }}"
-                    {% if wifi_credentials_valid %}readonly{% endif %}
+                    {% if wifi_verified %}readonly{% endif %}
                   >
                   <button type="button" class="password-toggle" id="wifi-password-toggle" aria-label="Afficher le mot de passe">
                     <span class="icon-show">{% icon 'eye' size=18 %}</span>
@@ -291,7 +284,7 @@
               </div>
               <div class="field">
                 <label for="wifi_security">Sécurité</label>
-                <select class="input{% if wifi_credentials_valid %} locked{% endif %}" id="wifi_security" name="wifi_security" {% if wifi_credentials_valid %}tabindex="-1"{% endif %}>
+                <select class="input{% if wifi_verified %} locked{% endif %}" id="wifi_security" name="wifi_security" {% if wifi_verified %}tabindex="-1"{% endif %}>
                   {% for value, label in wifi_security_choices %}
                   <option value="{{ value }}" {% if site_settings.wifi_security == value %}selected{% endif %}>{{ label }}</option>
                   {% endfor %}
@@ -299,14 +292,49 @@
               </div>
 
               <div id="wifi-action-buttons">
-                <button type="button" class="textbox-btn" id="modify-wifi-btn" {% if not wifi_credentials_valid %}disabled{% endif %}>Modifier</button>
-                <button type="submit" name="save_wifi_config" class="textbox-btn">Enregistrer</button>
+                <button type="button" class="textbox-btn" id="modify-wifi-btn" {% if not wifi_verified %}disabled{% endif %}>Modifier</button>
+                <button type="submit" name="verify_wifi_config" class="textbox-btn">Vérifier</button>
               </div>
 
               {% if wifi_credentials_error %}
               <p class="text-sm" style="color:var(--danger);width:100%;margin:var(--space-2xs) 0 0;">{{ wifi_credentials_error }}</p>
               {% endif %}
             </form>
+
+            <dialog id="wifi-verify-modal">
+              <div style="padding:var(--space-md) var(--space-lg);">
+                <div style="position:relative;">
+                  <h2>Teste tes identifiants Wi-Fi</h2>
+                  <button
+                    type="button" class="help-btn" id="wifi-qr-help-btn"
+                    style="position:absolute;top:0;right:0;"
+                  >?</button>
+                </div>
+                <p id="wifi-qr-help-text" hidden class="text-sm text-muted" style="margin-bottom:var(--space-sm);">
+                  Pour vraiment tester, oublie ce réseau Wi-Fi sur ton téléphone, puis scanne ce QR
+                  code pour essayer de t'y reconnecter à partir de zéro.
+                </p>
+                <div style="display:flex;justify-content:center;margin-bottom:var(--space-sm);">
+                  <img src="{% url 'wifi-qr-preview' %}" alt="QR code Wi-Fi" width="220" height="220">
+                </div>
+                <div class="flex gap-sm items-center flex-wrap" style="justify-content:center;">
+                  <form method="post">
+                    {% csrf_token %}
+                    <button type="submit" name="wifi_verify_broken" class="btn btn--outline btn--sm">C'est cassé</button>
+                  </form>
+                  <form method="post">
+                    {% csrf_token %}
+                    <button type="submit" name="wifi_verify_ok" class="btn btn--dark btn--sm">Ça marche du feu de Dieu !</button>
+                  </form>
+                </div>
+                <div class="flex items-center" style="justify-content:center;margin-top:var(--space-sm);">
+                  <button type="button" class="btn btn--light btn--sm" onclick="document.getElementById('wifi-verify-modal').close()">Fermer</button>
+                </div>
+              </div>
+            </dialog>
+            {% if wifi_check and wifi_credentials_valid %}
+            <script>document.getElementById('wifi-verify-modal').showModal();</script>
+            {% endif %}
 
             <script>
               document.getElementById('modify-wifi-btn').addEventListener('click', function () {
@@ -318,7 +346,7 @@
                 ssid.focus();
                 ssid.select();
                 this.disabled = true;
-                document.getElementById('wifi-status-circle').classList.remove('verified');
+                document.getElementById('wifi-status-circle').classList.remove('verified', 'failed');
               });
 
               document.getElementById('wifi-password-toggle').addEventListener('click', function () {
@@ -331,17 +359,19 @@
                 hideIcon.hidden = !revealing;
                 this.setAttribute('aria-label', revealing ? 'Masquer le mot de passe' : 'Afficher le mot de passe');
               });
+
+              document.getElementById('wifi-qr-help-btn').addEventListener('click', function () {
+                document.getElementById('wifi-qr-help-text').hidden = false;
+              });
             </script>
 
             </div>
-          </details>
+          </div>
         </div>
 
         <div class="card card--solid">
-          <details id="drive-details" class="hub-details" {% if drive_error or drive_attention %}open{% endif %}>
-            <summary>
+          <div id="drive-details" class="hub-section">
               <h2><span class="status-circle{% if drive_ready %} verified{% elif drive_attention %} failed{% elif drive_progress > 0 %} partial{% endif %}"></span>Google Drive</h2>
-            </summary>
             <div class="details-body">
               <button type="button" class="drive-step-row" onclick="document.getElementById('drive-step1-modal').showModal()">
                 <span class="status-circle{% if has_client_secret and not client_secret_valid %} failed{% elif client_secret_valid %} verified{% endif %}"></span>
@@ -362,14 +392,12 @@
               </form>
               {% endif %}
             </div>
-          </details>
+          </div>
         </div>
 
         <div class="card card--solid">
-          <details id="support-email-details" class="hub-details">
-            <summary>
+          <div id="support-email-details" class="hub-section">
               <h2><span class="status-circle{% if email_ready %} verified{% elif email_attention %} failed{% endif %}"></span>Email de récupération</h2>
-            </summary>
             <div class="details-body">
               <p class="text-sm text-muted" style="margin-bottom:var(--space-sm);">Envoie les liens de réinitialisation de mot de passe aux admins et sous-admins qui l'oublient, via le même compte Google connecté ci-dessous — Google n'accepte plus les connexions Gmail par simple mot de passe, il n'y a donc ni adresse ni mot de passe à saisir ici. Les étapes 1 et 2 sont exactement les mêmes que celles du bloc Google Drive : connecter l'une connecte les deux.</p>
               <button type="button" class="drive-step-row" onclick="document.getElementById('drive-step1-modal').showModal()">
@@ -396,7 +424,7 @@
               </form>
               {% endif %}
             </div>
-          </details>
+          </div>
         </div>
       </div>
     </div>

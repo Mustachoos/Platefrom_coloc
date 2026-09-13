@@ -181,6 +181,14 @@ class SiteSettings(models.Model):
     wifi_ssid = models.CharField(max_length=100, blank=True, verbose_name="Nom du réseau Wi-Fi (SSID)")
     wifi_password = models.CharField(max_length=200, blank=True, verbose_name="Mot de passe Wi-Fi")
     wifi_security = models.CharField(max_length=10, choices=WIFI_SECURITY_CHOICES, default=WIFI_SECURITY_WPA)
+    # Tri-state: None = never manually tested, True = admin confirmed the QR
+    # code actually connects, False = admin confirmed it doesn't. Reset to
+    # None whenever the credentials change (an old confirmation doesn't
+    # carry over to new credentials) — see admin_views.py's verify_wifi_config
+    # handler. Deliberately a human-driven confirmation (scan the QR, try to
+    # join), not an automated join attempt — see wifi_credentials_check's
+    # docstring for why the server itself never attempts a real Wi-Fi join.
+    wifi_verified = models.BooleanField(null=True, default=None)
     server_host = models.CharField(
         max_length=255,
         blank=True,

@@ -1,6 +1,5 @@
 import io
 import logging
-import re
 import zipfile
 
 import qrcode
@@ -18,7 +17,7 @@ from django.utils import timezone
 from django.utils.text import slugify
 
 from . import drive_service, event_service, whiteboard_service
-from .admin_views import superuser_required
+from .admin_views import build_wifi_qr_payload, superuser_required
 from .forms import PseudoForm, ShareDriveForm, StaffLoginForm, StyledPasswordChangeForm
 from .models import Event, Like, Photo, SiteSettings, SlideshowSettings, UserIdentity, WhiteboardDrawing
 
@@ -407,32 +406,12 @@ def upload_qr_code(request):
     return HttpResponse(buffer.getvalue(), content_type="image/png")
 
 
-_WIFI_QR_ESCAPE_RE = re.compile(r'([\\;,"])')
-
-
-def _wifi_qr_escape(value):
-    # Per the WIFI: QR payload convention (no formal RFC, but universally
-    # implemented this way): backslash, semicolon, comma and double-quote
-    # are field/record separators or quoting characters, so a literal one
-    # inside the SSID/password has to be backslash-escaped.
-    return _WIFI_QR_ESCAPE_RE.sub(r"\\\1", value)
-
-
 def wifi_qr_code(request):
     site_settings = SiteSettings.get_solo()
     active_event = Event.get_active()
     if not active_event or not active_event.wifi_qr_enabled or not site_settings.wifi_ssid:
         return HttpResponse(status=404)
-    ssid = site_settings.wifi_ssid
-    if site_settings.wifi_security == SiteSettings.WIFI_SECURITY_NOPASS:
-        payload = f"WIFI:T:nopass;S:{_wifi_qr_escape(ssid)};;"
-    else:
-        payload = (
-            f"WIFI:T:{site_settings.wifi_security};"
-            f"S:{_wifi_qr_escape(ssid)};"
-            f"P:{_wifi_qr_escape(site_settings.wifi_password)};;"
-        )
-    image = qrcode.make(payload)
+    image = qrcode.make(build_wifi_qr_payload(site_settings))
     buffer = io.BytesIO()
     image.save(buffer, format="PNG")
     return HttpResponse(buffer.getvalue(), content_type="image/png")
