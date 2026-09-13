@@ -114,3 +114,37 @@ human-driven confirmation by design (see PI-1 US-E3's rationale, still valid: an
 risks dropping the server's own connection at a live event).
 
 **Actors.** Admin only.
+
+---
+
+## Feature E — Simple, non-technical error pages
+
+**Problem.** `DEBUG = True` was hardcoded unconditionally, including in the packaged .exe/.dmg
+distribution — meaning a real end user (per the README's own framing: "un ordinateur unique,
+pas de compte technique") would see Django's full technical debug page — source snippets,
+settings dump, full traceback — on any unhandled error. Django only ever uses custom error
+templates when `DEBUG` is `False`; while `DEBUG=True` (unconditionally, before this feature),
+they'd have been completely inert regardless of whether they existed.
+
+**Scope.**
+- `DEBUG` is now `os.environ.get("DJANGO_DEBUG", "0" if IS_FROZEN else "1") == "1"` —
+  off by default in the packaged build, on by default everywhere else (Docker/dev), so tracebacks
+  stay visible during active development; `DJANGO_DEBUG=0`/`=1` overrides either default (e.g. to
+  preview these pages locally: `DJANGO_DEBUG=0 docker compose up`).
+- Four templates at the project's template root (`photos/templates/{400,403,404,500}.html`) —
+  Django's default error views find these automatically by name, no custom handler functions
+  needed. Same minimal centered-card style as `no_active_event.html`; a short French message, no
+  exception/traceback content, one link back to `/`.
+- **Real bug caught and fixed along the way**: media serving (`config/urls.py`) was wired via
+  `if settings.DEBUG: urlpatterns += static(...)` — `django.conf.urls.static.static()`
+  deliberately no-ops when `DEBUG` is `False`, which would have silently taken down every guest
+  photo/whiteboard image in the packaged build the moment `DEBUG` became conditional. Media is
+  now served by a URL pattern wired directly (independent of `DEBUG`) — this app has no reverse
+  proxy in front of it in any deployment mode, so it must always serve its own media itself.
+
+**Out of scope.** No change to `photos/admin.py`/Django's own `/admin/` site styling (already a
+documented exclusion in this PI, see Feature C/D above) — the custom templates are Django's
+generic site-wide error pages, not admin-specific.
+
+**Actors.** Everyone — this is what any user, guest or staff, sees on an unhandled error once
+the app runs with `DEBUG=False` (the packaged build's default).

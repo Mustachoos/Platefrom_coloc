@@ -26,7 +26,13 @@ if IS_FROZEN:
 else:
     SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY", "dev-only-secret-key-flatshare-photos")
 
-DEBUG = True
+# Off by default in the packaged distribution (real end users, no technical
+# account — a raw traceback means nothing to them and leaks source/settings),
+# on by default everywhere else (Docker/dev) so we keep seeing real
+# tracebacks while working. DJANGO_DEBUG overrides either default, e.g. to
+# preview the custom error pages (404.html/500.html/etc., below) without a
+# packaged build: DJANGO_DEBUG=0 docker compose up.
+DEBUG = os.environ.get("DJANGO_DEBUG", "0" if IS_FROZEN else "1") == "1"
 
 ALLOWED_HOSTS = ["*"]
 
