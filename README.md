@@ -93,7 +93,9 @@ entrantes : sans cela, les téléphones des invités ne peuvent pas atteindre l'
 Ensuite : une icône apparaît dans la barre de menus (macOS) ou la zone de notification
 (Windows/Linux, parfois derrière la flèche « icônes masquées ») et le navigateur s'ouvre sur
 l'app. Un clic sur l'icône donne **Open PartyBooth**, l'adresse à communiquer aux invités
-(« Guests join at »), et **Quit** (qui arrête le serveur). Pour relancer l'app plus tard, ouvrez-la comme n'importe
+(« Guests join at »), et **Quit** (qui arrête le serveur). Si une version plus récente est publiée sur GitHub, une entrée « New version available »
+apparaît dans ce menu et ouvre la page de téléchargement (la vérification se fait en arrière-plan,
+sans rien installer ; hors-ligne, elle est simplement ignorée). Pour relancer l'app plus tard, ouvrez-la comme n'importe
 quelle application ; elle ne démarre pas toute seule à l'ouverture de session. Vos données
 (photos, base, identifiants) restent dans le dossier de données de l'utilisateur et survivent aux
 mises à jour.

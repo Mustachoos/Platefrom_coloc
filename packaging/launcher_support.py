@@ -4,10 +4,13 @@ address detection, native message dialogs, and stdout/stderr redirection.
 Kept free of Django/Twisted imports so it can be unit-tested (and imported
 before Django is set up) without any of the app's dependencies."""
 
+import json
 import os
+import re
 import socket
 import subprocess
 import sys
+import urllib.request
 
 PREFERRED_PORT = 8000
 PORT_SEARCH_LIMIT = 10  # tries 8000..8009, then lets the OS pick
@@ -89,3 +92,48 @@ def redirect_output_to_log(log_path):
     sys.stdout = stream
     sys.stderr = stream
     return stream
+
+
+RELEASES_API = "https://api.github.com/repos/PablArb/Platefrom_coloc/releases/latest"
+
+
+def parse_version(text):
+    """"v0.4.1" / "0.4.1" -> (0, 4, 1); None for anything that isn't a plain
+    numeric dotted version (e.g. "0.0.0-dev", a branch name, garbage)."""
+    match = re.fullmatch(r"v?(\d+(?:\.\d+)*)", (text or "").strip())
+    return tuple(int(part) for part in match.group(1).split(".")) if match else None
+
+
+def is_newer(latest, current):
+    latest_v, current_v = parse_version(latest), parse_version(current)
+    return latest_v is not None and current_v is not None and latest_v > current_v
+
+
+def read_current_version(path):
+    """Version baked in by CI (packaging/version.txt, written from the git
+    tag); None for a dev run or a manual workflow build, where the check is
+    skipped."""
+    try:
+        with open(path, encoding="utf-8") as f:
+            text = f.read().strip()
+    except OSError:
+        return None
+    return text if parse_version(text) else None
+
+
+def check_for_update(current, api_url=RELEASES_API, timeout=5):
+    """(tag, page_url) of a newer published release, else None. Never raises:
+    offline, rate-limited, private repo (404) and malformed answers all just
+    mean "no update to announce"."""
+    if parse_version(current) is None:
+        return None
+    try:
+        request = urllib.request.Request(
+            api_url, headers={"Accept": "application/vnd.github+json", "User-Agent": "PartyBooth"}
+        )
+        with urllib.request.urlopen(request, timeout=timeout) as response:
+            data = json.load(response)
+        tag, url = data["tag_name"], data["html_url"]
+    except Exception:
+        return None
+    return (tag, url) if is_newer(tag, current) else None

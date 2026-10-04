@@ -36,7 +36,13 @@ datas = [
     (os.path.join(DJANGO_DIR, "contrib", "auth", "templates"), "django/contrib/auth/templates"),
     # Tray icon image, loaded at runtime by launcher.py via sys._MEIPASS.
     (os.path.join(REPO_ROOT, "packaging", "linux", "app-icon.png"), "."),
-]
+] + (
+    # Written by the release workflow from the git tag; absent on dev/manual
+    # builds, which simply skip the update check.
+    [(os.path.join(REPO_ROOT, "packaging", "version.txt"), ".")]
+    if os.path.exists(os.path.join(REPO_ROOT, "packaging", "version.txt"))
+    else []
+)
 
 # Django resolves a lot of modules dynamically from strings (MIDDLEWARE
 # entries, ROOT_URLCONF, INSTALLED_APPS, include(), DB backend ENGINE),

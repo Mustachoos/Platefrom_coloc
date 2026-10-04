@@ -92,7 +92,16 @@ def _stop_server():
         reactor.callFromThread(reactor.stop)
 
 
-def _run_tray(local_url, guest_url):
+def _check_update(update, icon):
+    current = support.read_current_version(_resource_path("version.txt"))
+    found = support.check_for_update(current) if current else None
+    if found:
+        update.update(tag=found[0], url=found[1])
+        print(f"Update available: {found[0]} ({found[1]})", flush=True)
+        icon.update_menu()
+
+
+def _run_tray(local_url, guest_url, update):
     """Blocks on the main thread until the user picks Quit. Raises if no tray
     is available on this system (e.g. a Linux desktop without an indicator)."""
     import pystray
@@ -104,13 +113,24 @@ def _run_tray(local_url, guest_url):
     def quit_app(icon, item):
         icon.stop()
 
+    def open_update(icon, item):
+        webbrowser.open(update["url"])
+
     guest_label = f"Guests join at: {guest_url}" if guest_url else "Guests: not connected to a network"
     menu = pystray.Menu(
         pystray.MenuItem("Open PartyBooth", open_app, default=True),
         pystray.MenuItem(guest_label, None, enabled=False),
+        pystray.MenuItem(
+            lambda item: f"New version available: {update['tag']} - download",
+            open_update,
+            visible=lambda item: bool(update),
+        ),
         pystray.MenuItem("Quit", quit_app),
     )
     icon = pystray.Icon(APP_NAME, Image.open(_resource_path("app-icon.png")), APP_NAME, menu)
+    # Checked in the background so a slow/offline network never delays
+    # startup; the menu item above just appears once an answer is in.
+    threading.Thread(target=_check_update, args=(update, icon), daemon=True).start()
     icon.run()
 
 
@@ -153,7 +173,7 @@ def main():
     webbrowser.open(local_url)
 
     try:
-        _run_tray(local_url, guest_url)
+        _run_tray(local_url, guest_url, {})
     except Exception:
         # No tray on this system: keep serving rather than exit, the log says why.
         print("System tray unavailable, running without it:\n" + traceback.format_exc(), flush=True)
