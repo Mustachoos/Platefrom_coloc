@@ -34,6 +34,18 @@ else:
 # packaged build: DJANGO_DEBUG=0 docker compose up.
 DEBUG = os.environ.get("DJANGO_DEBUG", "0" if IS_FROZEN else "1") == "1"
 
+# The dev fallback key above is public (this repo is open source): anyone who
+# can read it can forge session cookies, including an admin's. Fine for local
+# dev with DEBUG on; a real (DEBUG off) deployment must set DJANGO_SECRET_KEY.
+if not DEBUG and SECRET_KEY == "dev-only-secret-key-flatshare-photos":
+    import warnings
+
+    warnings.warn(
+        "DJANGO_SECRET_KEY is not set: running with DEBUG off on the public dev key. "
+        "Set DJANGO_SECRET_KEY to a private random value.",
+        stacklevel=1,
+    )
+
 ALLOWED_HOSTS = ["*"]
 
 INSTALLED_APPS = [
