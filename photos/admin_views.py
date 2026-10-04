@@ -561,7 +561,12 @@ def delete_invite_view(request, token):
     if request.method == "POST":
         invite = get_object_or_404(AdminInvite, token=token, revoked_at__isnull=False)
         invitee_name = invite.invitee_name
+        # Also drop the deactivated subadmin account itself, otherwise the
+        # username stays taken forever with no way to see it on the site.
+        user = invite.used_by
         invite.delete()
+        if user is not None and not user.is_active and not user.is_superuser:
+            user.delete()
         messages.success(request, f"{invitee_name} retiré de la liste.", extra_tags="staff")
     return redirect("admin-management")
 
