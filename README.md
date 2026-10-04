@@ -373,3 +373,11 @@ Un unique canal WebSocket diffuse à tous les écrans TV connectés :
 | `GOOGLE_OAUTH_TOKEN_FILE` | Chemin vers le token OAuth Drive (contient le refresh token), écrit depuis `/admin-account/` ou par `manage.py google_drive_auth` | aucune |
 | `GMAIL_SEND_TOKEN_FILE` | Chemin vers le token OAuth de l'email de récupération (même identifiants que Drive, scope `gmail.send` séparé), écrit depuis `/admin-account/` | aucune (email de récupération désactivé si absent — le lien "Forgot password?" reste grisé) |
 | `GOOGLE_DRIVE_ROOT_FOLDER_ID` | ID du dossier Drive racine sous lequel chaque soirée crée son sous-dossier — prioritaire sur la valeur "Site settings" choisie depuis `/admin-account/` | aucune (Drive désactivé si ni l'un ni l'autre n'est défini) |
+
+## Licence
+
+PartyBooth est distribué sous licence **GNU GPL v3** (voir [`LICENSE`](LICENSE)). Vous pouvez
+l'utiliser, l'étudier, le modifier et le redistribuer, à condition que toute version modifiée que
+vous distribuez reste sous la même licence, code source disponible.
+
+Copyright (C) 2026 les contributeurs de PartyBooth.
