@@ -67,6 +67,36 @@ Au lancement, pas de console : une icône dans la barre système / barre de menu
 pour les invités, Quitter) pilote l'app ; le port 8000 est remplacé par le premier port libre s'il est
 occupé ; les logs sont dans `<dossier de données>/logs/partybooth.log` et une erreur de démarrage
 s'affiche dans une boîte de dialogue.
+
+#### Installer et lancer PartyBooth (utilisateurs)
+
+Téléchargez l'installeur de votre système depuis la page des [releases GitHub](../../releases).
+Les builds ne sont pas encore signés : le système affiche donc un avertissement au premier
+lancement, c'est normal et il suffit de le contourner une fois.
+
+- **macOS** (`.dmg`) : ouvrez le fichier, glissez `PartyBooth.app` sur le raccourci
+  *Applications*, puis lancez-la depuis Launchpad. Au premier lancement macOS la bloque : ouvrez
+  **Réglages Système → Confidentialité et sécurité**, descendez jusqu'au message sur PartyBooth et
+  cliquez **Ouvrir quand même** (sur macOS 14 et antérieur, un clic droit → *Ouvrir* suffit).
+- **Windows** (`PartyBooth-Setup-x.y.z.exe`) : lancez l'installeur (aucun droit administrateur
+  nécessaire). Si SmartScreen affiche « Windows a protégé votre ordinateur », cliquez
+  **Informations complémentaires → Exécuter quand même**. Cochez « Lancer PartyBooth » en fin
+  d'installation ; ensuite, démarrez-le depuis le menu Démarrer.
+- **Linux** (`.AppImage`) : rendez le fichier exécutable (`chmod +x PartyBooth-*.AppImage` ou
+  Propriétés → Exécutable), puis double-cliquez dessus. L'icône de la barre système demande une
+  extension *AppIndicator* sur GNOME ; sans elle l'app fonctionne mais ne peut être quittée qu'en
+  terminant le processus.
+
+Au premier lancement, autorisez PartyBooth si le pare-feu demande d'accepter les connexions
+entrantes : sans cela, les téléphones des invités ne peuvent pas atteindre l'app.
+
+Ensuite : une icône apparaît dans la barre de menus (macOS) ou la zone de notification
+(Windows/Linux, parfois derrière la flèche « icônes masquées ») et le navigateur s'ouvre sur
+l'app. Un clic sur l'icône donne **Open PartyBooth**, l'adresse à communiquer aux invités
+(« Guests join at »), et **Quit** (qui arrête le serveur). Pour relancer l'app plus tard, ouvrez-la comme n'importe
+quelle application ; elle ne démarre pas toute seule à l'ouverture de session. Vos données
+(photos, base, identifiants) restent dans le dossier de données de l'utilisateur et survivent aux
+mises à jour.
 Fonctionnellement identique à la version Docker (même code Django), à la base de données près et à
 la persistance des credentials/clé secrète (dossier de données utilisateur de l'OS plutôt que des
 fichiers montés dans le conteneur).
