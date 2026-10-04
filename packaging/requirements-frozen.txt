@@ -16,3 +16,4 @@ platformdirs
 whitenoise
 pyinstaller
 pystray
+certifi

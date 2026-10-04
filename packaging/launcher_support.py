@@ -8,6 +8,7 @@ import json
 import os
 import re
 import socket
+import ssl
 import subprocess
 import sys
 import urllib.request
@@ -94,7 +95,7 @@ def redirect_output_to_log(log_path):
     return stream
 
 
-RELEASES_API = "https://api.github.com/repos/PablArb/Platefrom_coloc/releases/latest"
+RELEASES_API = "https://api.github.com/repos/Mustachoos/Platefrom_coloc/releases/latest"
 
 
 def parse_version(text):
@@ -121,6 +122,19 @@ def read_current_version(path):
     return text if parse_version(text) else None
 
 
+def _ssl_context():
+    """A frozen app can't count on the OS's CA bundle being where its bundled
+    OpenSSL looks (python.org-style builds ship none), which would make every
+    HTTPS call fail certificate verification. certifi's own CA file is bundled
+    by PyInstaller and always present."""
+    try:
+        import certifi
+
+        return ssl.create_default_context(cafile=certifi.where())
+    except Exception:
+        return ssl.create_default_context()
+
+
 def check_for_update(current, api_url=RELEASES_API, timeout=5):
     """(tag, page_url) of a newer published release, else None. Never raises:
     offline, rate-limited, private repo (404) and malformed answers all just
@@ -131,7 +145,7 @@ def check_for_update(current, api_url=RELEASES_API, timeout=5):
         request = urllib.request.Request(
             api_url, headers={"Accept": "application/vnd.github+json", "User-Agent": "PartyBooth"}
         )
-        with urllib.request.urlopen(request, timeout=timeout) as response:
+        with urllib.request.urlopen(request, timeout=timeout, context=_ssl_context()) as response:
             data = json.load(response)
         tag, url = data["tag_name"], data["html_url"]
     except Exception:

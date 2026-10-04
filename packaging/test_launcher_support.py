@@ -77,6 +77,12 @@ class VersionTests(unittest.TestCase):
             self.assertIsNone(s.read_current_version(path))
 
 
+class SslTests(unittest.TestCase):
+    def test_context_has_trusted_cas(self):
+        # A frozen app can't rely on the OS CA bundle; the context must carry certifi's.
+        self.assertGreater(len(s._ssl_context().get_ca_certs()), 0)
+
+
 class UpdateCheckTests(unittest.TestCase):
     def check(self, body, current="0.4.0", status=200):
         server, url = _serve(body, status)
