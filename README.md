@@ -63,6 +63,10 @@ Pour un usage sans Docker (un ordinateur unique, pas de compte technique) : une 
 autonome packagée avec PyInstaller existe (nom de produit "PartyBooth"), avec SQLite à la place de
 PostgreSQL et un seul exécutable/installeur par OS (Windows, macOS, Linux). Publiée automatiquement
 sur les releases GitHub par `.github/workflows/release.yml` ; sources de build sous `packaging/`.
+Au lancement, pas de console : une icône dans la barre système / barre de menus (Ouvrir, adresse
+pour les invités, Quitter) pilote l'app ; le port 8000 est remplacé par le premier port libre s'il est
+occupé ; les logs sont dans `<dossier de données>/logs/partybooth.log` et une erreur de démarrage
+s'affiche dans une boîte de dialogue.
 Fonctionnellement identique à la version Docker (même code Django), à la base de données près et à
 la persistance des credentials/clé secrète (dossier de données utilisateur de l'OS plutôt que des
 fichiers montés dans le conteneur).

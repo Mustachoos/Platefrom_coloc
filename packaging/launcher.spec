@@ -34,6 +34,8 @@ datas = [
     (os.path.join(DJANGO_DIR, "contrib", "admin", "templates"), "django/contrib/admin/templates"),
     (os.path.join(DJANGO_DIR, "contrib", "admin", "static"), "django/contrib/admin/static"),
     (os.path.join(DJANGO_DIR, "contrib", "auth", "templates"), "django/contrib/auth/templates"),
+    # Tray icon image, loaded at runtime by launcher.py via sys._MEIPASS.
+    (os.path.join(REPO_ROOT, "packaging", "linux", "app-icon.png"), "."),
 ]
 
 # Django resolves a lot of modules dynamically from strings (MIDDLEWARE
@@ -50,6 +52,9 @@ hiddenimports = (
     + collect_submodules("whitenoise")
     + collect_submodules("daphne")
     + collect_submodules("channels")
+    # pystray picks its OS backend (win32 / darwin / appindicator / xorg)
+    # with a dynamic import, which static analysis can't see.
+    + collect_submodules("pystray")
     + [
         "django.contrib.admin.apps",
         "django.contrib.auth.apps",
@@ -98,7 +103,9 @@ exe = EXE(
     # '_imaging' from PIL" — the file survives but its exported symbols
     # break. Not worth the size savings for a one-time download.
     upx=False,
-    console=True,
+    # Windowed: no terminal window. launcher.py logs to a file in the
+    # app-data folder and owns a tray icon with Quit instead.
+    console=False,
     disable_windowed_traceback=False,
     argv_emulation=False,
     icon=os.path.join(REPO_ROOT, "packaging", "windows", "app-icon.ico") if sys.platform == "win32" else None,
@@ -121,5 +128,9 @@ if sys.platform == "darwin":
         name="PartyBooth.app",
         icon=os.path.join(REPO_ROOT, "packaging", "macos", "app-icon.icns"),
         bundle_identifier="com.partybooth.app",
-        info_plist={"NSHighResolutionCapable": True},
+        info_plist={
+            "NSHighResolutionCapable": True,
+            # Menu-bar-only app: no Dock icon, the tray icon is the UI.
+            "LSUIElement": True,
+        },
     )
