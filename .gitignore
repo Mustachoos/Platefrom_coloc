@@ -13,3 +13,7 @@ credentials/
 /dist-installers/
 /staticfiles/
 /AppDir/
+
+
+releases*
+.claude
